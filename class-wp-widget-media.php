@@ -427,7 +427,7 @@ class WP_Media_Widget extends WP_Widget {
 	 * @access public
 	 */
 	public function enqueue_admin_styles() {
-		wp_enqueue_style( 'wp-media-widget-styles', includes_url( 'css/wp-media-widget.css' ), array( 'media-views' ) );
+		wp_enqueue_style( 'wp-media-widget-styles' );
 	}
 
 	/**
@@ -448,13 +448,7 @@ class WP_Media_Widget extends WP_Widget {
 		wp_enqueue_media();
 
 		// Register, localize and enqueue custom JS.
-		wp_enqueue_script(
-			'wp-media-widget',
-			includes_url( 'js/wp-media-widget.js' ),
-			array( 'jquery', 'media-models', 'media-views' ),
-			'',
-			true
-		);
+		wp_enqueue_script( 'wp-media-widget' );
 
 		wp_localize_script( 'wp-media-widget', '_mediaWidgetl10n',
 			array(
