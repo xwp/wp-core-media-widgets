@@ -62,13 +62,13 @@ class WP_Media_Widget extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-
-		echo $args['before_widget'];
+		$output = $args['before_widget'];
 		if ( ! empty( $instance['title'] ) ) {
-			echo $args['before_title'] . $instance['title'] . $args['after_title'];
+			$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
+			$output .= $args['before_title'] . $title . $args['after_title'];
 		}
 		if ( ! empty( $instance['description'] ) ) {
-			echo '<p class="attachment-description align' . $instance['align'] . '">' . $instance['description'] . '</p>';
+			$output .= '<p class="attachment-description align' . $instance['align'] . '">' . $instance['description'] . '</p>';
 		}
 		if ( ! empty( $instance['link'] ) ) {
 			if ( 'file' === $instance['link'] ) {
@@ -102,6 +102,7 @@ class WP_Media_Widget extends WP_Widget {
 					$media_output .= $this->get_attachment_image( $instance['id'], $instance['size'], array(
 						'id'      => $args['widget_id'],
 						'align'   => $instance['align'],
+						'scale'   => $instance['scale'],
 						'title'   => $attachment->post_title,
 						'caption' => $attachment->post_excerpt,
 					) );
@@ -129,8 +130,11 @@ class WP_Media_Widget extends WP_Widget {
 			$media_output .= '</a>';
 		}
 
-		echo $media_output;
-		echo $args['after_widget'];
+		$output .= $media_output;
+		$output .= $this->get_responsive_style( $attachment, $args['widget_id'], $instance );
+		$output .= $args['after_widget'];
+
+		echo $output;
 	}
 
 	/**
@@ -148,14 +152,16 @@ class WP_Media_Widget extends WP_Widget {
 	function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
 
-		// ID, title
+		// ID, title, scale
 		$instance['id'] = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
+		$instance['scale'] = isset( $new_instance['scale'] ) ? sanitize_text_field( $new_instance['scale'] ) : '';
 
 		// Everything else.
 		$instance['align'] = sanitize_text_field( $new_instance['align'] );
-		$instance['size'] = sanitize_text_field( $new_instance['size'] );
-		$instance['link'] = sanitize_text_field( $new_instance['link'] );
+		$instance['size']  = sanitize_text_field( $new_instance['size'] );
+		$instance['link']  = sanitize_text_field( $new_instance['link'] );
+
 		return $instance;
 	}
 
@@ -178,9 +184,11 @@ class WP_Media_Widget extends WP_Widget {
 		);
 
 		// If an image id is saved for this widget, display the image using `wp_get_attachment_image()`.
-		echo '<div class="media-widget-admin-preview">';
-		echo $this->get_attachment_image( $attachment->ID, $instance['size'], $attrs );
-		echo '</div>';
+		$output =  '<div class="media-widget-admin-preview" id="' . $widget_id . '">';
+		$output .= $this->get_attachment_image( $attachment->ID, $instance['size'], $attrs );
+		$output .= '</div>';
+
+		echo $output;
 	}
 
 	/**
@@ -194,26 +202,36 @@ class WP_Media_Widget extends WP_Widget {
 	 * @param array  $attrs Attributes for the markup.
 	 */
 	private function get_attachment_image( $attachment_id, $size = 'medium', $attrs = array() ) {
+
+		$has_caption   = ( ! empty( $attrs['caption'] ) );
+		$is_responsive = ( ! empty( $attrs['scale'] ) );
+
 		$img_attrs = array(
 			'data-id' => $attrs['id'],
 			'title'   => $attrs['title'],
 			'class'   => 'image wp-image-' . $attachment_id,
 		);
 
-		if ( empty( $attrs['caption'] ) ) {
-			$img_attrs['class'] .= ' ' . 'align' . $attrs['align'];
+		if ( $has_caption ) {
+			$img_attrs['class'] .= ' align' . $attrs['align'];
 		}
 
-		$image = wp_get_attachment_image( $attachment_id, $size, false, $img_attrs);
+		if ( $is_responsive ) {
+			$img_attrs['style'] = 'width: 100%; height: auto;';
+		}
 
-		if ( empty( $attrs['caption'] ) ) {
+		$image = wp_get_attachment_image( $attachment_id, $size, false, $img_attrs );
+
+		if ( ! $has_caption ) {
 			return $image;
 		}
 
 		$attrs['id'] .= '-caption';
 		$attrs['width'] = get_option( $size . '_size_w' );
 
-		return img_caption_shortcode( $attrs, $image );
+		$figure = img_caption_shortcode( $attrs, $image );
+
+		return $figure;
 	}
 
 	/**
@@ -227,13 +245,15 @@ class WP_Media_Widget extends WP_Widget {
 	 * @param array   $instance   Current widget instance arguments.
 	 */
 	public function render_audio( $attachment, $widget_id, $instance ) {
-		echo '<div class="media-widget-admin-preview">';
+		$output = '<div class="media-widget-admin-preview" id="' . $widget_id . '">';;
 		if ( 'embed' === $instance['link'] ) {
-			echo $this->get_attachment_audio( $attachment->ID );
+			$output .= $this->get_attachment_audio( $attachment->ID );
 		} else {
-			echo '<a href="#">' . $attachment->post_title .'</a>';
+			$output .= '<a href="#">' . $attachment->post_title .'</a>';
 		}
-		echo '</div>';
+		$output .= '</div>';
+
+		echo $output;
 	}
 
 	/**
@@ -264,13 +284,15 @@ class WP_Media_Widget extends WP_Widget {
 	 * @param array   $instance   Current widget instance arguments.
 	 */
 	public function render_video( $attachment, $widget_id, $instance ) {
-		echo '<div class="media-widget-admin-preview">';
+		$output = '<div class="media-widget-admin-preview" id="' . $widget_id . '">';
 		if ( 'embed' === $instance['link'] ) {
-			echo $this->get_attachment_video( $attachment->ID );
+			$output .= $this->get_attachment_video( $attachment->ID );
 		} else {
-			echo '<a href="#">' . $attachment->post_title .'</a>';
+			$output .= '<a href="#">' . $attachment->post_title .'</a>';
 		}
-		echo '</div>';
+		$output .= '</div>';
+
+		echo $output;
 	}
 
 	/**
@@ -286,6 +308,36 @@ class WP_Media_Widget extends WP_Widget {
 		$output = wp_video_shortcode( array(
 			'src' => wp_get_attachment_url( $attachment_id )
 		) );
+
+		return $output;
+	}
+
+	/**
+	 * Get styles for responsifying the widget
+	 *
+	 * @since 4.8.0
+	 * @access private
+	 *
+	 * @param WP_Post $attachment Attachment object.
+	 * @param string  $widget_id  Widget ID.
+	 * @param array   $instance   Current widget instance arguments.
+	 */
+	private function get_responsive_style( $attachment, $widget_id, $instance ) {
+		if ( empty( $instance['scale'] ) || wp_attachment_is( 'audio', $attachment ) ) {
+			return;
+		}
+
+		$output = '<style type="text/css">';
+
+		if ( wp_attachment_is_image( $attachment ) ) {
+			$output .= "#{$widget_id}-caption{ width: 100% !important; }";
+		}
+
+		if ( wp_attachment_is( 'video', $attachment ) ) {
+			$output .= "#{$widget_id} .wp-video{ width: 100% !important; }";
+		}
+
+		$output .= '</style>';
 
 		return $output;
 	}
@@ -307,6 +359,7 @@ class WP_Media_Widget extends WP_Widget {
 			'align'  => '',
 			'size'   => '',
 			'link'   => '',
+			'scale'  => '',
 		);
 
 		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
@@ -332,10 +385,21 @@ class WP_Media_Widget extends WP_Widget {
 					} elseif ( wp_attachment_is( 'video', $attachment ) ) {
 						$this->render_video( $attachment, $widget_id, $instance );
 					}
+					echo $this->get_responsive_style( $attachment, $widget_id, $instance );
 				}
 			?>
 
 			<p class="extras">
+				<input
+					type="checkbox"
+					name="<?php echo $this->get_field_name( 'scale' ) ?>"
+					id="<?php echo $this->get_field_id( 'scale' )?>"
+					value="on"
+					<?php checked( 'on', $instance[ 'scale' ]  ); ?>
+				/>
+				<label for="<?php echo $this->get_field_id( 'scale' )?>">
+					<?php esc_html_e( 'Scale to fit width' ); ?>
+				</label>
 			</p>
 
 			<p>
@@ -346,7 +410,7 @@ class WP_Media_Widget extends WP_Widget {
 
 			<?php
 			// Use hidden form fields to capture the attachment details from the media manager.
-			unset( $instance['title'] );
+			unset( $instance['title'], $instance['scale'] );
 			?>
 
 			<?php foreach ( $instance as $name => $value ) : ?>
@@ -363,7 +427,7 @@ class WP_Media_Widget extends WP_Widget {
 	 * @access public
 	 */
 	public function enqueue_admin_styles() {
-		wp_enqueue_style( 'wp-media-widget-styles' );
+		wp_enqueue_style( 'wp-media-widget-styles', includes_url( 'css/wp-media-widget.css' ), array( 'media-views' ) );
 	}
 
 	/**
@@ -384,7 +448,13 @@ class WP_Media_Widget extends WP_Widget {
 		wp_enqueue_media();
 
 		// Register, localize and enqueue custom JS.
-		wp_enqueue_script( 'wp-media-widget' );
+		wp_enqueue_script(
+			'wp-media-widget',
+			includes_url( 'js/wp-media-widget.js' ),
+			array( 'jquery', 'media-models', 'media-views' ),
+			'',
+			true
+		);
 
 		wp_localize_script( 'wp-media-widget', '_mediaWidgetl10n',
 			array(

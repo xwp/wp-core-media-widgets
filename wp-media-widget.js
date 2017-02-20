@@ -99,7 +99,8 @@
 			// Start with container elements for the widgets page, customizer controls, and customizer preview.
 			var previewEl,
 				extras,
-				formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId );
+				formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId ),
+				scale = $( '#widget-' + widgetId + '-scale' );
 
 			// The widget title bar doesn't update automatically on the Appearance > Widgets page. This fixes that problem.
 			formView.closest( '.widget' ).find( '.in-widget-title' ).html( ': ' + attachment.title );
@@ -112,11 +113,20 @@
 			// Display a preview of the image in the widgets page and customizer controls.
 			extras.removeClass( 'hidden' );
 
+			attachment.link = props.link;
+			attachment.size = props.size;
+
 			previewEl = formView.find( '.media-widget-admin-preview' );
 			if ( ! previewEl ) {
 				previewEl = $( '<div class="media-widget-admin-preview />' ).insertBefore( extras );
 			}
 			previewEl.html( frame.renderMediaElement( widgetId, props, attachment ) );
+
+			if ( scale.prop( 'checked' ) ) {
+				previewEl
+					.find( '.wp-video, .wp-caption' ).css( 'width', '100%' ).end()
+					.find( 'img.image' ).css( { width: '100%', height: 'auto' } );
+			}
 
 			if ( -1 < $.inArray( attachment.type, [ 'audio', 'video' ] ) ) {
 				wp.mediaelement.initialize();
