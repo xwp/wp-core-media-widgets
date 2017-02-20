@@ -118,7 +118,7 @@
 
 			previewEl = formView.find( '.media-widget-admin-preview' );
 			if ( ! previewEl.length ) {
-				previewEl = $( '<div class="media-widget-admin-preview />' ).insertBefore( extras );
+				previewEl = $( '<div class="media-widget-admin-preview"></div>' ).insertBefore( extras );
 			}
 			previewEl.html( frame.renderMediaElement( widgetId, props, attachment ) );
 
