@@ -117,7 +117,7 @@
 			attachment.size = props.size;
 
 			previewEl = formView.find( '.media-widget-admin-preview' );
-			if ( ! previewEl ) {
+			if ( ! previewEl.length ) {
 				previewEl = $( '<div class="media-widget-admin-preview />' ).insertBefore( extras );
 			}
 			previewEl.html( frame.renderMediaElement( widgetId, props, attachment ) );
