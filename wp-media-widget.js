@@ -3,16 +3,8 @@
  *
  * @package WP_Media_Widget
  */
-( function ( $ ) {
-	var frame, widgetFrame;
-
-	function translate( key, defaultText ) {
-		return ( window._mediaWidgetl10n && _mediaWidgetl10n[ key ] ) || defaultText;
-	}
-
-	frame = {
-		buttonId: '.media-widget-preview .button',
-
+( function ( $, l10n ) {
+	var frame = {
 		defaultProps: {
 			id:    '',
 			align: '',
@@ -21,53 +13,58 @@
 		},
 
 		init: function() {
-			$( frame.buttonId )
-				.off( 'click.mediaWidget' )
-				.on( 'click.mediaWidget', frame.openMediaManager );
-
-			frame.bindImageClick();
-
+			frame.bindEvent();
 			wp.mediaelement.initialize();
 		},
 
-		bindImageClick: function() {
-			$( '.media-widget-preview .image' )
+		bindEvent: function( context ) {
+			$( '.button.select-media, .image', context || '.media-widget-preview' )
 				.off( 'click.mediaWidget' )
 				.on( 'click.mediaWidget', frame.openMediaManager );
 		},
 
+		/**
+		 * Get current selection of media
+		 *
+		 * @param {String} widgetId
+		 * @return {wp.media.models.Selection|null}
+		 */
+		getSelection: function( widgetId ) {
+			var ids = $( '#widget-' + widgetId + '-id' ).val();
+
+			if ( ! ids ) {
+				return null;
+			}
+
+			var selection = ids.split(',').reduce( function( list, id ) {
+				var attachment = wp.media.attachment( id );
+				if ( id && attachment ) {
+					list.push( attachment );
+				}
+				return list;
+			}, [] );
+
+			return new wp.media.model.Selection( selection );
+		},
+
 		openMediaManager: function( event ) {
-			event.preventDefault();
 			var widgetId = $( event.target ).data( 'id' );
 
 			// Create the media frame.
-			widgetFrame = wp.media( {
+			var widgetFrame = wp.media( {
 				button: {
-					text: translate( 'add-to-widget', 'Add to widget' ), // Text of the submit button.
+					text: translate( 'addToWidget', 'Add to widget' ), // Text of the submit button.
 				},
 
 				states: new wp.media.controller.Library( {
 					library:    wp.media.query(),
-					title:      translate( 'select-media', 'Select Media' ), // Media frame title
+					title:      translate( 'selectMedia', 'Select Media' ), // Media frame title
+					selection:  frame.getSelection( widgetId ),
 					multiple:   false,
 					priority:   20,
 					display:    true, // attachment display setting
 					filterable: 'all',
 				} ),
-			} );
-
-			// Populate previously selected media when the media frame is opened.
-			widgetFrame.on( 'open', function() {
-				var selection = widgetFrame.state().get( 'selection' ),
-					ids = $( '#widget-' + widgetId + '-id' ).val().split(',');
-
-				if ( ids[0] > 0 ) {
-					ids.forEach( function( id ) {
-						var attachment = wp.media.attachment( id );
-						attachment.fetch();
-						selection.add( attachment ? [ attachment ] : [] );
-					} );
-				}
 			} );
 
 			// Render the attachment details.
@@ -102,37 +99,37 @@
 				formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId ),
 				scale = $( '#widget-' + widgetId + '-scale' );
 
-			// The widget title bar doesn't update automatically on the Appearance > Widgets page. This fixes that problem.
-			formView.closest( '.widget' ).find( '.in-widget-title' ).html( ': ' + attachment.title );
+			// Bail if there is no target form
+			if ( ! formView.length || ! scale.length ) {
+				return;
+			}
 
+			_.extend( attachment, _.pick( props, 'link', 'size' ) );
+
+			// Show/hide the widget description
 			formView.find( '.attachment-description' )
-				[ attachment.description ? 'removeClass' : 'addClass' ]('hidden')
+				.toggleClass( 'hidden', ! attachment.description )
 				.html( attachment.description );
 
-			extras = formView.find( '.extras' );
 			// Display a preview of the image in the widgets page and customizer controls.
-			extras.removeClass( 'hidden' );
+			extras = formView.find( '.extras' ).removeClass( 'hidden' );
 
-			attachment.link = props.link;
-			attachment.size = props.size;
-
+			// Set the preview content
 			previewEl = formView.find( '.media-widget-admin-preview' );
-			if ( ! previewEl.length ) {
-				previewEl = $( '<div class="media-widget-admin-preview"></div>' ).insertBefore( extras );
-			}
 			previewEl.html( frame.renderMediaElement( widgetId, props, attachment ) );
 
+			// Apply responsive styles to the media if the scale option is checked
 			if ( scale.prop( 'checked' ) ) {
 				previewEl
 					.find( '.wp-video, .wp-caption' ).css( 'width', '100%' ).end()
 					.find( 'img.image' ).css( { width: '100%', height: 'auto' } );
 			}
 
-			if ( -1 < $.inArray( attachment.type, [ 'audio', 'video' ] ) ) {
+			if ( _.contains( [ 'audio', 'video' ], attachment.type ) ) {
 				wp.mediaelement.initialize();
-			} else if ( 'image' === attachment.type ) {
-				frame.bindImageClick();
 			}
+
+			frame.bindEvent( formView );
 
 			// Populate form fields with selection data from the media frame.
 			_.each( _.keys( frame.defaultProps ), function ( key ) {
@@ -143,7 +140,7 @@
 			formView.find( '#widget-' + widgetId + '-url' ).trigger( 'change' );
 
 			// Change button text
-			formView.find( frame.buttonId ).text( translate( 'change-media', 'Change Media' ) );
+			formView.find( frame.buttonId ).text( translate( 'changeMedia', 'Change Media' ) );
 		},
 
 		/**
@@ -152,77 +149,115 @@
 		 * @param {String} widgetId
 		 * @param {Object} props Attachment Display Settings (align, link, size, etc).
 		 * @param {Object} attachment Attachment Details (title, description, caption, url, sizes, etc).
+		 *
+		 * @return {String}
 		 */
 		renderMediaElement: function( widgetId, props, attachment ) {
-			var image;
+			var type = attachment.type || '';
+			var renderer = 'render' + type.charAt(0).toUpperCase() + type.slice(1);
 
-			if ( 'image' === attachment.type ) {
-				image = $( '<img />' )
-					.addClass( 'image wp-image' + attachment.id )
-					.attr( {
-						'data-id': widgetId,
-						src:       attachment.sizes[ props.size ].url,
-						title:     attachment.title,
-						alt:       attachment.alt,
-						width:     attachment.sizes[ props.size ].width,
-						height:    attachment.sizes[ props.size ].height
-					} );
-
-				if ( attachment.caption ) {
-					image = $( '<figure />' )
-						.width( attachment.sizes[ props.size ].width )
-						.addClass( 'wp-caption' )
-						.attr( 'id', widgetId + '-caption' )
-						.append( image );
-
-					$( '<figcaption class="wp-caption-text" />' ).text( attachment.caption ).appendTo( image );
-				}
-
-				return image.wrap( '<div />' ).parent().html();
+			if ( 'function' === typeof frame[renderer] ) {
+				return frame[renderer]( widgetId, props, attachment );
 			}
 
-			if ( 'audio' === attachment.type ) {
-				if ( 'embed' === props.link ) {
-					return wp.media.template( 'wp-media-widget-audio' )( {
-						model: {
-							src:    attachment.url
-						}
-					} );
-				}
-
-				return wp.html.string( {
-					tag: 'a',
-					content: attachment.title,
-					attrs: {
-						href: '#'
-					}
-				} );
-			}
-
-			if ( 'video' === attachment.type ) {
-				if ( 'embed' === props.link ) {
-					return wp.media.template( 'wp-media-widget-video' )( {
-						model: {
-							src:    attachment.url,
-							width:  attachment.width,
-							height: attachment.height
-						}
-					} );
-				}
-
-				return wp.html.string( {
-					tag: 'a',
-					content: attachment.title,
-					attrs: {
-						href: '#'
-					}
-				} );
-			}
-
-			// Unknown media type
+			// In case no renderer found
 			return '';
+		},
+
+		/**
+		 * Renders the image attachment
+		 *
+		 * @param {String} widgetId
+		 * @param {Object} props Attachment Display Settings (align, link, size, etc).
+		 * @param {Object} attachment Attachment Details (title, description, caption, url, sizes, etc).
+		 *
+		 * @return {String}
+		 */
+		renderImage: function( widgetId, props, attachment ) {
+			var image = $( '<img />' )
+				.addClass( 'image wp-image' + attachment.id )
+				.attr( {
+					'data-id': widgetId,
+					src:       attachment.sizes[ props.size ].url,
+					title:     attachment.title,
+					alt:       attachment.alt,
+					width:     attachment.sizes[ props.size ].width,
+					height:    attachment.sizes[ props.size ].height
+				} );
+
+			if ( attachment.caption ) {
+				image = $( '<figure />' )
+					.width( attachment.sizes[ props.size ].width )
+					.addClass( 'wp-caption' )
+					.attr( 'id', widgetId + '-caption' )
+					.append( image );
+
+				$( '<figcaption class="wp-caption-text" />' ).text( attachment.caption ).appendTo( image );
+			}
+
+			return image.wrap( '<div />' ).parent().html();
+		},
+
+		/**
+		 * Renders the audio attachment
+		 *
+		 * @param {String} widgetId
+		 * @param {Object} props Attachment Display Settings (align, link, size, etc).
+		 * @param {Object} attachment Attachment Details (title, description, caption, url, sizes, etc).
+		 *
+		 * @return {String}
+		 */
+		renderAudio: function( widgetId, props, attachment ) {
+			if ( 'embed' === props.link ) {
+				return wp.media.template( 'wp-media-widget-audio' )( {
+					model: {
+						src:    attachment.url
+					}
+				} );
+			}
+
+			return wp.html.string( {
+				tag: 'a',
+				content: attachment.title,
+				attrs: {
+					href: '#'
+				}
+			} );
+		},
+
+		/**
+		 * Renders the video attachment
+		 *
+		 * @param {String} widgetId
+		 * @param {Object} props Attachment Display Settings (align, link, size, etc).
+		 * @param {Object} attachment Attachment Details (title, description, caption, url, sizes, etc).
+		 *
+		 * @return {String}
+		 */
+		renderVideo: function( widgetId, props, attachment ) {
+			if ( 'embed' === props.link ) {
+				return wp.media.template( 'wp-media-widget-video' )( {
+					model: {
+						src:    attachment.url,
+						width:  attachment.width,
+						height: attachment.height
+					}
+				} );
+			}
+
+			return wp.html.string( {
+				tag: 'a',
+				content: attachment.title,
+				attrs: {
+					href: '#'
+				}
+			} );
 		}
 	};
+
+	function translate( key, defaultText ) {
+		return l10n[ key ] || defaultText;
+	}
 
 	$( document )
 		.ready( frame.init )
@@ -230,4 +265,4 @@
 
 	window.wp = window.wp || {};
 	window.wp.MediaWidget = frame;
-} )( jQuery );
+} )( jQuery, window._mediaWidgetL10n || {} );
