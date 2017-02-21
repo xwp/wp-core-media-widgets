@@ -38,7 +38,7 @@ add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
  * @param WP_Styles $styles
  */
 function wp32417_default_styles( WP_Styles $styles ) {
-	$styles->add( 'wp-media-widget-styles', plugin_dir_url( __FILE__ ) . 'wp-media-widget.css', array( 'media-views' ) );
+	$styles->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-media-widget.css', array( 'media-views' ) );
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
 
