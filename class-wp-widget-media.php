@@ -20,6 +20,7 @@ class WP_Media_Widget extends WP_Widget {
 		'title'       => '',
 		'description' => '',
 		'link'        => '',
+		'align'       => 'none',
 	);
 
 	/**
@@ -53,6 +54,10 @@ class WP_Media_Widget extends WP_Widget {
 			$control_opts
 		);
 
+		if ( is_customize_preview() ) {
+			$this->enqueue_mediaelement_script();
+		}
+
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
@@ -73,11 +78,11 @@ class WP_Media_Widget extends WP_Widget {
 
 		$instance = array_merge( $this->default_instance, $instance );
 
-		if ( ! $instance['title'] ) {
+		if ( $instance['title'] ) {
 			$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 			$output .= $args['before_title'] . $title . $args['after_title'];
 		}
-		if ( ! $instance['description'] ) {
+		if ( $instance['description'] ) {
 			$output .= '<p class="attachment-description align' . $instance['align'] . '">' . $instance['description'] . '</p>';
 		}
 
@@ -191,7 +196,7 @@ class WP_Media_Widget extends WP_Widget {
 			'class'   => 'image wp-image-' . $attachment->ID,
 		);
 
-		if ( $has_caption ) {
+		if ( ! $has_caption ) {
 			$img_attrs['class'] .= ' align' . $instance['align'];
 		}
 
@@ -432,5 +437,24 @@ class WP_Media_Widget extends WP_Widget {
 		</script>
 
 		<?php
+	}
+
+	/**
+	 * Enqueue mediaelement script and style if in need,
+	 * so the first instance of the media widget can properly handle media elements.
+	 *
+	 * @since 4.8.0
+	 * @access private
+	 */
+	private function enqueue_mediaelement_script() {
+		$audio_library = apply_filters( 'wp_audio_shortcode_library', 'mediaelement' );
+		$video_library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
+
+		if ( ! in_array( 'mediaelement', array( $audio_library, $video_library ) ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'wp-mediaelement' );
+		wp_enqueue_script( 'wp-mediaelement' );
 	}
 }

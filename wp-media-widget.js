@@ -57,7 +57,7 @@
 				},
 
 				states: new wp.media.controller.Library( {
-					library:    wp.media.query(),
+					library:    wp.media.query( { type: [ 'image', 'audio', 'video' ] } ),
 					title:      translate( 'selectMedia', 'Select Media' ), // Media frame title
 					selection:  frame.getSelection( widgetId ),
 					multiple:   false,
