@@ -113,10 +113,9 @@ class WP_Media_Widget extends WP_Widget {
 	public function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
 
-		// ID, title, scale
+		// ID, title
 		$instance['id']    = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
-		$instance['scale'] = isset( $new_instance['scale'] ) ? sanitize_text_field( $new_instance['scale'] ) : '';
 
 		// Everything else.
 		$instance['align'] = sanitize_text_field( $new_instance['align'] );
@@ -188,20 +187,16 @@ class WP_Media_Widget extends WP_Widget {
 	 */
 	private function render_image( $attachment, $widget_id, $instance ) {
 		$has_caption   = ( ! empty( $attachment->post_excerpt ) );
-		$is_responsive = ( ! empty( $instance['scale'] ) );
 
 		$img_attrs = array(
 			'data-id' => $widget_id,
 			'title'   => $attachment->post_title,
 			'class'   => 'image wp-image-' . $attachment->ID,
+			'style'   => 'width: 100%; height: auto;',
 		);
 
 		if ( ! $has_caption ) {
 			$img_attrs['class'] .= ' align' . $instance['align'];
-		}
-
-		if ( $is_responsive ) {
-			$img_attrs['style'] = 'width: 100%; height: auto;';
 		}
 
 		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $img_attrs );
@@ -276,7 +271,7 @@ class WP_Media_Widget extends WP_Widget {
 	 * @return string styles for responsive media
 	 */
 	private function get_responsive_style( $attachment, $widget_id, $instance ) {
-		if ( empty( $instance['scale'] ) || wp_attachment_is( 'audio', $attachment ) ) {
+		if ( wp_attachment_is( 'audio', $attachment ) ) {
 			return;
 		}
 
@@ -331,7 +326,6 @@ class WP_Media_Widget extends WP_Widget {
 			'align'  => '',
 			'size'   => '',
 			'link'   => '',
-			'scale'  => '',
 		);
 
 		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
@@ -357,18 +351,7 @@ class WP_Media_Widget extends WP_Widget {
 			?>
 			</div>
 
-			<p class="extras">
-				<input
-					type="checkbox"
-					name="<?php echo $this->get_field_name( 'scale' ) ?>"
-					id="<?php echo $this->get_field_id( 'scale' )?>"
-					value="on"
-					<?php checked( 'on', $instance[ 'scale' ]  ); ?>
-				/>
-				<label for="<?php echo $this->get_field_id( 'scale' )?>">
-					<?php esc_html_e( 'Scale to fit width' ); ?>
-				</label>
-			</p>
+			<p class="extras"></p>
 
 			<p>
 				<button type="button" data-id="<?php echo esc_attr( $widget_id ); ?>" class="button select-media widefat">
@@ -378,7 +361,7 @@ class WP_Media_Widget extends WP_Widget {
 
 			<?php
 			// Use hidden form fields to capture the attachment details from the media manager.
-			unset( $instance['title'], $instance['scale'] );
+			unset( $instance['title'] );
 			?>
 
 			<?php foreach ( $instance as $name => $value ) : ?>

@@ -94,13 +94,10 @@
 		 */
 		renderFormView: function( widgetId, props, attachment ) {
 			// Start with container elements for the widgets page, customizer controls, and customizer preview.
-			var previewEl,
-				extras,
-				formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId ),
-				scale = $( '#widget-' + widgetId + '-scale' );
+			var extras, formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId );
 
 			// Bail if there is no target form
-			if ( ! formView.length || ! scale.length ) {
+			if ( ! formView.length ) {
 				return;
 			}
 
@@ -115,15 +112,11 @@
 			extras = formView.find( '.extras' ).removeClass( 'hidden' );
 
 			// Set the preview content
-			previewEl = formView.find( '.media-widget-admin-preview' );
-			previewEl.html( frame.renderMediaElement( widgetId, props, attachment ) );
-
-			// Apply responsive styles to the media if the scale option is checked
-			if ( scale.prop( 'checked' ) ) {
-				previewEl
-					.find( '.wp-video, .wp-caption' ).css( 'width', '100%' ).end()
-					.find( 'img.image' ).css( { width: '100%', height: 'auto' } );
-			}
+			formView.find( '.media-widget-admin-preview' )
+				.html( frame.renderMediaElement( widgetId, props, attachment ) )
+				// Apply responsive styles to the media
+				.find( '.wp-video, .wp-caption' ).css( 'width', '100%' ).end()
+				.find( 'img.image' ).css( { width: '100%', height: 'auto' } );
 
 			if ( _.contains( [ 'audio', 'video' ], attachment.type ) ) {
 				wp.mediaelement.initialize();
