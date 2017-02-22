@@ -9,7 +9,7 @@
 			id:    '',
 			align: '',
 			size:  '',
-			link:  '',
+			link:  ''
 		},
 
 		init: function() {
@@ -53,7 +53,7 @@
 			// Create the media frame.
 			var widgetFrame = wp.media( {
 				button: {
-					text: translate( 'addToWidget', 'Add to widget' ), // Text of the submit button.
+					text: translate( 'addToWidget', 'Add to widget' ) // Text of the submit button.
 				},
 
 				states: new wp.media.controller.Library( {
@@ -63,8 +63,8 @@
 					multiple:   false,
 					priority:   20,
 					display:    true, // attachment display setting
-					filterable: 'all',
-				} ),
+					filterable: 'all'
+				} )
 			} );
 
 			// Render the attachment details.
