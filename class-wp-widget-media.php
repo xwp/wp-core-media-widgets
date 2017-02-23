@@ -14,11 +14,16 @@
  *
  * @see WP_Widget
  */
-class WP_Media_Widget extends WP_Widget {
+class WP_Widget_Media extends WP_Widget {
+
+	/**
+	 * Default instance.
+	 *
+	 * @var array
+	 */
 	private $default_instance = array(
 		'id'          => '',
 		'title'       => '',
-		'description' => '',
 		'link'        => '',
 		'align'       => 'none',
 	);
@@ -41,14 +46,14 @@ class WP_Media_Widget extends WP_Widget {
 	public function __construct( $id_base = '', $name = '', $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
 			'classname' => 'widget_media',
-			'description' => __( 'Display media such as images, video, or audio in your sidebar.' ),
+			'description' => __( 'An image, video, or audio file.' ),
 			'customize_selective_refresh' => true,
 		) );
 
 		$control_opts = wp_parse_args( $control_options, array() );
 
 		parent::__construct(
-			$id_base ? $id_base : 'wp-media-widget',
+			$id_base ? $id_base : 'wp-media-widget', // @todo This should just be 'media'.
 			$name ? $name : __( 'Media' ),
 			$widget_opts,
 			$control_opts
@@ -82,9 +87,6 @@ class WP_Media_Widget extends WP_Widget {
 			$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 			$output .= $args['before_title'] . $title . $args['after_title'];
 		}
-		if ( $instance['description'] ) {
-			$output .= '<p class="attachment-description align' . $instance['align'] . '">' . $instance['description'] . '</p>';
-		}
 
 		// Render the media.
 		$attachment = $instance['id'] ? get_post( $instance['id'] ) : null;
@@ -113,14 +115,16 @@ class WP_Media_Widget extends WP_Widget {
 	public function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
 
-		// ID, title
+		// ID and title.
 		$instance['id']    = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
 		// Everything else.
-		$instance['align'] = sanitize_text_field( $new_instance['align'] );
-		$instance['size']  = sanitize_text_field( $new_instance['size'] );
-		$instance['link']  = sanitize_text_field( $new_instance['link'] );
+		$instance['align']   = sanitize_text_field( $new_instance['align'] );
+		$instance['size']    = sanitize_text_field( $new_instance['size'] );
+		$instance['link']    = sanitize_text_field( $new_instance['link'] );
+		$instance['caption'] = sanitize_text_field( $new_instance['caption'] );
+		$instance['attachment-title'] = sanitize_text_field( $new_instance['attachment-title'] );
 
 		return $instance;
 	}
@@ -130,9 +134,9 @@ class WP_Media_Widget extends WP_Widget {
 	 *
 	 * @since 4.8.0
 	 * @access private
+	 * @todo Why private? What about plugins that extend? Should they be able to easily call the parent method?
 	 *
 	 * @param WP_Post $attachment Attachment object.
-	 *
 	 * @return String type string such as image, audio and video. Returns empty string for unknown type
 	 */
 	private function get_typeof_media( $attachment ) {
@@ -148,7 +152,7 @@ class WP_Media_Widget extends WP_Widget {
 			return 'video';
 		}
 
-		// unknown media type
+		// Unknown media type.
 		return '';
 	}
 
@@ -207,9 +211,9 @@ class WP_Media_Widget extends WP_Widget {
 
 		$fig_attrs = array(
 			'id'      => $widget_id . '-caption',
-			'width'   => get_option( $instance['size'] . '_size_w'),
+			'width'   => get_option( $instance['size'] . '_size_w' ),
 			'align'   => $instance['align'],
-			'caption' => $attachment->post_excerpt
+			'caption' => $attachment->post_excerpt,
 		);
 
 		$figure = img_caption_shortcode( $fig_attrs, $image );
@@ -229,12 +233,13 @@ class WP_Media_Widget extends WP_Widget {
 	 * @return string
 	 */
 	private function render_audio( $attachment, $widget_id, $instance ) {
-		if ( in_array( $instance['link'], array( 'file', 'post' ) ) ) {
+		unset( $widget_id );
+		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
 			return $this->create_link_for( $attachment, $instance['link'] );
 		}
 
 		return wp_audio_shortcode( array(
-			'src' => wp_get_attachment_url( $attachment->ID )
+			'src' => wp_get_attachment_url( $attachment->ID ),
 		) );
 	}
 
@@ -250,12 +255,13 @@ class WP_Media_Widget extends WP_Widget {
 	 * @return string
 	 */
 	private function render_video( $attachment, $widget_id, $instance ) {
-		if ( in_array( $instance['link'], array( 'file', 'post' ) ) ) {
+		unset( $widget_id );
+		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
 			return $this->create_link_for( $attachment, $instance['link'] );
 		}
 
 		return wp_video_shortcode( array(
-			'src' => wp_get_attachment_url( $attachment->ID )
+			'src' => wp_get_attachment_url( $attachment->ID ),
 		) );
 	}
 
@@ -267,10 +273,9 @@ class WP_Media_Widget extends WP_Widget {
 	 *
 	 * @param WP_Post $attachment Attachment object.
 	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
 	 * @return string styles for responsive media
 	 */
-	private function get_responsive_style( $attachment, $widget_id, $instance ) {
+	private function get_responsive_style( $attachment, $widget_id ) {
 		if ( wp_attachment_is( 'audio', $attachment ) ) {
 			return;
 		}
@@ -306,7 +311,7 @@ class WP_Media_Widget extends WP_Widget {
 			$url = get_attachment_link( $attachment->ID );
 		}
 
-		return '<a href="' . $url  . '">' . $attachment->post_title . '</a>';
+		return '<a href="' . esc_url( $url ) . '">' . $attachment->post_title . '</a>';
 	}
 
 	/**
@@ -316,16 +321,18 @@ class WP_Media_Widget extends WP_Widget {
 	 * @access public
 	 *
 	 * @param array $saved_instance Current settings.
-	 * @return string Default return is 'noform'.
+	 * @return void
 	 */
 	public function form( $saved_instance ) {
 		$defaults = array(
-			'title'  => '',
+			'title'   => '',
 			// Attachment props.
-			'id'     => '',
-			'align'  => '',
-			'size'   => '',
-			'link'   => '',
+			'id'      => '',
+			'align'   => '',
+			'size'    => '',
+			'link'    => '',
+			'caption' => '',
+			'attachment-title' => '',
 		);
 
 		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
@@ -342,12 +349,12 @@ class WP_Media_Widget extends WP_Widget {
 				<?php esc_html_e( 'Add an image, video, or audio to your sidebar.' ); ?>
 			</p>
 
-			<div class="media-widget-admin-preview" id="<?php echo $widget_id; ?>">
+			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
 			<?php
-				if ( $attachment ) {
-					echo $this->render_media( $attachment, $widget_id, $instance );
-					echo $this->get_responsive_style( $attachment, $widget_id, $instance );
-				}
+			if ( $attachment ) {
+				echo $this->render_media( $attachment, $widget_id, $instance );
+				echo $this->get_responsive_style( $attachment, $widget_id, $instance );
+			}
 			?>
 			</div>
 
@@ -423,17 +430,21 @@ class WP_Media_Widget extends WP_Widget {
 	}
 
 	/**
-	 * Enqueue mediaelement script and style if in need,
-	 * so the first instance of the media widget can properly handle media elements.
+	 * Enqueue media element script and style if in need.
+	 *
+	 * This ensures the first instance of the media widget can properly handle media elements.
 	 *
 	 * @since 4.8.0
 	 * @access private
 	 */
 	private function enqueue_mediaelement_script() {
+		/** This filter is documented in wp-includes/media.php */
 		$audio_library = apply_filters( 'wp_audio_shortcode_library', 'mediaelement' );
+
+		/** This filter is documented in wp-includes/media.php */
 		$video_library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
 
-		if ( ! in_array( 'mediaelement', array( $audio_library, $video_library ) ) ) {
+		if ( 'mediaelement' !== $audio_library && 'mediaelement' !== $video_library ) {
 			return;
 		}
 
