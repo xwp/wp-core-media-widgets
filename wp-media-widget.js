@@ -68,8 +68,14 @@
 		 * @returns {void}
 		 */
 		openMediaManager: function( event ) {
-			var widgetFrame, widgetId;
+			var widgetFrame, widgetId, selection, prevAttachmentId;
+
 			widgetId = $( event.target ).data( 'id' );
+			selection = frame.getSelection( widgetId );
+
+			if ( selection.length > 0 ) {
+				prevAttachmentId = selection.first().get('id');
+			}
 
 			// Create the media frame.
 			widgetFrame = wp.media( {
@@ -80,7 +86,7 @@
 				states: new wp.media.controller.Library( {
 					library:    wp.media.query( { type: [ 'image', 'audio', 'video' ] } ),
 					title:      translate( 'selectMedia', 'Select Media' ), // Media frame title
-					selection:  frame.getSelection( widgetId ),
+					selection:  selection,
 					multiple:   false,
 					priority:   20,
 					display:    true, // Attachment display setting
@@ -90,21 +96,65 @@
 
 			// Render the attachment details.
 			widgetFrame.on( 'select', function() {
-				var props, attachment;
+				var attachment, props;
+
+				attachment = frame.getFirstAttachment( widgetFrame );
+				props = frame.getDisplayProps( widgetFrame );
 
 				// Only try to render the attachment details if a selection was made.
-				if ( widgetFrame.state().get( 'selection' ).length > 0 ) {
-					props = widgetFrame.content.get( '.attachments-browser' )
-						.sidebar.get( 'display' ).model.toJSON();
+				if ( props && attachment && prevAttachmentId !== attachment.id ) {
+					frame.renderFormView( widgetId, props, attachment );
+				}
+			} );
 
-					attachment = widgetFrame.state().get( 'selection' ).first().toJSON();
+			/*
+			 * Try to render the form only if the selection doesn't change.
+			 * This ensures that changes of props will reflect in the form and the preview
+			 * even when user doesn't click the Add button.
+			 */
+			widgetFrame.on( 'close', function() {
+				var attachment, props;
 
+				attachment = frame.getFirstAttachment( widgetFrame );
+
+				if ( attachment && prevAttachmentId && prevAttachmentId === attachment.id ) {
+					props = frame.getDisplayProps( widgetFrame );
 					frame.renderFormView( widgetId, props, attachment );
 				}
 			} );
 
 			widgetFrame.open( widgetId );
 		},
+
+		/**
+		 * Get the first attachment of the selection in the widget frame.
+		 *
+		 * @param {wp.media.view.MediaFrame} widgetFrame Widget frame
+		 * @return {object|null} JSON object of the attachment if it exists, otherwise null
+		 */
+		getAttachment: function( widgetFrame ) {
+			var selection = widgetFrame.state().get( 'selection' );
+
+			if ( 0 === selection.length ) {
+				return null;
+			}
+
+			return selection.first().toJSON();
+		},
+
+		/**
+		 * Get display props of the current selection from the widget frame.
+		 *
+		 * @param {wp.media.view.MediaFrame} widgetFrame Widget frame
+		 * @return {object|null} JSON object of the props if possible, otherwise null
+		 */
+		 getDisplayProps: function( widgetFrame ) {
+		 	if ( 0 === widgetFrame.state().get( 'selection' ).length ) {
+		 		return null;
+		 	}
+
+		 	return widgetFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
+		 },
 
 		/**
 		 * Renders the attachment details from the media modal into the widget.
@@ -115,7 +165,7 @@
 		 * @returns {void}
 		 */
 		renderFormView: function( widgetId, props, attachment ) {
-			var formView, attachmentJSON;
+			var formView, serializedAttachment;
 
 			// Start with container elements for the widgets page, customizer controls, and customizer preview.
 			formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId );
@@ -154,10 +204,10 @@
 			 * This ensures that changes to attachment's caption or description will be shown in the
 			 * preview since these are not in the widget's instance state.
 			 */
-			attachmentJSON = JSON.stringify( _.pick( attachment, 'id', 'title', 'caption', 'link', 'size' ) );
-			if ( formView.data( 'attachment' ) !== attachmentJSON && wp.customize && wp.customize.previewer ) {
+			serializedAttachment = JSON.stringify( _.pick( attachment, 'id', 'title', 'caption', 'link', 'size' ) );
+			if ( formView.data( 'attachment' ) !== serializedAttachment && wp.customize && wp.customize.previewer ) {
 				wp.customize.previewer.send( 'refresh-partial', 'widget[' + widgetId + ']' );
-				formView.data( 'attachment', attachmentJSON );
+				formView.data( 'attachment', serializedAttachment );
 			}
 
 			// Change button text
