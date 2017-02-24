@@ -120,11 +120,9 @@ class WP_Widget_Media extends WP_Widget {
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
 		// Everything else.
-		$instance['align']   = sanitize_text_field( $new_instance['align'] );
-		$instance['size']    = sanitize_text_field( $new_instance['size'] );
-		$instance['link']    = sanitize_text_field( $new_instance['link'] );
-		$instance['caption'] = sanitize_text_field( $new_instance['caption'] );
-		$instance['attachment-title'] = sanitize_text_field( $new_instance['attachment-title'] );
+		$instance['align'] = sanitize_text_field( $new_instance['align'] );
+		$instance['size']  = sanitize_text_field( $new_instance['size'] );
+		$instance['link']  = sanitize_text_field( $new_instance['link'] );
 
 		return $instance;
 	}
@@ -325,14 +323,12 @@ class WP_Widget_Media extends WP_Widget {
 	 */
 	public function form( $saved_instance ) {
 		$defaults = array(
-			'title'   => '',
+			'title'  => '',
 			// Attachment props.
-			'id'      => '',
-			'align'   => '',
-			'size'    => '',
-			'link'    => '',
-			'caption' => '',
-			'attachment-title' => '',
+			'id'     => '',
+			'align'  => '',
+			'size'   => '',
+			'link'   => '',
 		);
 
 		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
@@ -357,8 +353,6 @@ class WP_Widget_Media extends WP_Widget {
 			}
 			?>
 			</div>
-
-			<p class="extras"></p>
 
 			<p>
 				<button type="button" data-id="<?php echo esc_attr( $widget_id ); ?>" class="button select-media widefat">

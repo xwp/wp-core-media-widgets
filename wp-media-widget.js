@@ -8,12 +8,10 @@
 
 	var frame = {
 		defaultProps: {
-			id:      '',
-			align:   '',
-			size:    '',
-			link:    '',
-			caption: '',
-			'attachment-title': ''
+			id:    '',
+			align: '',
+			size:  '',
+			link:  ''
 		},
 
 		/**
@@ -117,8 +115,10 @@
 		 * @returns {void}
 		 */
 		renderFormView: function( widgetId, props, attachment ) {
+			var formView, attachmentJSON;
+
 			// Start with container elements for the widgets page, customizer controls, and customizer preview.
-			var formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId );
+			formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId );
 
 			// Bail if there is no target form
 			if ( ! formView.length ) {
@@ -126,15 +126,11 @@
 			}
 
 			_.extend( attachment, _.pick( props, 'link', 'size' ) );
-			attachment['attachment-title'] = attachment['title'];
 
 			// Show/hide the widget description
 			formView.find( '.attachment-description' )
 				.toggleClass( 'hidden', ! attachment.description )
 				.html( attachment.description );
-
-			// Display a preview of the image in the widgets page and customizer controls.
-			formView.find( '.extras' ).removeClass( 'hidden' );
 
 			// Set the preview content and apply responsive styles to the media.
 			formView.find( '.media-widget-admin-preview' )
@@ -152,6 +148,17 @@
 			_.each( _.keys( frame.defaultProps ), function( key ) {
 				formView.find( '#widget-' + widgetId + '-' + key ).val( attachment[ key ] || props[ key ] ).trigger( 'change' );
 			} );
+
+			/*
+			 * Force the widget's partial in the preview to refresh even when the instance was not changed.
+			 * This ensures that changes to attachment's caption or description will be shown in the
+			 * preview since these are not in the widget's instance state.
+			 */
+			attachmentJSON = JSON.stringify( _.pick( attachment, 'id', 'title', 'caption', 'link', 'size' ) );
+			if ( formView.data( 'attachment' ) !== attachmentJSON && wp.customize && wp.customize.previewer ) {
+				wp.customize.previewer.send( 'refresh-partial', 'widget[' + widgetId + ']' );
+				formView.data( 'attachment', attachmentJSON );
+			}
 
 			// Change button text
 			formView.find( frame.buttonId ).text( translate( 'changeMedia', 'Change Media' ) );
