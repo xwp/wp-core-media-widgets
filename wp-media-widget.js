@@ -31,7 +31,7 @@
 		 * @returns {void}
 		 */
 		bindEvent: function( context ) {
-			$( '.button.select-media, .image', context || '.media-widget-preview' )
+			$( '.button.select-media', context || '.media-widget-preview' )
 				.off( 'click.mediaWidget' )
 				.on( 'click.mediaWidget', frame.openMediaManager );
 		},
@@ -73,7 +73,7 @@
 			widgetId = $( event.target ).data( 'id' );
 			selection = frame.getSelection( widgetId );
 
-			if ( selection.length > 0 ) {
+			if ( selection && selection.length > 0 ) {
 				prevAttachmentId = selection.first().get('id');
 			}
 
@@ -132,7 +132,7 @@
 		 * @param {wp.media.view.MediaFrame} widgetFrame Widget frame
 		 * @return {object|null} JSON object of the attachment if it exists, otherwise null
 		 */
-		getAttachment: function( widgetFrame ) {
+		getFirstAttachment: function( widgetFrame ) {
 			var selection = widgetFrame.state().get( 'selection' );
 
 			if ( 0 === selection.length ) {
@@ -211,7 +211,7 @@
 			}
 
 			// Change button text
-			formView.find( frame.buttonId ).text( translate( 'changeMedia', 'Change Media' ) );
+			formView.find( '.select-media' ).text( translate( 'changeMedia', 'Change Media' ) );
 		},
 
 		/**

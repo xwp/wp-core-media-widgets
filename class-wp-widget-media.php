@@ -92,7 +92,6 @@ class WP_Widget_Media extends WP_Widget {
 		$attachment = $instance['id'] ? get_post( $instance['id'] ) : null;
 		if ( $attachment ) {
 			$output .= $this->render_media( $attachment, $args['widget_id'], $instance );
-			$output .= $this->get_responsive_style( $attachment, $args['widget_id'], $instance );
 		}
 
 		$output .= $args['after_widget'];
@@ -264,38 +263,7 @@ class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Get styles for responsifying the widget
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @return string styles for responsive media
-	 */
-	private function get_responsive_style( $attachment, $widget_id ) {
-		if ( wp_attachment_is( 'audio', $attachment ) ) {
-			return;
-		}
-
-		$output = '<style type="text/css">';
-
-		if ( wp_attachment_is_image( $attachment ) ) {
-			$output .= "#{$widget_id}-caption{ width: 100% !important; }";
-		}
-
-		if ( wp_attachment_is( 'video', $attachment ) ) {
-			$output .= "#{$widget_id} .wp-video{ width: 100% !important; }";
-		}
-
-		$output .= '</style>';
-
-		return $output;
-	}
-
-
-	/**
-	 * Creates and returns a link for an attachment
+	 * Creates and returns a link for an attachment.
 	 *
 	 * @param WP_Post $attachment Attachment object.
 	 * @param string  $type       link type.
@@ -310,6 +278,17 @@ class WP_Widget_Media extends WP_Widget {
 		}
 
 		return '<a href="' . esc_url( $url ) . '">' . $attachment->post_title . '</a>';
+	}
+
+	/**
+	 * Renders a placeholder.
+	 *
+	 * @since 4.8.0
+	 * @access private
+	 * @return string
+	 */
+	private function render_placeholder() {
+		return '<p class="placeholder">' . esc_html__( 'No media selected' ) . '</p>';
 	}
 
 	/**
@@ -341,15 +320,12 @@ class WP_Widget_Media extends WP_Widget {
 				<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
 			</p>
 
-			<p>
-				<?php esc_html_e( 'Add an image, video, or audio to your sidebar.' ); ?>
-			</p>
-
 			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
 			<?php
 			if ( $attachment ) {
 				echo $this->render_media( $attachment, $widget_id, $instance );
-				echo $this->get_responsive_style( $attachment, $widget_id, $instance );
+			} else {
+				echo $this->render_placeholder();
 			}
 			?>
 			</div>
