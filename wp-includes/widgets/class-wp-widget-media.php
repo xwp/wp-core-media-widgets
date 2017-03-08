@@ -53,8 +53,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$control_opts = wp_parse_args( $control_options, array() );
 
 		parent::__construct(
-			$id_base ? $id_base : 'wp-media-widget', // @todo This should just be 'media'.
-			$name ? $name : __( 'Media' ),
+			$id_base,
+			/* translators: placeholder is the id base of the widget */
+			$name ? $name : sprintf( __( 'Media: %s' ), $id_base ),
 			$widget_opts,
 			$control_opts
 		);
