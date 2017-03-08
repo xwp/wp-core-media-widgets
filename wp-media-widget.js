@@ -74,7 +74,7 @@
 				widgetFrame, prevAttachmentId;
 
 			if ( selection && selection.length > 0 ) {
-				prevAttachmentId = selection.first().get('id');
+				prevAttachmentId = selection.first().get( 'id' );
 			}
 
 			// Create the media frame.
@@ -148,13 +148,13 @@
 		 * @param {wp.media.view.MediaFrame} widgetFrame Widget frame
 		 * @return {object|null} JSON object of the props if possible, otherwise null
 		 */
-		 getDisplayProps: function( widgetFrame ) {
-		 	if ( 0 === widgetFrame.state().get( 'selection' ).length ) {
-		 		return null;
-		 	}
+		getDisplayProps: function( widgetFrame ) {
+			if ( 0 === widgetFrame.state().get( 'selection' ).length ) {
+				return null;
+			}
 
-		 	return widgetFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
-		 },
+			return widgetFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
+		},
 
 		/**
 		 * Renders the attachment details from the media modal into the widget.
