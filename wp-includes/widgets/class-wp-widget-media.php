@@ -54,8 +54,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		parent::__construct(
 			$id_base,
-			/* translators: placeholder is the id base of the widget */
-			$name ? $name : sprintf( __( 'Media: %s' ), $id_base ),
+			$name,
 			$widget_opts,
 			$control_opts
 		);
