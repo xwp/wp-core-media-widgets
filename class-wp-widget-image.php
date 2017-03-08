@@ -39,7 +39,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @param string  $widget_id  Widget ID.
 	 * @param array   $instance   Current widget instance arguments.
 	 *
-	 * @return string
+	 * @return void
 	 */
 	public function render_media( $attachment, $widget_id, $instance ) {
 		$has_caption = ! empty( $attachment->post_excerpt );

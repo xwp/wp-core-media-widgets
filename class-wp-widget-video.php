@@ -45,13 +45,15 @@ class WP_Widget_Video extends WP_Widget_Media {
 	 * @param string  $widget_id  Widget ID.
 	 * @param array   $instance   Current widget instance arguments.
 	 *
-	 * @return string
+	 * @return void
 	 */
 	public function render_media( $attachment, $widget_id, $instance ) {
 		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
 			echo $this->create_link_for( $attachment, $instance['link'] );
 		} else {
-			echo wp_video_shortcode( array( 'src' => wp_get_attachment_url( $attachment->ID ) ) );
+			echo wp_video_shortcode( array(
+				'src' => wp_get_attachment_url( $attachment->ID ),
+			) );
 		}
 	}
 
