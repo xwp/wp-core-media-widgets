@@ -181,13 +181,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 			</p>
 
 			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
-			<?php
-			if ( $attachment ) :
-				$this->render_media( $attachment, $widget_id, $instance );
-				else :
-					echo '<p class="placeholder">' . esc_html__( 'No media selected' ) . '</p>';
-				endif;
-			?>
+				<?php if ( $attachment ) : ?>
+					<?php $this->render_media( $attachment, $widget_id, $instance ); ?>
+				<?php else : ?>
+					<p class="placeholder"><?php esc_html_e( 'No media selected' ); ?></p>
+				<?php endif; ?>
 			</div>
 
 			<p>
