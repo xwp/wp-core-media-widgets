@@ -20,12 +20,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ * @package WordPress
  */
 
 /**
  * Register widget scripts.
  *
- * @param WP_Scripts $scripts
+ * @param WP_Scripts $scripts Scripts.
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
 	$scripts->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-media-widget.js', array( 'jquery', 'media-models', 'media-views', 'wp-mediaelement' ) );
@@ -35,7 +37,7 @@ add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
 /**
  * Register widget styles.
  *
- * @param WP_Styles $styles
+ * @param WP_Styles $styles Styles.
  */
 function wp32417_default_styles( WP_Styles $styles ) {
 	$styles->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-media-widget.css', array( 'media-views' ) );
@@ -47,6 +49,12 @@ add_action( 'wp_default_styles', 'wp32417_default_styles' );
  */
 function wp32417_widgets_init() {
 	require_once( __DIR__ . '/class-wp-widget-media.php' );
-	register_widget( 'WP_Widget_Media' );
+	require_once( __DIR__ . '/class-wp-widget-audio.php' );
+	require_once( __DIR__ . '/class-wp-widget-image.php' );
+	require_once( __DIR__ . '/class-wp-widget-video.php' );
+
+	register_widget( 'WP_Widget_Audio' );
+	register_widget( 'WP_Widget_Image' );
+	register_widget( 'WP_Widget_Video' );
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );

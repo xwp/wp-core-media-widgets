@@ -14,14 +14,14 @@
  *
  * @see WP_Widget
  */
-class WP_Widget_Media extends WP_Widget {
+abstract class WP_Widget_Media extends WP_Widget {
 
 	/**
 	 * Default instance.
 	 *
 	 * @var array
 	 */
-	private $default_instance = array(
+	protected $default_instance = array(
 		'id'          => '',
 		'title'       => '',
 		'link'        => '',
@@ -59,10 +59,6 @@ class WP_Widget_Media extends WP_Widget {
 			$control_opts
 		);
 
-		if ( is_customize_preview() ) {
-			$this->enqueue_mediaelement_script();
-		}
-
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
@@ -79,24 +75,22 @@ class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$output = $args['before_widget'];
-
 		$instance = array_merge( $this->default_instance, $instance );
+
+		echo $args['before_widget'];
 
 		if ( $instance['title'] ) {
 			$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
-			$output .= $args['before_title'] . $title . $args['after_title'];
+			echo $args['before_title'] . $title . $args['after_title'];
 		}
 
 		// Render the media.
 		$attachment = $instance['id'] ? get_post( $instance['id'] ) : null;
 		if ( $attachment ) {
-			$output .= $this->render_media( $attachment, $args['widget_id'], $instance );
+			$this->render_media( $attachment, $args['widget_id'], $instance );
 		}
 
-		$output .= $args['after_widget'];
-
-		echo $output;
+		echo $args['after_widget'];
 	}
 
 	/**
@@ -127,33 +121,6 @@ class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Get type of a media attachment
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 * @todo Why private? What about plugins that extend? Should they be able to easily call the parent method?
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @return String type string such as image, audio and video. Returns empty string for unknown type
-	 */
-	private function get_typeof_media( $attachment ) {
-		if ( wp_attachment_is_image( $attachment ) ) {
-			return 'image';
-		}
-
-		if ( wp_attachment_is( 'audio', $attachment ) ) {
-			return 'audio';
-		}
-
-		if ( wp_attachment_is( 'video', $attachment ) ) {
-			return 'video';
-		}
-
-		// Unknown media type.
-		return '';
-	}
-
-	/**
 	 * Renders a single media attachment
 	 *
 	 * @since 4.8.0
@@ -164,103 +131,7 @@ class WP_Widget_Media extends WP_Widget {
 	 * @param array   $instance   Current widget instance arguments.
 	 * @return string
 	 */
-	public function render_media( $attachment, $widget_id, $instance ) {
-		$output = '';
-		$renderer = 'render_' . $this->get_typeof_media( $attachment );
-
-		if ( method_exists( $this, $renderer ) ) {
-			$output .= call_user_func( array( $this, $renderer ), $attachment, $widget_id, $instance );
-		}
-
-		return $output;
-	}
-
-	/**
-	 * Renders an image attachment preview.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
-	 * @return string
-	 */
-	private function render_image( $attachment, $widget_id, $instance ) {
-		$has_caption   = ( ! empty( $attachment->post_excerpt ) );
-
-		$img_attrs = array(
-			'data-id' => $widget_id,
-			'title'   => $attachment->post_title,
-			'class'   => 'image wp-image-' . $attachment->ID,
-			'style'   => 'width: 100%; height: auto;',
-		);
-
-		if ( ! $has_caption ) {
-			$img_attrs['class'] .= ' align' . $instance['align'];
-		}
-
-		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $img_attrs );
-
-		if ( ! $has_caption ) {
-			return $image;
-		}
-
-		$fig_attrs = array(
-			'id'      => $widget_id . '-caption',
-			'width'   => get_option( $instance['size'] . '_size_w' ),
-			'align'   => $instance['align'],
-			'caption' => $attachment->post_excerpt,
-		);
-
-		$figure = img_caption_shortcode( $fig_attrs, $image );
-
-		return $figure;
-	}
-
-	/**
-	 * Renders an audio attachment preview.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
-	 * @return string
-	 */
-	private function render_audio( $attachment, $widget_id, $instance ) {
-		unset( $widget_id );
-		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
-			return $this->create_link_for( $attachment, $instance['link'] );
-		}
-
-		return wp_audio_shortcode( array(
-			'src' => wp_get_attachment_url( $attachment->ID ),
-		) );
-	}
-
-	/**
-	 * Renders a video attachment preview.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
-	 * @return string
-	 */
-	private function render_video( $attachment, $widget_id, $instance ) {
-		unset( $widget_id );
-		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
-			return $this->create_link_for( $attachment, $instance['link'] );
-		}
-
-		return wp_video_shortcode( array(
-			'src' => wp_get_attachment_url( $attachment->ID ),
-		) );
-	}
+	abstract public function render_media( $attachment, $widget_id, $instance );
 
 	/**
 	 * Creates and returns a link for an attachment.
@@ -269,7 +140,7 @@ class WP_Widget_Media extends WP_Widget {
 	 * @param string  $type       link type.
 	 * @return string
 	 */
-	private function create_link_for( $attachment, $type = '' ) {
+	protected function create_link_for( $attachment, $type = '' ) {
 		$url = '#';
 		if ( 'file' === $type ) {
 			$url = wp_get_attachment_url( $attachment->ID );
@@ -278,17 +149,6 @@ class WP_Widget_Media extends WP_Widget {
 		}
 
 		return '<a href="' . esc_url( $url ) . '">' . $attachment->post_title . '</a>';
-	}
-
-	/**
-	 * Renders a placeholder.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 * @return string
-	 */
-	private function render_placeholder() {
-		return '<p class="placeholder">' . esc_html__( 'No media selected' ) . '</p>';
 	}
 
 	/**
@@ -321,17 +181,20 @@ class WP_Widget_Media extends WP_Widget {
 			</p>
 
 			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
-			<?php
-			if ( $attachment ) {
-				echo $this->render_media( $attachment, $widget_id, $instance );
-			} else {
-				echo $this->render_placeholder();
-			}
-			?>
+				<?php if ( $attachment ) : ?>
+					<?php $this->render_media( $attachment, $widget_id, $instance ); ?>
+				<?php else : ?>
+					<p class="placeholder"><?php esc_html_e( 'No media selected' ); ?></p>
+				<?php endif; ?>
 			</div>
 
 			<p>
-				<button type="button" data-id="<?php echo esc_attr( $widget_id ); ?>" class="button select-media widefat">
+				<button
+					type="button"
+					class="button select-media widefat"
+					data-id="<?php echo esc_attr( $widget_id ); ?>"
+					data-type="<?php echo esc_attr( $this->id_base ); ?>"
+				>
 					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
 				</button>
 			</p>
@@ -359,66 +222,15 @@ class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Registers the scripts for handling the widget in the back-end.
+	 * Loads the required media files for the media manager.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 */
 	public function enqueue_admin_scripts() {
-		global $pagenow;
-
-		// Bail if we are not in the widgets or customize screens.
-		if ( 'widgets.php' !== $pagenow && ! is_customize_preview() ) {
-			return;
+		if ( 'widgets.php' === $GLOBALS['pagenow'] || $this->is_preview() ) {
+			wp_enqueue_media();
+			wp_enqueue_script( 'wp-media-widget' );
 		}
-
-		// Load the required media files for the media manager.
-		wp_enqueue_media();
-
-		wp_enqueue_script( 'wp-media-widget' );
-
-		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ) );
-	}
-
-	/**
-	 * Prints footer scripts.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 */
-	public function admin_print_footer_scripts() {
-		?>
-		<script type="text/html" id="tmpl-wp-media-widget-audio">
-		<?php wp_underscore_audio_template() ?>
-		</script>
-
-		<script type="text/html" id="tmpl-wp-media-widget-video">
-		<?php wp_underscore_video_template() ?>
-		</script>
-
-		<?php
-	}
-
-	/**
-	 * Enqueue media element script and style if in need.
-	 *
-	 * This ensures the first instance of the media widget can properly handle media elements.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 */
-	private function enqueue_mediaelement_script() {
-		/** This filter is documented in wp-includes/media.php */
-		$audio_library = apply_filters( 'wp_audio_shortcode_library', 'mediaelement' );
-
-		/** This filter is documented in wp-includes/media.php */
-		$video_library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
-
-		if ( 'mediaelement' !== $audio_library && 'mediaelement' !== $video_library ) {
-			return;
-		}
-
-		wp_enqueue_style( 'wp-mediaelement' );
-		wp_enqueue_script( 'wp-mediaelement' );
 	}
 }

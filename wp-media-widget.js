@@ -68,13 +68,13 @@
 		 * @returns {void}
 		 */
 		openMediaManager: function( event ) {
-			var widgetFrame, widgetId, selection, prevAttachmentId;
-
-			widgetId = $( event.target ).data( 'id' );
-			selection = frame.getSelection( widgetId );
+			var $button = $( event.target ),
+				widgetId = $button.data( 'id' ),
+				selection = frame.getSelection( widgetId ),
+				widgetFrame, prevAttachmentId;
 
 			if ( selection && selection.length > 0 ) {
-				prevAttachmentId = selection.first().get('id');
+				prevAttachmentId = selection.first().get( 'id' );
 			}
 
 			// Create the media frame.
@@ -84,13 +84,13 @@
 				},
 
 				states: new wp.media.controller.Library( {
-					library:    wp.media.query( { type: [ 'image', 'audio', 'video' ] } ),
+					library:    wp.media.query( { type: $button.data( 'type' ) } ),
 					title:      translate( 'selectMedia', 'Select Media' ), // Media frame title
 					selection:  selection,
 					multiple:   false,
 					priority:   20,
 					display:    true, // Attachment display setting
-					filterable: 'all'
+					filterable: false
 				} )
 			} );
 
@@ -148,13 +148,13 @@
 		 * @param {wp.media.view.MediaFrame} widgetFrame Widget frame
 		 * @return {object|null} JSON object of the props if possible, otherwise null
 		 */
-		 getDisplayProps: function( widgetFrame ) {
-		 	if ( 0 === widgetFrame.state().get( 'selection' ).length ) {
-		 		return null;
-		 	}
+		getDisplayProps: function( widgetFrame ) {
+			if ( 0 === widgetFrame.state().get( 'selection' ).length ) {
+				return null;
+			}
 
-		 	return widgetFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
-		 },
+			return widgetFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
+		},
 
 		/**
 		 * Renders the attachment details from the media modal into the widget.
