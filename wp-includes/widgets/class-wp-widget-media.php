@@ -34,16 +34,14 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @param string $id_base         Optional Base ID for the widget, lowercase and unique. If left empty,
-	 *                                a portion of the widget's class name will be used Has to be unique.
-	 * @param string $name            Optional. Name for the widget displayed on the configuration page.
-	 *                                Default empty.
+	 * @param string $id_base         Base ID for the widget, lowercase and unique.
+	 * @param string $name            Name for the widget displayed on the configuration page.
 	 * @param array  $widget_options  Optional. Widget options. See wp_register_sidebar_widget() for
 	 *                                information on accepted arguments. Default empty array.
 	 * @param array  $control_options Optional. Widget control options. See wp_register_widget_control()
 	 *                                for information on accepted arguments. Default empty array.
 	 */
-	public function __construct( $id_base = '', $name = '', $widget_options = array(), $control_options = array() ) {
+	public function __construct( $id_base, $name, $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
 			'classname' => 'widget_media',
 			'description' => __( 'An image, video, or audio file.' ),
