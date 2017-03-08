@@ -31,6 +31,8 @@
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
 	$scripts->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widget.js', array( 'jquery', 'media-models', 'media-views', 'wp-mediaelement' ) );
+
+	$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
 }
 add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
 
