@@ -47,6 +47,12 @@ add_action( 'wp_default_styles', 'wp32417_default_styles' );
  */
 function wp32417_widgets_init() {
 	require_once( __DIR__ . '/class-wp-widget-media.php' );
-	register_widget( 'WP_Widget_Media' );
+	require_once( __DIR__ . '/class-wp-widget-audio.php' );
+	require_once( __DIR__ . '/class-wp-widget-image.php' );
+	require_once( __DIR__ . '/class-wp-widget-video.php' );
+
+	register_widget( 'WP_Widget_Audio' );
+	register_widget( 'WP_Widget_Image' );
+	register_widget( 'WP_Widget_Video' );
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );

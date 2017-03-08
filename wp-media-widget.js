@@ -68,10 +68,10 @@
 		 * @returns {void}
 		 */
 		openMediaManager: function( event ) {
-			var widgetFrame, widgetId, selection, prevAttachmentId;
-
-			widgetId = $( event.target ).data( 'id' );
-			selection = frame.getSelection( widgetId );
+			var $button = $( event.target ),
+				widgetId = $button.data( 'id' ),
+				selection = frame.getSelection( widgetId ),
+				widgetFrame, prevAttachmentId;
 
 			if ( selection && selection.length > 0 ) {
 				prevAttachmentId = selection.first().get('id');
@@ -84,13 +84,13 @@
 				},
 
 				states: new wp.media.controller.Library( {
-					library:    wp.media.query( { type: [ 'image', 'audio', 'video' ] } ),
+					library:    wp.media.query( { type: $button.data( 'type' ) } ),
 					title:      translate( 'selectMedia', 'Select Media' ), // Media frame title
 					selection:  selection,
 					multiple:   false,
 					priority:   20,
 					display:    true, // Attachment display setting
-					filterable: 'all'
+					filterable: false
 				} )
 			} );
 
