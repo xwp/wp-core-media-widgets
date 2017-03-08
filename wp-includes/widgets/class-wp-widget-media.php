@@ -151,7 +151,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$url = get_attachment_link( $attachment->ID );
 		}
 
-		return '<a href="' . esc_url( $url ) . '">' . $attachment->post_title . '</a>';
+		return '<a href="' . esc_url( $url ) . '">' . get_the_title( $attachment->ID ) . '</a>';
 	}
 
 	/**
