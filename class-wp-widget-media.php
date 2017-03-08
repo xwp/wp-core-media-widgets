@@ -14,7 +14,7 @@
  *
  * @see WP_Widget
  */
-class WP_Widget_Media extends WP_Widget {
+abstract class WP_Widget_Media extends WP_Widget {
 
 	/**
 	 * Default instance.
@@ -131,9 +131,7 @@ class WP_Widget_Media extends WP_Widget {
 	 * @param array   $instance   Current widget instance arguments.
 	 * @return string
 	 */
-	public function render_media( $attachment, $widget_id, $instance ) {
-		die('function WP_Widget_Media::render_media() must be over-ridden in a sub-class.');
-	}
+	abstract public function render_media( $attachment, $widget_id, $instance );
 
 	/**
 	 * Creates and returns a link for an attachment.
