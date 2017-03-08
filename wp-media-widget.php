@@ -30,7 +30,7 @@
  * @param WP_Scripts $scripts Scripts.
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
-	$scripts->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-media-widget.js', array( 'jquery', 'media-models', 'media-views', 'wp-mediaelement' ) );
+	$scripts->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widget.js', array( 'jquery', 'media-models', 'media-views', 'wp-mediaelement' ) );
 }
 add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
 
@@ -40,7 +40,7 @@ add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
  * @param WP_Styles $styles Styles.
  */
 function wp32417_default_styles( WP_Styles $styles ) {
-	$styles->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-media-widget.css', array( 'media-views' ) );
+	$styles->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widget.css', array( 'media-views' ) );
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
 
@@ -48,10 +48,10 @@ add_action( 'wp_default_styles', 'wp32417_default_styles' );
  * Register widget.
  */
 function wp32417_widgets_init() {
-	require_once( __DIR__ . '/class-wp-widget-media.php' );
-	require_once( __DIR__ . '/class-wp-widget-audio.php' );
-	require_once( __DIR__ . '/class-wp-widget-image.php' );
-	require_once( __DIR__ . '/class-wp-widget-video.php' );
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' );
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php' );
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php' );
 
 	register_widget( 'WP_Widget_Audio' );
 	register_widget( 'WP_Widget_Image' );
