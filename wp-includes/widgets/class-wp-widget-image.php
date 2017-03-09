@@ -23,8 +23,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @access public
 	 */
 	public function __construct() {
-		parent::__construct( 'wp-image', __( 'Image' ), array(
-			'classname'   => 'widget_wp-image',
+		parent::__construct( 'media-image', __( 'Image' ), array(
+			'classname'   => 'widget_media-image',
 			'description' => __( 'Displays an image file.' ),
 			'mime_type'   => 'image',
 		) );

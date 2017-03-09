@@ -23,8 +23,8 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	 * @access public
 	 */
 	public function __construct() {
-		parent::__construct( 'wp-audio', __( 'Audio' ), array(
-			'classname'   => 'widget_wp-audio',
+		parent::__construct( 'media-audio', __( 'Audio' ), array(
+			'classname'   => 'widget_media-audio',
 			'description' => __( 'Displays an audio file.' ),
 			'mime_type'   => 'audio',
 		) );
