@@ -43,7 +43,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function __construct( $id_base, $name, $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
-			'classname' => 'widget_media',
 			'description' => __( 'An image, video, or audio file.' ),
 			'customize_selective_refresh' => true,
 		) );
@@ -193,7 +192,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 					type="button"
 					class="button select-media widefat"
 					data-id="<?php echo esc_attr( $widget_id ); ?>"
-					data-type="<?php echo esc_attr( $this->id_base ); ?>"
+					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
 				>
 					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
 				</button>

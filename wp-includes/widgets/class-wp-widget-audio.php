@@ -23,9 +23,9 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	 * @access public
 	 */
 	public function __construct() {
-		parent::__construct( 'audio', __( 'Audio' ), array(
-			'classname'   => 'widget_audio',
+		parent::__construct( 'media_audio', __( 'Audio' ), array(
 			'description' => __( 'Displays an audio file.' ),
+			'mime_type'   => 'audio',
 		) );
 
 		if ( $this->is_preview() ) {
