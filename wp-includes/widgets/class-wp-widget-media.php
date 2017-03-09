@@ -43,7 +43,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function __construct( $id_base, $name, $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
-			'classname' => 'widget_media',
 			'description' => __( 'An image, video, or audio file.' ),
 			'customize_selective_refresh' => true,
 		) );
