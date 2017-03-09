@@ -193,7 +193,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 					type="button"
 					class="button select-media widefat"
 					data-id="<?php echo esc_attr( $widget_id ); ?>"
-					data-type="<?php echo esc_attr( $this->id_base ); ?>"
+					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
 				>
 					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
 				</button>

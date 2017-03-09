@@ -23,9 +23,10 @@ class WP_Widget_Video extends WP_Widget_Media {
 	 * @access public
 	 */
 	public function __construct() {
-		parent::__construct( 'video', __( 'Video' ), array(
-			'classname'   => 'widget_video',
+		parent::__construct( 'wp-video', __( 'Video' ), array(
+			'classname'   => 'widget_wp-video',
 			'description' => __( 'Displays a video file.' ),
+			'mime_type'   => 'video',
 		) );
 
 		if ( $this->is_preview() ) {
