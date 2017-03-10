@@ -58,6 +58,11 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$image_attributes['class'] .= ' align' . $instance['align'];
 		}
 
+		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );
+		if ( in_array( $instance['size'], $image_sizes ) ) {
+			$image_attributes['class'] .= sprintf( ' attachment-%1$s size-%1$s', $instance['size'] );
+		}
+
 		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $image_attributes );
 		$url = '';
 		if ( 'file' === $instance['link'] ) {

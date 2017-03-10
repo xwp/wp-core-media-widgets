@@ -65,6 +65,118 @@
 		},
 
 		/**
+		 * Gather meta information about an image.
+		 *
+		 * @param {Object} image The image to extract data from
+		 * @return {{
+		 *      align: string,
+		 *      attachment_id: boolean|number,
+		 *      caption: string,
+		 *      customHeight: number,
+		 *      customWidth: number,
+		 *      extraClasses: string,
+		 *      link: boolean,
+		 *      linkClassName: string,
+		 *      linkTargetBlank: boolean,
+		 *      linkUrl: string,
+		 *      linkRel: string,
+		 *      size: string,
+		 *      title: string
+		 *  }}
+		 */
+		extractImageData: function( image ) {
+			var classes, extraClasses, metadata, captionBlock, caption, link, width, height,
+				captionClassName = [],
+				isIntRegExp = /^\d+$/;
+
+			// Default attributes.
+			metadata = {
+				align: 'none',
+				attachment_id: false,
+				caption: '',
+				extraClasses: '',
+				link: false,
+				linkClassName: '',
+				linkTargetBlank: false,
+				linkUrl: '',
+				linkRel: '',
+				size: 'custom',
+				title: ''
+			};
+
+			metadata.alt   = image.attr( 'alt' );
+			metadata.title = image.attr( 'title' );
+			metadata.url   = image.attr( 'src' );
+
+			height = image.attr( 'height' );
+			width  = image.attr( 'width' );
+
+			if ( ! isIntRegExp.test( height ) || parseInt( height, 10 ) < 1 ) {
+				height = image.naturalHeight || image.height;
+			}
+
+			if ( ! isIntRegExp.test( width ) || parseInt( width, 10 ) < 1 ) {
+				width = image.naturalWidth || image.width;
+			}
+
+			metadata.customHeight = metadata.height = height;
+			metadata.customWidth  = metadata.width = width;
+
+			classes = image.attr( 'class' ).split( ' ' );
+			extraClasses = [];
+
+			_.each( classes, function( name ) {
+				if ( /^wp-image/.test( name ) ) {
+					metadata.attachment_id = parseInt( name.replace( 'wp-image-', '' ), 10 );
+				} else if ( /^align/.test( name ) ) {
+					metadata.align = name.replace( 'align', '' );
+				} else if ( /^size/.test( name ) ) {
+					metadata.size = name.replace( 'size-', '' );
+				} else {
+					extraClasses.push( name );
+				}
+			} );
+
+			metadata.extraClasses = extraClasses.join( ' ' );
+
+			// Extract caption
+			captionBlock = image.parents( '.wp-caption' );
+
+			if ( captionBlock.length ) {
+				classes = captionBlock.attr( 'class' ).split( ' ' );
+				_.each( classes, function( name ) {
+					if ( /^align/.test( name ) ) {
+						metadata.align = name.replace( 'align', '' );
+					} else if ( name && 'wp-caption' !== name ) {
+						captionClassName.push( name );
+					}
+				} );
+
+				metadata.captionClassName = captionClassName.join( ' ' );
+
+				caption = $( '.wp-caption-text', captionBlock );
+				if ( caption.length ) {
+					metadata.caption = caption.text()
+						.replace( /<br[^>]*>/g, '$&\n' )
+						.replace( /^<p>/, '' )
+						.replace( /<\/p>$/, '' );
+				}
+			}
+
+			// Extract linkTo
+			link = image.parent( 'a' );
+			if ( link.length ) {
+				metadata.link = true;
+				metadata.linkUrl = link.prop( 'href' );
+				metadata.linkTargetBlank = '_blank' === link.prop( 'target' );
+				metadata.linkRel = link.attr( 'rel' );
+				metadata.linkClassName = link.attr( 'class' );
+			}
+
+			return metadata;
+		},
+
+		/**
 		 * Open the media modal in the edit media state.
 		 *
 		 * @param {jQuery.Event} event Event.
@@ -74,23 +186,14 @@
 			var $button = $( event.target ),
 				widgetId = $button.data( 'id' ),
 				widgetFrame, callback,
-				metadata = {},
-				$img = $button.parents( '.media-widget-preview' ).find( '.media-widget-admin-preview > img' ),
-				widgetContent = $button.closest( '.widget-content' );
-
-			// Extract the image meta data.
-			// @todo The underlying widget instance data needs to be exposed for us to access and manipulate.
-
-			metadata.attachment_id = widgetContent.find( '.id' ).val();
-			metadata.align = widgetContent.find( '.align' ).val();
-			metadata.link = widgetContent.find( '.link' ).val();
-			metadata.linkUrl = widgetContent.find( '.link_url' ).val();
-			metadata.size = widgetContent.find( '.size' ).val();
+				widgetContent = $button.closest( '.widget-content' ),
+				$image = widgetContent.find( '.image' ),
+				metadata = frame.extractImageData( $image );
 
 			// Set media to the edit mode.
 			wp.media.events.trigger( 'editor:image-edit', {
 				metadata: metadata,
-				image: $img
+				image: $image
 			} );
 
 			// Set up the media frame.
