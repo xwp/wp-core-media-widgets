@@ -19,13 +19,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Default instance.
 	 *
+	 * @todo These are media-specific.
 	 * @var array
 	 */
 	protected $default_instance = array(
-		'id'          => '',
-		'title'       => '',
-		'link'        => '',
-		'align'       => 'none',
+		'id' => '', // @todo Rename this to attachment_id?
+		'title' => '',
+		'size' => '',
+		'link' => '',
+		'link_url' => '',
+		'align' => 'none',
 	);
 
 	/**
@@ -111,10 +114,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance['id']    = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
+		// @todo These need to be more specific.
 		// Everything else.
 		$instance['align'] = sanitize_text_field( $new_instance['align'] );
 		$instance['size']  = sanitize_text_field( $new_instance['size'] );
 		$instance['link']  = sanitize_text_field( $new_instance['link'] );
+
+		$instance['link_url']  = esc_url_raw( $new_instance['link_url'] );
 
 		return $instance;
 	}
@@ -162,19 +168,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function form( $saved_instance ) {
 
-		// @todo These will vary based on the media. Re-use $this->default_instance.
-		$defaults = array(
-			'title'  => '',
-			// Attachment props.
-			'id'     => '',
-			'align'  => '',
-			'size'   => '',
-			'link'   => '',
-		);
-
-		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
+		$instance = wp_parse_args( (array) $saved_instance, $this->default_instance );
 		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
-		$widget_id  = $this->id;
+		$widget_id = $this->id;
 		?>
 		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview <?php echo $attachment ? 'has-attachment' : '' ?>">
 			<p>
@@ -184,7 +180,18 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
 				<?php if ( $attachment ) : ?>
-					<?php $this->render_media( $attachment, $widget_id, $instance ); ?>
+					<?php
+					$this->render_media(
+						$attachment,
+						$widget_id,
+						array_merge(
+							$instance,
+							array(
+								'align' => 'none', // Required to prevent widget control layout from breaking.
+							)
+						)
+					);
+					?>
 				<?php else : ?>
 					<p class="placeholder"><?php esc_html_e( 'No media selected' ); // @todo Use type-specific label. ?></p>
 				<?php endif; ?>
@@ -218,7 +225,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			?>
 
 			<?php foreach ( $instance as $name => $value ) : ?>
-				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" class="<?php echo esc_attr( $name ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
 			<?php endforeach; ?>
 		</div>
 		<?php

@@ -75,16 +75,17 @@
 				widgetId = $button.data( 'id' ),
 				widgetFrame, callback,
 				metadata = {},
-				$img = $button.parents( '.media-widget-preview' ).find( '.media-widget-admin-preview > img' );
+				$img = $button.parents( '.media-widget-preview' ).find( '.media-widget-admin-preview > img' ),
+				widgetContent = $button.closest( '.widget-content' );
 
-			//Extract the image meta data.
-			_.each( $img[0].attributes, function( attribute ) {
-				metadata[attribute.name] = attribute.value;
-			} );
+			// Extract the image meta data.
+			// @todo The underlying widget instance data needs to be exposed for us to access and manipulate.
 
-			// Set some media modal specific attributes.
-			metadata.attachment_id = widgetId;
-			metadata.url = metadata.src;
+			metadata.attachment_id = widgetContent.find( '.id' ).val();
+			metadata.align = widgetContent.find( '.align' ).val();
+			metadata.link = widgetContent.find( '.link' ).val();
+			metadata.linkUrl = widgetContent.find( '.link_url' ).val();
+			metadata.size = widgetContent.find( '.size' ).val();
 
 			// Set media to the edit mode.
 			wp.media.events.trigger( 'editor:image-edit', {
@@ -102,8 +103,15 @@
 			// Create a callback function for the mediaFrame.
 			callback = function( imageData ) {
 
+				// @todo Changing the ID is not causing the image to update.
+				widgetContent.find( '.id' ).val( imageData.attachment_id ).trigger( 'change' );
+
+				widgetContent.find( '.align' ).val( imageData.align ).trigger( 'change' );
+				widgetContent.find( '.link' ).val( imageData.link ).trigger( 'change' );
+				widgetContent.find( '.link_url' ).val( imageData.linkUrl ).trigger( 'change' );
+				widgetContent.find( '.size' ).val( imageData.size ).trigger( 'change' );
+
 				// Set the new data on the image.
-				$img.attr( imageData );
 				widgetFrame.detach();
 			};
 
@@ -304,6 +312,8 @@
 		 * @returns {String} Rendered image.
 		 */
 		renderImage: function( widgetId, props, attachment ) {
+
+			// @todo The image size in the control should always be full. Only the preview should get the actual selected size.
 			var image = $( '<img />' )
 				.addClass( 'image wp-image' + attachment.id )
 				.attr( {
