@@ -19,13 +19,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Default instance.
 	 *
+	 * @todo These are media-specific.
 	 * @var array
 	 */
 	protected $default_instance = array(
-		'id'    => '',
-		'align' => 'alignnone',
-		'link'  => '',
-		'size'  => '',
+		'id' => '', // @todo Rename this to attachment_id?
+		'align' => 'none',
+		'link' => '',
+		'link_url' => '',
+		'size' => '',
 		'title' => '',
 	);
 
@@ -122,6 +124,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$instance['link']  = esc_url_raw( $new_instance['link'] );
 
+		$instance['link_url']  = esc_url_raw( $new_instance['link_url'] );
+
 		return $instance;
 	}
 
@@ -162,15 +166,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @since 4.8.0
 	 * @access public
 	 *
+	 * @todo This is redundant with JS-based templating. It should be made DRY by only using the JS template alone, with instance data stored in hidden named field.
 	 * @param array $instance Current settings.
 	 * @return void
 	 */
 	public function form( $instance ) {
-		$instance   = wp_parse_args( (array) $instance, $this->default_instance );
+		$instance = wp_parse_args( (array) $instance, $this->default_instance );
 		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
-		$widget_id  = $this->id;
+		$widget_id = $this->id;
 		?>
-		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview">
+		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview <?php echo $attachment ? 'has-attachment' : '' ?>">
 			<p>
 				<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php esc_html_e( 'Title:' ); ?></label>
 				<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
@@ -178,30 +183,52 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
 				<?php if ( $attachment ) : ?>
-					<?php $this->render_media( $attachment, $widget_id, $instance ); ?>
+					<?php
+					$this->render_media(
+						$attachment,
+						$widget_id,
+						array_merge(
+							$instance,
+							array(
+								'align' => 'none', // Required to prevent widget control layout from breaking.
+							)
+						)
+					);
+					?>
 				<?php else : ?>
-					<p class="placeholder"><?php esc_html_e( 'No media selected' ); ?></p>
+					<p class="placeholder"><?php esc_html_e( 'No media selected' ); // @todo Use type-specific label. ?></p>
 				<?php endif; ?>
 			</div>
 
-			<p>
+			<p class="media-widget-buttons">
 				<button
 					type="button"
-					class="button select-media widefat"
+					class="button edit-media"
 					data-id="<?php echo esc_attr( $widget_id ); ?>"
 					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
 				>
-					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
+					<?php esc_html_e( 'Edit Media' ); ?>
+				</button>
+				<button
+					type="button"
+					class="button select-media"
+					data-id="<?php echo esc_attr( $widget_id ); ?>"
+					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
+				>
+					<?php if ( $attachment ) : ?>
+						<?php esc_html_e( 'Change Media' ); // @todo Use type-specific label. ?>
+					<?php else : ?>
+						<?php esc_html_e( 'Select Media' ); // @todo Use type-specific label. ?>
+					<?php endif; ?>
 				</button>
 			</p>
-
 			<?php
 			// Use hidden form fields to capture the attachment details from the media manager.
 			unset( $instance['title'] );
 			?>
 
 			<?php foreach ( $instance as $name => $value ) : ?>
-				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" class="<?php echo esc_attr( $name ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
 			<?php endforeach; ?>
 		</div>
 		<?php

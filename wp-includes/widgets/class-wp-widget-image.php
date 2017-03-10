@@ -57,6 +57,18 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $image_attributes );
+		$url = '';
+		if ( 'file' === $instance['link'] ) {
+			$url = wp_get_attachment_url( $attachment->ID );
+		} elseif ( 'post' === $instance['link'] ) {
+			$url = get_attachment_link( $attachment->ID );
+		} elseif ( 'custom' === $instance['link'] && ! empty( $instance['link_url'] ) ) {
+			$url = $instance['link_url'];
+		}
+
+		if ( $url ) {
+			$image = sprintf( '<a href="%s">%s</a>', esc_url( $url ), $image );
+		}
 
 		if ( $has_caption ) {
 			// [0] => width, [1] => height;
