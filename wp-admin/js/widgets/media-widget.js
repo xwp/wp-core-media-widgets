@@ -35,8 +35,8 @@
 				.off( 'click.mediaWidget' )
 				.on( 'click.mediaWidget', frame.openMediaManager );
 			$( '.button.edit-media' )
-				.off( 'click' )
-				.on( 'click', frame.openMediaEditor );
+				.off( 'click.mediaWidget' )
+				.on( 'click.mediaWidget', frame.openMediaEditor );
 		},
 
 		/**

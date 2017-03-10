@@ -18,7 +18,8 @@
 	text-align: center
 }
 
-.media-widget-preview.has-attachment .widefat {
+.media-widget-preview.has-attachment .select-media,
+.media-widget-preview.has-attachment .edit-media {
 	width: 48%;
 }
 
