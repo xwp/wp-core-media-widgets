@@ -66,15 +66,18 @@
 
 		/**
 		 * Open the media modal in the edit media state.
+		 *
+		 * @param {jQuery.Event} event Event.
+		 * @returns {void}
 		 */
 		openMediaEditor: function( event ) {
 			var $button = $( event.target ),
 				widgetId = $button.data( 'id' ),
-				widgetFrame,
+				widgetFrame, callback,
+				metadata = {},
 				$img = $button.parents( '.media-widget-preview' ).find( '.media-widget-admin-preview > img' );
 
 			//Extract the image meta data.
-			var metadata = {};
 			_.each( $img[0].attributes, function( attribute ) {
 				metadata[attribute.name] = attribute.value;
 			} );
@@ -97,15 +100,15 @@
 			} );
 
 			// Create a callback function for the mediaFrame.
-			var callback = function( imageData ) {
+			callback = function( imageData ) {
 
 				// Set the new data on the image.
 				$img.attr( imageData );
 				widgetFrame.detach();
 			};
 
-			widgetFrame.state('image-details').on( 'update', callback );
-			widgetFrame.state('replace-image').on( 'replace', callback );
+			widgetFrame.state( 'image-details' ).on( 'update', callback );
+			widgetFrame.state( 'replace-image' ).on( 'replace', callback );
 			widgetFrame.on( 'close', function() {
 				widgetFrame.detach();
 			});
