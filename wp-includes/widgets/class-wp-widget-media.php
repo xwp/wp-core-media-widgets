@@ -173,7 +173,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
 		$widget_id  = $this->id;
 		?>
-		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview">
+		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview <?php echo $attachment ? 'has-attachment' : '' ?>">
 			<p>
 				<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php esc_html_e( 'Title:' ); ?></label>
 				<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
@@ -196,8 +196,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 				>
 					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
 				</button>
-			</p>
+				<button
 
+					type="button"
+					class="button edit-media widefat"
+					data-id="<?php echo esc_attr( $widget_id ); ?>"
+					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
+				>
+					<?php esc_html_e( 'Edit Media' ); ?>
+				</button>
+			</p>
 			<?php
 			// Use hidden form fields to capture the attachment details from the media manager.
 			unset( $instance['title'] );
