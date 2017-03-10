@@ -2,12 +2,14 @@
 	text-align: center
 }
 
-.media-widget-preview .wp-caption {
+.media-widget-preview .wp-caption,
+.media-widget-admin-preview .wp-caption {
 	max-width: 100%;
 	margin: 0;
 }
 
-.media-widget-preview .image {
+.media-widget-preview .image,
+.media-widget-admin-preview .image {
 	height: auto;
 	max-width: 100%;
 }

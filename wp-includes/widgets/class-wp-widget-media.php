@@ -22,10 +22,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @var array
 	 */
 	protected $default_instance = array(
-		'id'          => '',
-		'title'       => '',
-		'link'        => '',
-		'align'       => 'none',
+		'id'    => '',
+		'align' => 'alignnone',
+		'link'  => '',
+		'size'  => '',
+		'title' => '',
 	);
 
 	/**
@@ -72,7 +73,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$instance = array_merge( $this->default_instance, $instance );
+		$instance = wp_parse_args( $instance, $this->default_instance );
 
 		echo $args['before_widget'];
 
@@ -101,20 +102,25 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @see WP_Widget::update()
 	 *
 	 * @param array $new_instance Values just sent to be saved.
-	 * @param array $old_instance Previously saved values from database.
+	 * @param array $instance     Previously saved values from database.
 	 * @return array Updated safe values to be saved.
 	 */
-	public function update( $new_instance, $old_instance ) {
-		$instance = $old_instance;
+	public function update( $new_instance, $instance ) {
 
 		// ID and title.
 		$instance['id']    = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
-		// Everything else.
-		$instance['align'] = sanitize_text_field( $new_instance['align'] );
-		$instance['size']  = sanitize_text_field( $new_instance['size'] );
-		$instance['link']  = sanitize_text_field( $new_instance['link'] );
+		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ) ) ) {
+			$instance['align'] = 'align' . $new_instance['align'];
+		}
+
+		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );
+		if ( in_array( $new_instance['size'], $image_sizes ) ) {
+			$instance['size'] = $new_instance['size'];
+		}
+
+		$instance['link']  = esc_url_raw( $new_instance['link'] );
 
 		return $instance;
 	}
@@ -156,20 +162,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @param array $saved_instance Current settings.
+	 * @param array $instance Current settings.
 	 * @return void
 	 */
-	public function form( $saved_instance ) {
-		$defaults = array(
-			'title'  => '',
-			// Attachment props.
-			'id'     => '',
-			'align'  => '',
-			'size'   => '',
-			'link'   => '',
-		);
-
-		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
+	public function form( $instance ) {
+		$instance   = wp_parse_args( (array) $instance, $this->default_instance );
 		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
 		$widget_id  = $this->id;
 		?>

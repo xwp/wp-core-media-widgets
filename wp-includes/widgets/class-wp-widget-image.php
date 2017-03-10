@@ -42,25 +42,28 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $attachment, $widget_id, $instance ) {
+		$instance    = wp_parse_args( $instance, array( 'size' => 'thumbnail' ) );
 		$has_caption = ! empty( $attachment->post_excerpt );
 
 		$image_attributes = array(
 			'data-id' => $widget_id,
 			'title'   => $attachment->post_title,
 			'class'   => 'image wp-image-' . $attachment->ID,
-			'style'   => 'width: 100%; height: auto;',
+			'style'   => 'max-width: 100%; height: auto;',
 		);
 
 		if ( ! $has_caption ) {
-			$image_attributes['class'] .= ' align' . $instance['align'];
+			$image_attributes['class'] .= ' ' . $instance['align'];
 		}
 
 		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $image_attributes );
 
 		if ( $has_caption ) {
+			// [0] => width, [1] => height;
+			$size = _wp_get_image_size_from_meta( $instance['size'], wp_get_attachment_metadata( $attachment->ID ) );
 			$image = img_caption_shortcode( array(
 				'id'      => $widget_id . '-caption',
-				'width'   => get_option( $instance['size'] . '_size_w' ),
+				'width'   => isset( $size[0] ) ? $size[0] : false,
 				'align'   => $instance['align'],
 				'caption' => $attachment->post_excerpt,
 			), $image );
