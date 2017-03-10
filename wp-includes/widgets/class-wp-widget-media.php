@@ -156,10 +156,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @since 4.8.0
 	 * @access public
 	 *
+	 * @todo This is redundant with JS-based templating. It should be made DRY by only using the JS template alone, with instance data stored in hidden named field.
 	 * @param array $saved_instance Current settings.
 	 * @return void
 	 */
 	public function form( $saved_instance ) {
+
+		// @todo These will vary based on the media. Re-use $this->default_instance.
 		$defaults = array(
 			'title'  => '',
 			// Attachment props.
@@ -183,15 +186,14 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<?php if ( $attachment ) : ?>
 					<?php $this->render_media( $attachment, $widget_id, $instance ); ?>
 				<?php else : ?>
-					<p class="placeholder"><?php esc_html_e( 'No media selected' ); ?></p>
+					<p class="placeholder"><?php esc_html_e( 'No media selected' ); // @todo Use type-specific label. ?></p>
 				<?php endif; ?>
 			</div>
 
-			<p>
+			<p class="media-widget-buttons">
 				<button
-
 					type="button"
-					class="button edit-media widefat"
+					class="button edit-media"
 					data-id="<?php echo esc_attr( $widget_id ); ?>"
 					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
 				>
@@ -199,11 +201,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 				</button>
 				<button
 					type="button"
-					class="button select-media widefat"
+					class="button select-media"
 					data-id="<?php echo esc_attr( $widget_id ); ?>"
 					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
 				>
-					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
+					<?php if ( $attachment ) : ?>
+						<?php esc_html_e( 'Change Media' ); // @todo Use type-specific label. ?>
+					<?php else : ?>
+						<?php esc_html_e( 'Select Media' ); // @todo Use type-specific label. ?>
+					<?php endif; ?>
 				</button>
 			</p>
 			<?php
