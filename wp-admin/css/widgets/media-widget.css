@@ -17,3 +17,15 @@
 	margin: 0 auto;
 	text-align: center
 }
+
+.media-widget-preview.has-attachment .widefat {
+	width: 48%;
+}
+
+.media-widget-preview .edit-media {
+	display: none;
+}
+
+.media-widget-preview.has-attachment .edit-media {
+	display: inline-block;
+}
