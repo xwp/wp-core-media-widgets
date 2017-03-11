@@ -122,7 +122,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$instance['size'] = $new_instance['size'];
 		}
 
-		$instance['link']  = esc_url_raw( $new_instance['link'] );
+		if ( in_array( $new_instance['link'], array( 'none', 'file', 'post', 'custom' ), true ) ) {
+			$instance['link'] = $new_instance['link'];
+		}
 
 		$instance['link_url']  = esc_url_raw( $new_instance['link_url'] );
 
