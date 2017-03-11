@@ -248,8 +248,7 @@
 			// Set the preview content and apply responsive styles to the media.
 			formView.find( '.media-widget-admin-preview' )
 				.html( frame.renderMediaElement( widgetId, props, attachment ) )
-				.find( '.wp-video, .wp-caption' ).css( 'width', '100%' ).end()
-				.find( 'img.image' ).css( { width: '100%', height: 'auto' } );
+				.find( '.wp-video' ).css( 'width', '100%' ).end();
 
 			if ( _.contains( [ 'audio', 'video' ], attachment.type ) ) {
 				wp.mediaelement.initialize();
@@ -315,7 +314,7 @@
 
 			// @todo The image size in the control should always be full. Only the preview should get the actual selected size.
 			var image = $( '<img />' )
-				.addClass( 'image wp-image' + attachment.id )
+				.addClass( 'image wp-image-' + attachment.id )
 				.attr( {
 					'data-id': widgetId,
 					src:       attachment.sizes[ props.size ].url,
@@ -327,7 +326,6 @@
 
 			if ( attachment.caption ) {
 				image = $( '<figure />' )
-					.width( attachment.sizes[ props.size ].width )
 					.addClass( 'wp-caption' )
 					.attr( 'id', widgetId + '-caption' )
 					.append( image );

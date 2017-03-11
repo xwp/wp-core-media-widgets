@@ -3,6 +3,25 @@
 
 	<rule ref="WordPress-Core" />
 	<rule ref="WordPress-Docs" />
+	<rule ref="WordPress-Extra" />
+
+	<rule ref="WordPress">
+		<exclude name="WordPress.XSS.EscapeOutput"/>
+	</rule>
+
+	<!-- @todo These should not be required since the WordPress-VIP ruleset isn't being included. -->
+	<rule ref="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.VIP.RestrictedFunctions.file_get_contents_file_get_contents">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.VIP.RestrictedFunctions.get_intermediate_image_sizes_get_intermediate_image_sizes">
+		<severity>0</severity>
+	</rule>
 
 	<exclude-pattern>*/dev-lib/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>

@@ -1,2 +1,3 @@
 CHECK_SCOPE=changed-files
 PHPCS_RULESET_FILE=phpcs.ruleset.xml
+WPCS_BRANCH=develop

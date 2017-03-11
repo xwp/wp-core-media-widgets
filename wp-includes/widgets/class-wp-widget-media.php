@@ -24,11 +24,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	protected $default_instance = array(
 		'id' => '', // @todo Rename this to attachment_id?
-		'title' => '',
-		'size' => '',
+		'align' => 'none',
 		'link' => '',
 		'link_url' => '',
-		'align' => 'none',
+		'size' => '',
+		'title' => '',
 	);
 
 	/**
@@ -75,7 +75,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$instance = array_merge( $this->default_instance, $instance );
+		$instance = wp_parse_args( $instance, $this->default_instance );
 
 		echo $args['before_widget'];
 
@@ -104,21 +104,27 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @see WP_Widget::update()
 	 *
 	 * @param array $new_instance Values just sent to be saved.
-	 * @param array $old_instance Previously saved values from database.
+	 * @param array $instance     Previously saved values from database.
 	 * @return array Updated safe values to be saved.
 	 */
-	public function update( $new_instance, $old_instance ) {
-		$instance = $old_instance;
+	public function update( $new_instance, $instance ) {
 
 		// ID and title.
 		$instance['id']    = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
-		// @todo These need to be more specific.
-		// Everything else.
-		$instance['align'] = sanitize_text_field( $new_instance['align'] );
-		$instance['size']  = sanitize_text_field( $new_instance['size'] );
-		$instance['link']  = sanitize_text_field( $new_instance['link'] );
+		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ), true ) ) {
+			$instance['align'] = $new_instance['align'];
+		}
+
+		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );
+		if ( in_array( $new_instance['size'], $image_sizes, true ) ) {
+			$instance['size'] = $new_instance['size'];
+		}
+
+		if ( in_array( $new_instance['link'], array( 'none', 'file', 'post', 'custom' ), true ) ) {
+			$instance['link'] = $new_instance['link'];
+		}
 
 		$instance['link_url']  = esc_url_raw( $new_instance['link_url'] );
 
@@ -163,12 +169,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @access public
 	 *
 	 * @todo This is redundant with JS-based templating. It should be made DRY by only using the JS template alone, with instance data stored in hidden named field.
-	 * @param array $saved_instance Current settings.
+	 * @param array $instance Current settings.
 	 * @return void
 	 */
-	public function form( $saved_instance ) {
-
-		$instance = wp_parse_args( (array) $saved_instance, $this->default_instance );
+	public function form( $instance ) {
+		$instance = wp_parse_args( (array) $instance, $this->default_instance );
 		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
 		$widget_id = $this->id;
 		?>
