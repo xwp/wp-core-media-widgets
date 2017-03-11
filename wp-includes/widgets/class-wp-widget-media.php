@@ -114,7 +114,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
 		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ), true ) ) {
-			$instance['align'] = 'align' . $new_instance['align'];
+			$instance['align'] = $new_instance['align'];
 		}
 
 		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );

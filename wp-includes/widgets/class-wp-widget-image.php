@@ -42,7 +42,9 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $attachment, $widget_id, $instance ) {
-		$instance    = wp_parse_args( $instance, array( 'size' => 'thumbnail' ) );
+		$instance = wp_parse_args( $instance, array(
+			'size' => 'thumbnail',
+		) );
 		$has_caption = ! empty( $attachment->post_excerpt );
 
 		$image_attributes = array(
@@ -53,7 +55,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		);
 
 		if ( ! $has_caption ) {
-			$image_attributes['class'] .= ' ' . $instance['align'];
+			$image_attributes['class'] .= ' align' . $instance['align'];
 		}
 
 		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $image_attributes );
@@ -71,12 +73,15 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		if ( $has_caption ) {
-			// [0] => width, [1] => height;
+			$width = 0;
 			$size = _wp_get_image_size_from_meta( $instance['size'], wp_get_attachment_metadata( $attachment->ID ) );
+			if ( false !== $size ) {
+				$width = $size[0];
+			}
 			$image = img_caption_shortcode( array(
 				'id'      => $widget_id . '-caption',
-				'width'   => isset( $size[0] ) ? $size[0] : false,
-				'align'   => $instance['align'],
+				'width'   => $width,
+				'align'   => 'align' . $instance['align'],
 				'caption' => $attachment->post_excerpt,
 			), $image );
 		}
