@@ -113,12 +113,12 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance['id']    = (int) $new_instance['id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
-		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ) ) ) {
+		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ), true ) ) {
 			$instance['align'] = 'align' . $new_instance['align'];
 		}
 
 		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );
-		if ( in_array( $new_instance['size'], $image_sizes ) ) {
+		if ( in_array( $new_instance['size'], $image_sizes, true ) ) {
 			$instance['size'] = $new_instance['size'];
 		}
 
