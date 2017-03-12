@@ -8,10 +8,10 @@
 
 	var frame = {
 		defaultProps: {
-			id:    '',
+			attachment_id: '',
 			align: '',
-			size:  '',
-			link:  ''
+			size: '',
+			link: ''
 		},
 
 		/**
@@ -81,7 +81,7 @@
 			// Extract the image meta data.
 			// @todo The underlying widget instance data needs to be exposed for us to access and manipulate.
 
-			metadata.attachment_id = widgetContent.find( '.id' ).val();
+			metadata.attachment_id = widgetContent.find( '.attachment_id' ).val();
 			metadata.align = widgetContent.find( '.align' ).val();
 			metadata.link = widgetContent.find( '.link' ).val();
 			metadata.linkUrl = widgetContent.find( '.link_url' ).val();
@@ -104,7 +104,7 @@
 			callback = function( imageData ) {
 
 				// @todo Changing the ID is not causing the image to update.
-				widgetContent.find( '.id' ).val( imageData.attachment_id ).trigger( 'change' );
+				widgetContent.find( '.attachment_id' ).val( imageData.attachment_id ).trigger( 'change' );
 
 				widgetContent.find( '.align' ).val( imageData.align ).trigger( 'change' );
 				widgetContent.find( '.link' ).val( imageData.link ).trigger( 'change' );
@@ -238,6 +238,7 @@
 				return;
 			}
 
+			props.attachment_id = attachment.id;
 			_.extend( attachment, _.pick( props, 'link', 'size' ) );
 
 			// Show/hide the widget description

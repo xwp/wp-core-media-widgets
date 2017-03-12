@@ -20,14 +20,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * Default instance.
 	 *
 	 * @todo These are media-specific.
+	 * @todo The fields in this should be expanded out into full schema entries, with types and sanitize_callbacks.
 	 * @var array
 	 */
 	protected $default_instance = array(
-		'id' => '', // @todo Rename this to attachment_id?
+		'attachment_id' => 0,
 		'align' => 'none',
 		'link' => '',
 		'link_url' => '',
-		'size' => '',
+		'size' => 'full',
 		'title' => '',
 	);
 
@@ -86,8 +87,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
 
+		// @todo The following should be able to render when there is no attachment_id but only a url to the media.
 		// Render the media.
-		$attachment = $instance['id'] ? get_post( $instance['id'] ) : null;
+		$attachment = ! empty( $instance['attachment_id'] ) ? get_post( $instance['attachment_id'] ) : null;
 		if ( $attachment ) {
 			$this->render_media( $attachment, $args['widget_id'], $instance );
 		}
@@ -109,8 +111,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function update( $new_instance, $instance ) {
 
+		// @todo The following should read from instance property schema definitions to apply sanitize callbacks.
 		// ID and title.
-		$instance['id']    = (int) $new_instance['id'];
+		$instance['attachment_id'] = (int) $new_instance['attachment_id'];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
 		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ), true ) ) {
@@ -126,7 +129,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$instance['link'] = $new_instance['link'];
 		}
 
-		$instance['link_url']  = esc_url_raw( $new_instance['link_url'] );
+		$instance['link_url'] = esc_url_raw( $new_instance['link_url'] );
 
 		return $instance;
 	}
@@ -174,7 +177,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function form( $instance ) {
 		$instance = wp_parse_args( (array) $instance, $this->default_instance );
-		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
+		$attachment = empty( $instance['attachment_id'] ) ? null : get_post( $instance['attachment_id'] );
 		$widget_id = $this->id;
 		?>
 		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview <?php echo $attachment ? 'has-attachment' : '' ?>">
@@ -229,7 +232,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			unset( $instance['title'] );
 			?>
 
-			<?php foreach ( $instance as $name => $value ) : ?>
+			<?php foreach ( wp_array_slice_assoc( $instance, array_keys( $this->default_instance ) ) as $name => $value ) : ?>
 				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" class="<?php echo esc_attr( $name ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
 			<?php endforeach; ?>
 		</div>
