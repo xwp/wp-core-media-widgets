@@ -228,7 +228,7 @@
 		 * @returns {void}
 		 */
 		renderFormView: function( widgetId, props, attachment ) {
-			var formView, serializedAttachment;
+			var formView;
 
 			// Start with container elements for the widgets page, customizer controls, and customizer preview.
 			formView = $( '.' + widgetId + ', #customize-control-widget_' + widgetId + ', #' + widgetId );
@@ -260,17 +260,6 @@
 			_.each( _.keys( frame.defaultProps ), function( key ) {
 				formView.find( '#widget-' + widgetId + '-' + key ).val( attachment[ key ] || props[ key ] ).trigger( 'change' );
 			} );
-
-			/*
-			 * Force the widget's partial in the preview to refresh even when the instance was not changed.
-			 * This ensures that changes to attachment's caption or description will be shown in the
-			 * preview since these are not in the widget's instance state.
-			 */
-			serializedAttachment = JSON.stringify( _.pick( attachment, 'id', 'title', 'caption', 'link', 'size' ) );
-			if ( formView.data( 'attachment' ) !== serializedAttachment && wp.customize && wp.customize.previewer ) {
-				wp.customize.previewer.send( 'refresh-partial', 'widget[' + widgetId + ']' );
-				formView.data( 'attachment', serializedAttachment );
-			}
 
 			// Change button text
 			formView.find( '.select-media' ).text( translate( 'changeMedia', 'Change Media' ) );
