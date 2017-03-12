@@ -54,8 +54,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$control_opts
 		);
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
 	}
 
 	/**
@@ -129,7 +128,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Renders a single media attachment
+	 * Renders a single media attachment on the frontend.
 	 *
 	 * @since 4.8.0
 	 * @access public
@@ -162,97 +161,62 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Outputs the settings update form.
 	 *
+	 * Note that the widget UI itself is rendered with JavaScript.
+	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @todo This is redundant with JS-based templating. It should be made DRY by only using the JS template alone, with instance data stored in hidden named field.
 	 * @param array $instance Current settings.
 	 * @return void
 	 */
 	public function form( $instance ) {
-		$instance = wp_parse_args( (array) $instance, $this->default_instance );
-		$attachment = empty( $instance['attachment_id'] ) ? null : get_post( $instance['attachment_id'] );
-		$widget_id = $this->id;
+		$instance = wp_array_slice_assoc(
+			wp_parse_args( (array) $instance, $this->default_instance ),
+			array_keys( $this->default_instance )
+		);
 		?>
-		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview <?php echo $attachment ? 'has-attachment' : '' ?>">
-			<p>
-				<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php esc_html_e( 'Title:' ); ?></label>
-				<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
-			</p>
-
-			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
-				<?php if ( $attachment ) : ?>
-					<?php
-					$this->render_media(
-						$attachment,
-						$widget_id,
-						array_merge(
-							$instance,
-							array(
-								'align' => 'none', // Required to prevent widget control layout from breaking.
-							)
-						)
-					);
-					?>
-				<?php else : ?>
-					<p class="placeholder"><?php esc_html_e( 'No media selected' ); // @todo Use type-specific label. ?></p>
-				<?php endif; ?>
-			</div>
-
-			<p class="media-widget-buttons">
-				<button
-					type="button"
-					class="button edit-media"
-					data-id="<?php echo esc_attr( $widget_id ); ?>"
-					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
-				>
-					<?php esc_html_e( 'Edit Media' ); ?>
-				</button>
-				<button
-					type="button"
-					class="button select-media"
-					data-id="<?php echo esc_attr( $widget_id ); ?>"
-					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
-				>
-					<?php if ( $attachment ) : ?>
-						<?php esc_html_e( 'Change Media' ); // @todo Use type-specific label. ?>
-					<?php else : ?>
-						<?php esc_html_e( 'Select Media' ); // @todo Use type-specific label. ?>
-					<?php endif; ?>
-				</button>
-			</p>
-			<?php
-			// Use hidden form fields to capture the attachment details from the media manager.
-			unset( $instance['title'] );
-			?>
-
-			<?php foreach ( wp_array_slice_assoc( $instance, array_keys( $this->default_instance ) ) as $name => $value ) : ?>
-				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" class="<?php echo esc_attr( $name ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
-			<?php endforeach; ?>
-		</div>
+		<?php foreach ( $instance as $name => $value ) : ?>
+			<input
+				type="hidden"
+				data-property="<?php echo esc_attr( $name ); ?>"
+				class="media-widget-instance-property"
+				name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>"
+				value="<?php echo esc_attr( wp_json_encode( $value ) ); ?>"
+			/>
+		<?php endforeach; ?>
 		<?php
 	}
 
 	/**
-	 * Registers the stylesheet for handling the widget in the back-end.
+	 * Check if is admin and if so call method to register scripts.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 */
-	public function enqueue_admin_styles() {
-		wp_enqueue_style( 'wp-media-widget' );
+	final public function maybe_enqueue_admin_scripts() {
+		if ( 'widgets.php' === $GLOBALS['pagenow'] || 'customize.php' === $GLOBALS['pagenow'] ) {
+			$this->enqueue_admin_scripts();
+		}
 	}
 
 	/**
-	 * Loads the required media files for the media manager.
+	 * Loads the required media files for the media manager and scripts for .
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 */
 	public function enqueue_admin_scripts() {
-		if ( 'widgets.php' === $GLOBALS['pagenow'] || $this->is_preview() ) {
-			wp_enqueue_media();
-			wp_enqueue_script( 'wp-media-widget' );
-		}
+		wp_enqueue_media();
+		wp_enqueue_style( 'media-widgets' );
+		wp_enqueue_script( 'media-widgets' );
+
+		wp_add_inline_script(
+			'media-widgets',
+			sprintf(
+				'wp.mediaWidgets.modelConstructors[ %s ].prototype.defaults = %s;',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $this->default_instance )
+			)
+		);
 	}
 }
