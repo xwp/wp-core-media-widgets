@@ -19,17 +19,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Default instance.
 	 *
-	 * @todo These are media-specific.
 	 * @todo The fields in this should be expanded out into full schema entries, with types and sanitize_callbacks.
 	 * @var array
 	 */
 	protected $default_instance = array(
 		'attachment_id' => 0,
-		'align' => 'none',
-		'link' => '',
-		'link_url' => '',
-		'size' => 'full',
-		'title' => '',
 	);
 
 	/**

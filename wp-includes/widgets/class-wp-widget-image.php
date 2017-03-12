@@ -27,6 +27,42 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'description' => __( 'Displays an image file.' ),
 			'mime_type'   => 'image',
 		) );
+
+		// @todo The following should be broken out into a schema that has the requisite types and sanitize_callbacks defined.
+		$this->default_instance = array_merge(
+			$this->default_instance,
+			array(
+				'attachment_id' => 0,
+				'url' => '', // This should only be set in the instance if attachment_id is empty.
+
+				'size' => 'full',
+				'width' => 0, // Via 'customWidth', only when size=custom.
+				'height' => 0, // Via 'customHeight', only when size=custom.
+
+				'align' => '',
+				'caption' => '',
+				'alt' => '',
+
+				'link_type' => 'none', // Via 'link' property.
+				'link_url' => '', // Via 'linkUrl' property.
+
+				'image_classes' => '', // Via 'extraClasses' property.
+				'link_classes' => '', // Via 'linkClassName' property.
+				'link_rel' => '', // Via 'linkRel' property.
+				'link_target_blank' => false, // Via 'linkTargetBlank' property.
+				'image_title' => '', // Via 'title' property.
+
+				/*
+				 * There are two additional properties exposed by the PostImage modal
+				 * that don't seem to be relevant, as they may only be derived read-only
+				 * values:
+				 * - originalUrl
+				 * - aspectRatio
+				 * - height (redundant when size is not custom)
+				 * - width (redundant when size is not custom)
+				 */
+			)
+		);
 	}
 
 	/**
