@@ -27,6 +27,19 @@ abstract class WP_Widget_Media extends WP_Widget {
 	);
 
 	/**
+	 * Translation labels.
+	 *
+	 * @since 4.8.0
+	 * @var array
+	 */
+	public $labels = array(
+		'no_media_selected' => '',
+		'edit_media' => '',
+		'change_media' => '',
+		'select_media' => '',
+	);
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 4.8.0
@@ -43,9 +56,19 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$widget_opts = wp_parse_args( $widget_options, array(
 			'description' => __( 'An image, video, or audio file.' ),
 			'customize_selective_refresh' => true,
+			'mime_type' => '',
 		) );
 
 		$control_opts = wp_parse_args( $control_options, array() );
+
+		$default_labels = array(
+			'no_media_selected' => __( 'No media selected' ),
+			'edit_media' => __( 'Edit Media' ),
+			'change_media' => __( 'Change Media' ),
+			'select_media' => __( 'Select Media' ),
+			'add_to_widget' => __( 'Add to Widget' ),
+		);
+		$this->labels = array_merge( $default_labels, array_filter( $this->labels ) );
 
 		parent::__construct(
 			$id_base,
@@ -55,6 +78,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		);
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
+		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
+		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
 	}
 
 	/**
@@ -218,5 +243,63 @@ abstract class WP_Widget_Media extends WP_Widget {
 				wp_json_encode( $this->default_instance )
 			)
 		);
+
+		wp_add_inline_script(
+			'media-widgets',
+			sprintf(
+				'wp.mediaWidgets.controlConstructors[ %s ].prototype.mime_type = %s;',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $this->widget_options['mime_type'] )
+			)
+		);
+	}
+
+	/**
+	 * Check if is admin and if so call method to register scripts.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	final public function maybe_print_control_templates() {
+		if ( 'widgets.php' === $GLOBALS['pagenow'] || 'customize.php' === $GLOBALS['pagenow'] ) {
+			$this->render_control_template_scripts();
+		}
+	}
+
+	/**
+	 * Render form template scripts.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function render_control_template_scripts() {
+		?>
+		<script type="text/html" id="tmpl-widget-media-<?php echo $this->id_base; ?>-control">
+			<# var elementIdPrefix = 'el' + String( Math.random() ) + '-' #>
+			<p>
+				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
+				<input id="{{ elementIdPrefix }}title" type="text" class="widefat">
+			</p>
+			<div class="media-widget-preview">
+				<div class="selected rendered">
+					<!-- Media rendering goes here. -->
+				</div>
+				<div class="not-selected">
+					<p class="placeholder"><?php echo esc_html( $this->labels['no_media_selected'] ); ?></p>
+				</div>
+			</div>
+			<p class="media-widget-buttons">
+				<button type="button" class="button edit-media select-media selected">
+					<?php echo esc_html( $this->labels['edit_media'] ); ?>
+				</button>
+				<button type="button" class="button change-media select-media selected">
+					<?php echo esc_html( $this->labels['change_media'] ); ?>
+				</button>
+				<button type="button" class="button select-media not-selected">
+					<?php echo esc_html( $this->labels['select_media'] ); ?>
+				</button>
+			</p>
+		</script>
+		<?php
 	}
 }

@@ -28,6 +28,13 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'mime_type'   => 'image',
 		) );
 
+		$this->labels = array(
+			'no_media_selected' => __( 'No image selected' ),
+			'edit_media' => __( 'Edit Image' ),
+			'change_media' => __( 'Change Image' ),
+			'select_media' => __( 'Select Image' ),
+		);
+
 		// @todo The following should be broken out into a schema that has the requisite types and sanitize_callbacks defined.
 		$this->default_instance = array_merge(
 			$this->default_instance,
@@ -123,5 +130,25 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		echo $image;
+	}
+
+	/**
+	 * Render form template scripts.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function render_control_template_scripts() {
+		parent::render_control_template_scripts();
+
+		?>
+		<script type="text/html" id="tmpl-wp-media-widget-image-preview">
+			<# if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.medium ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment.sizes.medium.url }}" draggable="false" alt="" />
+			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.full ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment.sizes.full.url }}" draggable="false" alt="" />
+			<# } #>
+		</script>
+		<?php
 	}
 }

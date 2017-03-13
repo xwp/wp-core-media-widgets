@@ -42,7 +42,7 @@ add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
  * @param WP_Styles $styles Styles.
  */
 function wp32417_default_styles( WP_Styles $styles ) {
-	$styles->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widget.css', array( 'media-views' ) );
+	$styles->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css', array( 'media-views' ) );
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
 

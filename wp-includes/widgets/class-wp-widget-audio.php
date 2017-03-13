@@ -31,8 +31,6 @@ class WP_Widget_Audio extends WP_Widget_Media {
 		if ( $this->is_preview() ) {
 			$this->enqueue_mediaelement_script();
 		}
-
-		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ) );
 	}
 
 	/**
@@ -58,15 +56,17 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	}
 
 	/**
-	 * Prints footer scripts.
+	 * Render form template scripts.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 */
-	public function admin_print_footer_scripts() {
+	public function render_control_template_scripts() {
+		parent::render_control_template_scripts();
+
 		?>
-		<script type="text/html" id="tmpl-wp-media-widget-audio">
-			<?php wp_underscore_audio_template() ?>
+		<script type="text/html" id="tmpl-wp-media-widget-audio-preview">
+			<?php wp_underscore_audio_template(); ?>
 		</script>
 		<?php
 	}
