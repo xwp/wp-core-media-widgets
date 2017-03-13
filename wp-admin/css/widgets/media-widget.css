@@ -20,6 +20,12 @@
 	text-align: center
 }
 
+.media-widget-admin-preview:after {
+	content: '';
+	display: table;
+	clear: both;
+}
+
 .media-widget-buttons {
 	display: -webkit-box;
 	display: -moz-box;

@@ -68,21 +68,7 @@
 		 * Gather meta information about an image.
 		 *
 		 * @param {Object} image The image to extract data from
-		 * @return {{
-		 *      align: string,
-		 *      attachment_id: boolean|number,
-		 *      caption: string,
-		 *      customHeight: number,
-		 *      customWidth: number,
-		 *      extraClasses: string,
-		 *      link: boolean,
-		 *      linkClassName: string,
-		 *      linkTargetBlank: boolean,
-		 *      linkUrl: string,
-		 *      linkRel: string,
-		 *      size: string,
-		 *      title: string
-		 *  }}
+		 * @return {Object} Extracted image data.
 		 */
 		extractImageData: function( image ) {
 			var classes, extraClasses, metadata, captionBlock, caption, link, width, height,
@@ -205,6 +191,140 @@
 
 			// Create a callback function for the mediaFrame.
 			callback = function( imageData ) {
+				var captionPadding = 10, classes, className, node, parent, wrap, link,
+					caption, captionText, id, linkAttrs, width, height, align,
+					srcset, src;
+
+				classes = imageData.extraClasses.split( ' ' );
+
+				if ( ! classes ) {
+					classes = [];
+				}
+
+				if ( ! imageData.caption ) {
+					classes.push( 'align' + imageData.align );
+				}
+
+				if ( imageData.attachment_id ) {
+					classes.push( 'wp-image-' + imageData.attachment_id );
+					if ( imageData.size && 'custom' !== imageData.size ) {
+						classes = _.filter( classes, function( imageClass ) {
+							return -1 === imageClass.indexOf( 'attachment-' );
+						} );
+
+						classes.push( 'attachment-' + imageData.size );
+						classes.push( 'size-' + imageData.size );
+					}
+				}
+
+				width  = imageData.width;
+				height = imageData.height;
+
+				if ( 'custom' === imageData.size ) {
+					width  = imageData.customWidth;
+					height = imageData.customHeight;
+				}
+
+				$image.attr( {
+					src: imageData.url,
+					width: width || null,
+					height: height || null,
+					title: imageData.title || null,
+					'class': _.uniq( classes ).join( ' ' ) || null
+				} );
+
+				// Preserve empty alt attributes.
+				$image.attr( 'alt', imageData.alt || '' );
+
+				linkAttrs = {
+					href: imageData.linkUrl,
+					rel: imageData.linkRel || null,
+					target: imageData.linkTargetBlank ? '_blank' : null,
+					'class': imageData.linkClassName || null
+				};
+
+				link = $image.parent( 'a' );
+				if ( link.length && '' === link.text() ) {
+
+					// Update or remove an existing link wrapped around the image
+					if ( imageData.linkUrl ) {
+						link.attr( linkAttrs );
+					} else {
+						link.remove();
+					}
+				} else if ( imageData.linkUrl ) {
+					if ( link.length ) {
+
+						// The image is inside a link together with other nodes,
+						// or is nested in another node, move it out
+						link.insertAfter( $image );
+					}
+
+					// Add link wrapped around the image
+					link = $( '<a />' ).attr( linkAttrs );
+					$image.parent().insertBefore( link );
+					link.append( $image );
+				}
+
+				caption = $( '.wp-caption' );
+
+				if ( link.length && '' === link.text() ) {
+					node = link;
+				} else {
+					node = $image;
+				}
+
+				if ( imageData.caption ) {
+					id = imageData.attachment_id ? 'attachment_' + imageData.attachment_id : null;
+					align = 'align' + ( imageData.align || 'none' );
+					width = parseInt( width, 10 ) + captionPadding;
+					className = 'wp-caption ' + align;
+
+					if ( imageData.captionClassName ) {
+						className += ' ' + imageData.captionClassName.replace( /[<>&]+/g,  '' );
+					}
+
+					if ( caption.length ) {
+						caption.attr( {
+							id: id,
+							'class': className,
+							style: 'width: ' + width + 'px'
+						} );
+
+						captionText = $( '.wp-caption-text', caption );
+						if ( captionText.length ) {
+							captionText.html( imageData.caption );
+						}
+
+					} else {
+						wrap = $( '<figure />' )
+									.attr( { id: id ? id : '', 'class': className } )
+									.width( width )
+									.append( node )
+									.append( $( '<figcaption />' ).addClass( 'wp-caption-text' ).html( imageData.caption ) );
+
+						$( '#' + widgetId ).append( wrap );
+
+					}
+				} else if ( caption ) {
+
+					// Remove the caption wrapper and place the image in new paragraph
+					parent = $( '#' + widgetId );
+					parent.append( node );
+					caption.remove();
+				}
+
+				srcset = $image.attr( 'srcset' );
+				src    = $image.attr( 'src' );
+
+				// Remove srcset and sizes if the image file was edited or the image was replaced.
+				if ( srcset && src ) {
+					src = src.replace( /[?#].*/, '' );
+
+					if ( srcset.indexOf( src ) === -1 ) {
+						$image.attr( { srcset: null, sizes: null } );
+					}
+				}
 
 				// @todo Changing the ID is not causing the image to update.
 				widgetContent.find( '.id' ).val( imageData.attachment_id ).trigger( 'change' );
