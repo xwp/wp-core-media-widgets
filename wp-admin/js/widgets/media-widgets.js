@@ -19,12 +19,18 @@ wp.mediaWidgets = ( function( $ ) {
 	 */
 	component.MediaWidgetControl = Backbone.View.extend( {
 
+		l10n: {
+			add_to_widget: '{{add_to_widget}}',
+			select_media: '{{select_media}}'
+		},
+
 		id_base: '',
 
 		mime_type: '',
 
 		events: {
-			'click .select-media': 'selectMedia'
+			'click .select-media': 'selectMedia',
+			'click .edit-media': 'editMedia'
 		},
 
 		/**
@@ -54,21 +60,45 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			control.attachmentFetched = $.Deferred();
-			control.attachment = new wp.media.model.Attachment();
+			control.selectedAttachment = new wp.media.model.Attachment();
 			if ( control.model.get( 'attachment_id' ) ) {
-				control.attachment.set( { id: control.model.get( 'attachment_id' ) } );
-				control.attachment.fetch().done( function() {
+				control.selectedAttachment.set( { id: control.model.get( 'attachment_id' ) } );
+				control.selectedAttachment.fetch().done( function() {
 					control.attachmentFetched.resolve();
 				} );
 			}
 
-			// @todo We may need to do this based on whether or not the modal sends back all the required fields.
-			// control.model.on( 'change:attachment_id', function( id ) {
-			// 	control.attachment.set( { id: id } );
-			// 	control.attachment.fetch();
-			// } );
+			// Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+			control.listenTo( control.model, 'change', function() {
+				control.$el.next( '.widget-content' ).find( '.media-widget-instance-property' ).each( function() {
+					var input = $( this ), value;
+					value = control.model.get( input.data( 'property' ) );
+					if ( _.isUndefined( value ) ) {
+						return;
+					}
+					value = String( value );
+					if ( input.val() === value ) {
+						return;
+					}
+					console.info( input.data( 'property' ), input.val(), '=>', value )
+					input.val( value );
+					input.trigger( 'change' );
+				} );
+			} );
 
-			// @todo 2-way binding of model title to input title.
+			// Re-render the preview when the attachment changes.
+			control.listenTo( control.selectedAttachment, 'change', function() {
+				control.renderPreview();
+			} );
+
+			// Update the title.
+			control.$el.on( 'input', '.title', function() {
+				control.model.set( {
+					title: $.trim( $( this ).val() )
+				} );
+			} );
+
+			// @todo Make sure that updates to the hidden inputs sync back to the model.
 		},
 
 		/**
@@ -90,11 +120,18 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		render: function() {
-			var control = this;
-			if ( ! control.rendered ) {
+			var control = this, titleInput;
+
+			if ( ! control.templateRendered ) {
 				control.$el.html( control.template( control.model.attributes ) );
-				control.rendered = true;
+				control.templateRendered = true;
 			}
+
+			titleInput = control.$el.find( '.title' );
+			if ( ! titleInput.is( document.activeElement ) ) {
+				titleInput.val( control.model.get( 'title' ) );
+			}
+
 			control.attachmentFetched.done( function() {
 				control.renderPreview();
 			} );
@@ -122,76 +159,51 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
+		 * Open the media select frame to chose an item.
 		 *
+		 * @abstract
 		 */
 		selectMedia: function() {
+			throw new Error( 'selectMedia not implemented' );
+		},
 
-			// @todo
-			return;
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @return {object}
+		 */
+		getSelectFrameProps: function( mediaFrame ) {
+			var attachment ,props;
 
-			var control = this;
-				selection = frame.getSelection( widgetId ),
-				widgetFrame, prevAttachmentId;
-
-			if ( selection && selection.length > 0 ) {
-				prevAttachmentId = selection.first().get( 'id' );
+			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+			if ( _.isEmpty( attachment ) ) {
+				return {};
 			}
 
-			// Create the media frame.
-			widgetFrame = wp.media( {
-				button: {
-					text: translate( 'addToWidget', 'Add to widget' ) // Text of the submit button.
-				},
+			props = {
+				attachment_id: attachment.id,
+				url: attachment.url
+			};
 
-				states: new wp.media.controller.Library( {
-					library:    wp.media.query( { type: $button.data( 'type' ) } ),
-					title:      translate( 'selectMedia', 'Select Media' ), // Media frame title
-					selection:  selection,
-					multiple:   false,
-					priority:   20,
-					display:    true, // Attachment display setting
-					filterable: false
-				} )
-			} );
+			return props;
+		},
 
-			// Render the attachment details.
-			widgetFrame.on( 'select', function() {
-				var attachment, props;
-
-				attachment = frame.getFirstAttachment( widgetFrame );
-				props = frame.getDisplayProps( widgetFrame );
-
-				// Only try to render the attachment details if a selection was made.
-				if ( props && attachment && prevAttachmentId !== attachment.id ) {
-					frame.renderFormView( widgetId, props, attachment );
-				}
-			} );
-
-			/*
-			 * Try to render the form only if the selection doesn't change.
-			 * This ensures that changes of props will reflect in the form and the preview
-			 * even when user doesn't click the Add button.
-			 */
-			widgetFrame.on( 'close', function() {
-				var attachment, props;
-
-				attachment = frame.getFirstAttachment( widgetFrame );
-
-				if ( attachment && prevAttachmentId && prevAttachmentId === attachment.id ) {
-					props = frame.getDisplayProps( widgetFrame );
-					frame.renderFormView( widgetId, props, attachment );
-				}
-			} );
-
-			widgetFrame.open( widgetId );
+		/**
+		 * Open the media image-edit frame to modify the selected item.
+		 *
+		 * @abstract
+		 */
+		editMedia: function() {
+			throw new Error( 'editMedia not implemented' );
 		}
-
 	} );
 
 	component.MediaWidgetModel = Backbone.Model.extend( {
 		defaults: {
 			title: '',
-			attachment_id: 0
+			attachment_id: 0,
+			url: ''
 		}
 	} );
 
@@ -202,7 +214,150 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, previewContainer, previewTemplate;
 			previewContainer = control.$el.find( '.media-widget-preview .rendered' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
-			previewContainer.html( previewTemplate( { attachment: control.attachment.attributes } ) );
+			previewContainer.html( previewTemplate( { attachment: control.selectedAttachment.attributes } ) );
+		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @return {object}
+		 */
+		getSelectFrameProps: function( mediaFrame ) {
+			var attachment, displaySettings, props;
+
+			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+			if ( _.isEmpty( attachment ) ) {
+				return {};
+			}
+
+			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
+
+			props = {
+				attachment_id: attachment.id,
+				url: attachment.url,
+				size: displaySettings.size,
+				width: 0, // Reset.
+				height: 0, // Reset.
+				align: displaySettings.align,
+				caption: attachment.caption,
+				alt: attachment.alt,
+				link_type: displaySettings.link,
+				link_url: displaySettings.link_url
+			};
+
+			return props;
+		},
+
+		/**
+		 * Open the media select frame to chose an item.
+		 */
+		selectMedia: function() {
+			var control = this, selection, mediaFrame;
+
+			selection = new wp.media.model.Selection( [ control.model.get( 'attachment_id' ) ] );
+
+			mediaFrame = wp.media( {
+				frame: 'select',
+				button: {
+					text: control.l10n.add_to_widget
+				},
+				states: new wp.media.controller.Library( {
+					library: wp.media.query( {
+						type: control.mime_type
+					} ),
+					title: control.l10n.select_media,
+					selection: selection,
+					multiple: false,
+					priority: 20,
+					display: true, // Attachment display setting.
+					filterable: false
+				} )
+			} );
+
+			mediaFrame.on( 'select', function() {
+				var attachment;
+
+				// Update cached attachment object to avoid having to re-fetch.
+				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+				control.selectedAttachment.set( attachment );
+
+				// Update widget instance.
+				control.model.set( control.getSelectFrameProps( mediaFrame ) );
+			} );
+
+			mediaFrame.open();
+		},
+
+		/**
+		 * Open the media image-edit frame to modify the selected item.
+		 */
+		editMedia: function() {
+			var control = this, mediaFrame, metadata, updateCallback;
+
+			metadata = {
+				attachment_id: control.model.get( 'attachment_id' ),
+				align: control.model.get( 'align' ),
+				link: control.model.get( 'link_type' ),
+				linkUrl: control.model.get( 'link_url' ),
+				size: control.model.get( 'size' ),
+				caption: control.model.get( 'caption' ),
+				alt: control.model.get( 'alt' ),
+				extraClasses: control.model.get( 'image_classes' ),
+				linkClassName: control.model.get( 'link_classes' ),
+				linkRel: control.model.get( 'link_rel' ),
+				linkTargetBlank: control.model.get( 'link_target_blank' ),
+				title: control.model.get( 'image_title' ),
+				customWidth: control.model.get( 'width' ),
+				customHeight: control.model.get( 'height' ),
+				url: control.model.get( 'url' )
+			};
+
+			wp.media.events.trigger( 'editor:image-edit', {
+				metadata: metadata,
+				image: control.$el.find( 'img:first' )
+			} );
+
+			// Set up the media frame.
+			mediaFrame = wp.media({
+				frame: 'image',
+				state: 'image-details',
+				metadata: metadata
+			} );
+
+			updateCallback = function( imageData ) {
+				var attachment;
+
+				control.model.set( {
+					attachment_id: imageData.attachment_id,
+					url: imageData.url,
+					align: imageData.align,
+					link_type: imageData.link,
+					link_url: imageData.linkUrl,
+					size: imageData.size,
+					caption: imageData.caption,
+					alt: imageData.alt,
+					image_classes: imageData.extraClasses,
+					link_classes: imageData.linkClassName,
+					link_rel: imageData.linkRel,
+					link_target_blank: imageData.linkTargetBlank,
+					image_title: imageData.title,
+					width: 'custom' === imageData.size ? imageData.customWidth : imageData.width,
+					height: 'custom' === imageData.size ? imageData.customHeight : imageData.height
+				} );
+
+				// Update cached attachment object to avoid having to re-fetch.
+				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+				control.selectedAttachment.set( attachment );
+			};
+
+			mediaFrame.state( 'image-details' ).on( 'update', updateCallback );
+			mediaFrame.state( 'replace-image' ).on( 'replace', updateCallback );
+			mediaFrame.on( 'close', function() {
+				mediaFrame.detach();
+			});
+
+			mediaFrame.open();
 		}
 	} );
 	component.controlConstructors.media_image = component.ImageWidgetControl;
@@ -236,7 +391,7 @@ wp.mediaWidgets = ( function( $ ) {
 		};
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var input = $( this );
-			modelAttributes[ input.data( 'property' ) ] = JSON.parse( input.val() );
+			modelAttributes[ input.data( 'property' ) ] = input.val();
 		} );
 
 		model = new ModelConstructor( modelAttributes );

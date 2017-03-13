@@ -24,6 +24,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	protected $default_instance = array(
 		'attachment_id' => 0,
+		'url' => '',
+		'title' => '',
 	);
 
 	/**
@@ -108,6 +110,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$this->render_media( $instance );
 
+		var_dump($instance);
+
 		echo $args['after_widget'];
 	}
 
@@ -126,7 +130,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function update( $new_instance, $instance ) {
 
+		// @todo Array items may not exist. If using schema, we can iterate. Otherwise, isset() checks are needed.
 		$instance['attachment_id'] = (int) $new_instance['attachment_id'];
+		$instance['url'] = esc_url_raw( $new_instance['url'] );
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
 		return $instance;
@@ -184,7 +190,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				data-property="<?php echo esc_attr( $name ); ?>"
 				class="media-widget-instance-property"
 				name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>"
-				value="<?php echo esc_attr( wp_json_encode( $value ) ); ?>"
+				value="<?php echo esc_attr( strval( $value ) ); // @todo Encode as JSON? ?>"
 			/>
 		<?php endforeach; ?>
 		<?php
@@ -260,7 +266,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			<# var elementIdPrefix = 'el' + String( Math.random() ) + '-' #>
 			<p>
 				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
-				<input id="{{ elementIdPrefix }}title" type="text" class="widefat">
+				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
 			</p>
 			<div class="media-widget-preview">
 				<div class="selected rendered">

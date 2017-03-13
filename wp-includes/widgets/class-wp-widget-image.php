@@ -43,8 +43,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'url' => '', // This should only be set in the instance if attachment_id is empty.
 
 				'size' => 'full',
-				'width' => 0, // Via 'customWidth', only when size=custom.
-				'height' => 0, // Via 'customHeight', only when size=custom.
+				'width' => 0, // Via 'customWidth', only when size=custom; otherwise via 'width'.
+				'height' => 0, // Via 'customHeight', only when size=custom; otherwise via 'height'.
 
 				'align' => '',
 				'caption' => '',
@@ -91,16 +91,28 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$instance['align'] = $new_instance['align'];
 		}
 
-		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );
+		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) );
 		if ( in_array( $new_instance['size'], $image_sizes, true ) ) {
 			$instance['size'] = $new_instance['size'];
 		}
 
-		if ( in_array( $new_instance['link'], array( 'none', 'file', 'post', 'custom' ), true ) ) {
-			$instance['link'] = $new_instance['link'];
+		$instance['width'] = intval( $new_instance['width'] );
+		$instance['height'] = intval( $new_instance['height'] );
+
+		if ( in_array( $new_instance['link_type'], array( 'none', 'file', 'post', 'custom' ), true ) ) {
+			$instance['link_type'] = $new_instance['link_type'];
 		}
 
 		$instance['link_url'] = esc_url_raw( $new_instance['link_url'] );
+
+		$instance['caption'] = sanitize_text_field( $new_instance['caption'] );
+		$instance['alt'] = sanitize_text_field( $new_instance['alt'] );
+
+		$instance['image_classes'] = sanitize_text_field( $new_instance['image_classes'] );
+		$instance['link_classes'] = sanitize_text_field( $new_instance['link_classes'] );
+		$instance['link_rel'] = sanitize_text_field( $new_instance['link_rel'] );
+		$instance['image_title'] = sanitize_text_field( $new_instance['image_title'] );
+		$instance['link_target_blank'] = (bool) $new_instance['link_target_blank'];
 
 		return $instance;
 	}
@@ -147,22 +159,28 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$image_attributes['alt'] = $instance['alt'];
 		}
 
-		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $image_attributes );
+		$size = $instance['size'];
+		if ( 'custom' === $size || ! has_image_size( $size ) ) {
+			$size = array( $instance['width'], $instance['height'] );
+		}
+
+		$image = wp_get_attachment_image( $attachment->ID, $size, false, $image_attributes );
+
 		$url = '';
-		if ( 'file' === $instance['link'] ) {
+		if ( 'file' === $instance['link_type'] ) {
 			$url = wp_get_attachment_url( $attachment->ID );
-		} elseif ( 'post' === $instance['link'] ) {
+		} elseif ( 'post' === $instance['link_type'] ) {
 			$url = get_attachment_link( $attachment->ID );
-		} elseif ( 'custom' === $instance['link'] && ! empty( $instance['link_url'] ) ) {
+		} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
 			$url = $instance['link_url'];
 		}
 
 		if ( $url ) {
 			$image = sprintf(
-				'<a href="%$1s" class="%$2s" rel="%$3s" target="%$4s">%$5s</a>',
+				'<a href="%1$s" class="%2$s" rel="%3$s" target="%4$s">%5$s</a>',
 				esc_url( $url ),
-				$instance['link_classes'],
-				$instance['link_rel'],
+				esc_attr( $instance['link_classes'] ),
+				esc_attr( $instance['link_rel'] ),
 				! empty( $instance['link_target_blank'] ) ? '_blank' : '',
 				$image
 			);
