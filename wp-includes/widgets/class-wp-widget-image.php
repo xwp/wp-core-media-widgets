@@ -28,12 +28,12 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'mime_type'   => 'image',
 		) );
 
-		$this->labels = array(
+		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No image selected' ),
 			'edit_media' => __( 'Edit Image' ),
 			'change_media' => __( 'Change Image' ),
 			'select_media' => __( 'Select Image' ),
-		);
+		) );
 
 		// @todo The following should be broken out into a schema that has the requisite types and sanitize_callbacks defined.
 		$this->default_instance = array_merge(

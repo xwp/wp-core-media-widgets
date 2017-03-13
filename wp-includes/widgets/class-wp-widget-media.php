@@ -32,11 +32,12 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @since 4.8.0
 	 * @var array
 	 */
-	public $labels = array(
+	public $l10n = array(
 		'no_media_selected' => '',
 		'edit_media' => '',
 		'change_media' => '',
 		'select_media' => '',
+		'add_to_widget' => '',
 	);
 
 	/**
@@ -61,14 +62,14 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$control_opts = wp_parse_args( $control_options, array() );
 
-		$default_labels = array(
+		$l10n_defaults = array(
 			'no_media_selected' => __( 'No media selected' ),
 			'edit_media' => __( 'Edit Media' ),
 			'change_media' => __( 'Change Media' ),
 			'select_media' => __( 'Select Media' ),
 			'add_to_widget' => __( 'Add to Widget' ),
 		);
-		$this->labels = array_merge( $default_labels, array_filter( $this->labels ) );
+		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
 		parent::__construct(
 			$id_base,
@@ -224,9 +225,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 		wp_add_inline_script(
 			'media-widgets',
 			sprintf(
-				'wp.mediaWidgets.controlConstructors[ %s ].prototype.mime_type = %s;',
+				'
+					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
+					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+				',
 				wp_json_encode( $this->id_base ),
-				wp_json_encode( $this->widget_options['mime_type'] )
+				wp_json_encode( $this->widget_options['mime_type'] ),
+				wp_json_encode( $this->l10n )
 			)
 		);
 	}
@@ -262,18 +267,18 @@ abstract class WP_Widget_Media extends WP_Widget {
 					<!-- Media rendering goes here. -->
 				</div>
 				<div class="not-selected">
-					<p class="placeholder"><?php echo esc_html( $this->labels['no_media_selected'] ); ?></p>
+					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
 				</div>
 			</div>
 			<p class="media-widget-buttons">
-				<button type="button" class="button edit-media select-media selected">
-					<?php echo esc_html( $this->labels['edit_media'] ); ?>
+				<button type="button" class="button edit-media selected">
+					<?php echo esc_html( $this->l10n['edit_media'] ); ?>
 				</button>
 				<button type="button" class="button change-media select-media selected">
-					<?php echo esc_html( $this->labels['change_media'] ); ?>
+					<?php echo esc_html( $this->l10n['change_media'] ); ?>
 				</button>
 				<button type="button" class="button select-media not-selected">
-					<?php echo esc_html( $this->labels['select_media'] ); ?>
+					<?php echo esc_html( $this->l10n['select_media'] ); ?>
 				</button>
 			</p>
 		</script>
