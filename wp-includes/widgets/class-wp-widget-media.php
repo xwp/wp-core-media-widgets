@@ -105,12 +105,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
 
-		// @todo The following should be able to render when there is no attachment_id but only a url to the media.
-		// Render the media.
-		$attachment = ! empty( $instance['attachment_id'] ) ? get_post( $instance['attachment_id'] ) : null;
-		if ( $attachment ) {
-			$this->render_media( $attachment, $args['widget_id'], $instance );
-		}
+		$this->render_media( $instance );
 
 		echo $args['after_widget'];
 	}
@@ -153,17 +148,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Renders a single media attachment on the frontend.
+	 * Render the media on the frontend.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
+	 * @param array $instance Widget instance props.
 	 * @return string
 	 */
-	abstract public function render_media( $attachment, $widget_id, $instance );
+	abstract public function render_media( $instance );
 
 	/**
 	 * Creates and returns a link for an attachment.

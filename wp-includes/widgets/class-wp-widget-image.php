@@ -73,25 +73,32 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
-	 * Renders a single media attachment
+	 * Render the media on the frontend.
 	 *
 	 * @since  4.8.0
 	 * @access public
 	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
-	 *
+	 * @param array $instance Widget instance props.
 	 * @return void
 	 */
-	public function render_media( $attachment, $widget_id, $instance ) {
+	public function render_media( $instance ) {
 		$instance = wp_parse_args( $instance, array(
 			'size' => 'thumbnail',
 		) );
+
+		// @todo Support external images defined by 'url' only.
+		if ( empty( $instance['attachment_id'] ) ) {
+			return;
+		}
+
+		$attachment = get_post( $instance['attachment_id'] );
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return;
+		}
+
 		$has_caption = ! empty( $attachment->post_excerpt );
 
 		$image_attributes = array(
-			'data-id' => $widget_id,
 			'title'   => $attachment->post_title,
 			'class'   => 'image wp-image-' . $attachment->ID,
 			'style'   => 'max-width: 100%; height: auto;',
@@ -122,9 +129,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				$width = $size[0];
 			}
 			$image = img_caption_shortcode( array(
-				'id'      => $widget_id . '-caption',
-				'width'   => $width,
-				'align'   => 'align' . $instance['align'],
+				'width' => $width,
+				'align' => 'align' . $instance['align'],
 				'caption' => $attachment->post_excerpt,
 			), $image );
 		}
