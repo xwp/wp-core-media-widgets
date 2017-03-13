@@ -115,6 +115,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
+		$instance = array_merge( $this->default_instance, $instance );
 		$instance = wp_parse_args( $instance, array(
 			'size' => 'thumbnail',
 		) );
@@ -129,16 +130,21 @@ class WP_Widget_Image extends WP_Widget_Media {
 			return;
 		}
 
-		$has_caption = ! empty( $attachment->post_excerpt );
+		$caption = $attachment->post_excerpt;
+		if ( $instance['caption'] ) {
+			$caption = $instance['caption'];
+		}
 
 		$image_attributes = array(
-			'title'   => $attachment->post_title,
-			'class'   => 'image wp-image-' . $attachment->ID,
-			'style'   => 'max-width: 100%; height: auto;',
+			'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
+			'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
+			'style' => 'max-width: 100%; height: auto;',
 		);
-
-		if ( ! $has_caption ) {
+		if ( ! $caption ) {
 			$image_attributes['class'] .= ' align' . $instance['align'];
+		}
+		if ( $instance['alt'] ) {
+			$image_attributes['alt'] = $instance['alt'];
 		}
 
 		$image = wp_get_attachment_image( $attachment->ID, $instance['size'], false, $image_attributes );
@@ -152,10 +158,17 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		if ( $url ) {
-			$image = sprintf( '<a href="%s">%s</a>', esc_url( $url ), $image );
+			$image = sprintf(
+				'<a href="%$1s" class="%$2s" rel="%$3s" target="%$4s">%$5s</a>',
+				esc_url( $url ),
+				$instance['link_classes'],
+				$instance['link_rel'],
+				! empty( $instance['link_target_blank'] ) ? '_blank' : '',
+				$image
+			);
 		}
 
-		if ( $has_caption ) {
+		if ( $caption ) {
 			$width = 0;
 			$size = _wp_get_image_size_from_meta( $instance['size'], wp_get_attachment_metadata( $attachment->ID ) );
 			if ( false !== $size ) {
@@ -164,7 +177,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$image = img_caption_shortcode( array(
 				'width' => $width,
 				'align' => 'align' . $instance['align'],
-				'caption' => $attachment->post_excerpt,
+				'caption' => $caption,
 			), $image );
 		}
 
