@@ -73,6 +73,39 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
+	 * Sanitizes the widget form values as they are saved.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @see WP_Widget::update()
+	 *
+	 * @param array $new_instance Values just sent to be saved.
+	 * @param array $instance Previously saved values from database.
+	 * @return array Updated safe values to be saved.
+	 */
+	public function update( $new_instance, $instance ) {
+		$instance = parent::update( $new_instance, $instance );
+
+		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ), true ) ) {
+			$instance['align'] = $new_instance['align'];
+		}
+
+		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full' ) );
+		if ( in_array( $new_instance['size'], $image_sizes, true ) ) {
+			$instance['size'] = $new_instance['size'];
+		}
+
+		if ( in_array( $new_instance['link'], array( 'none', 'file', 'post', 'custom' ), true ) ) {
+			$instance['link'] = $new_instance['link'];
+		}
+
+		$instance['link_url'] = esc_url_raw( $new_instance['link_url'] );
+
+		return $instance;
+	}
+
+	/**
 	 * Render the media on the frontend.
 	 *
 	 * @since  4.8.0
