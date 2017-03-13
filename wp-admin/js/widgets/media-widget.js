@@ -65,6 +65,104 @@
 		},
 
 		/**
+		 * Gather meta information about an image.
+		 *
+		 * @param {Object} image The image to extract data from
+		 * @return {Object} Extracted image data.
+		 */
+		extractImageData: function( image ) {
+			var classes, extraClasses, metadata, captionBlock, caption, link, width, height,
+				captionClassName = [],
+				isIntRegExp = /^\d+$/;
+
+			// Default attributes.
+			metadata = {
+				align: 'none',
+				attachment_id: false,
+				caption: '',
+				extraClasses: '',
+				link: false,
+				linkClassName: '',
+				linkTargetBlank: false,
+				linkUrl: '',
+				linkRel: '',
+				size: 'custom',
+				title: ''
+			};
+
+			metadata.alt   = image.attr( 'alt' );
+			metadata.title = image.attr( 'title' );
+			metadata.url   = image.attr( 'src' );
+
+			height = image.attr( 'height' );
+			width  = image.attr( 'width' );
+
+			if ( ! isIntRegExp.test( height ) || parseInt( height, 10 ) < 1 ) {
+				height = image.naturalHeight || image.height;
+			}
+
+			if ( ! isIntRegExp.test( width ) || parseInt( width, 10 ) < 1 ) {
+				width = image.naturalWidth || image.width;
+			}
+
+			metadata.customHeight = metadata.height = height;
+			metadata.customWidth  = metadata.width = width;
+
+			classes = image.attr( 'class' ).split( ' ' );
+			extraClasses = [];
+
+			_.each( classes, function( name ) {
+				if ( /^wp-image/.test( name ) ) {
+					metadata.attachment_id = parseInt( name.replace( 'wp-image-', '' ), 10 );
+				} else if ( /^align/.test( name ) ) {
+					metadata.align = name.replace( 'align', '' );
+				} else if ( /^size/.test( name ) ) {
+					metadata.size = name.replace( 'size-', '' );
+				} else {
+					extraClasses.push( name );
+				}
+			} );
+
+			metadata.extraClasses = extraClasses.join( ' ' );
+
+			// Extract caption
+			captionBlock = image.parents( '.wp-caption' );
+
+			if ( captionBlock.length ) {
+				classes = captionBlock.attr( 'class' ).split( ' ' );
+				_.each( classes, function( name ) {
+					if ( /^align/.test( name ) ) {
+						metadata.align = name.replace( 'align', '' );
+					} else if ( name && 'wp-caption' !== name ) {
+						captionClassName.push( name );
+					}
+				} );
+
+				metadata.captionClassName = captionClassName.join( ' ' );
+
+				caption = $( '.wp-caption-text', captionBlock );
+				if ( caption.length ) {
+					metadata.caption = caption.text()
+						.replace( /<br[^>]*>/g, '$&\n' )
+						.replace( /^<p>/, '' )
+						.replace( /<\/p>$/, '' );
+				}
+			}
+
+			// Extract linkTo
+			link = image.parent( 'a' );
+			if ( link.length ) {
+				metadata.link = true;
+				metadata.linkUrl = link.prop( 'href' );
+				metadata.linkTargetBlank = '_blank' === link.prop( 'target' );
+				metadata.linkRel = link.attr( 'rel' );
+				metadata.linkClassName = link.attr( 'class' );
+			}
+
+			return metadata;
+		},
+
+		/**
 		 * Open the media modal in the edit media state.
 		 *
 		 * @param {jQuery.Event} event Event.
@@ -74,23 +172,14 @@
 			var $button = $( event.target ),
 				widgetId = $button.data( 'id' ),
 				widgetFrame, callback,
-				metadata = {},
-				$img = $button.parents( '.media-widget-preview' ).find( '.media-widget-admin-preview > img' ),
-				widgetContent = $button.closest( '.widget-content' );
-
-			// Extract the image meta data.
-			// @todo The underlying widget instance data needs to be exposed for us to access and manipulate.
-
-			metadata.attachment_id = widgetContent.find( '.id' ).val();
-			metadata.align = widgetContent.find( '.align' ).val();
-			metadata.link = widgetContent.find( '.link' ).val();
-			metadata.linkUrl = widgetContent.find( '.link_url' ).val();
-			metadata.size = widgetContent.find( '.size' ).val();
+				widgetContent = $button.closest( '.widget-content' ),
+				$image = widgetContent.find( '.image' ),
+				metadata = frame.extractImageData( $image );
 
 			// Set media to the edit mode.
 			wp.media.events.trigger( 'editor:image-edit', {
 				metadata: metadata,
-				image: $img
+				image: $image
 			} );
 
 			// Set up the media frame.
@@ -102,6 +191,140 @@
 
 			// Create a callback function for the mediaFrame.
 			callback = function( imageData ) {
+				var captionPadding = 10, classes, className, node, parent, wrap, link,
+					caption, captionText, id, linkAttrs, width, height, align,
+					srcset, src;
+
+				classes = imageData.extraClasses.split( ' ' );
+
+				if ( ! classes ) {
+					classes = [];
+				}
+
+				if ( ! imageData.caption ) {
+					classes.push( 'align' + imageData.align );
+				}
+
+				if ( imageData.attachment_id ) {
+					classes.push( 'wp-image-' + imageData.attachment_id );
+					if ( imageData.size && 'custom' !== imageData.size ) {
+						classes = _.filter( classes, function( imageClass ) {
+							return -1 === imageClass.indexOf( 'attachment-' );
+						} );
+
+						classes.push( 'attachment-' + imageData.size );
+						classes.push( 'size-' + imageData.size );
+					}
+				}
+
+				width  = imageData.width;
+				height = imageData.height;
+
+				if ( 'custom' === imageData.size ) {
+					width  = imageData.customWidth;
+					height = imageData.customHeight;
+				}
+
+				$image.attr( {
+					src: imageData.url,
+					width: width || null,
+					height: height || null,
+					title: imageData.title || null,
+					'class': _.uniq( classes ).join( ' ' ) || null
+				} );
+
+				// Preserve empty alt attributes.
+				$image.attr( 'alt', imageData.alt || '' );
+
+				linkAttrs = {
+					href: imageData.linkUrl,
+					rel: imageData.linkRel || null,
+					target: imageData.linkTargetBlank ? '_blank' : null,
+					'class': imageData.linkClassName || null
+				};
+
+				link = $image.parent( 'a' );
+				if ( link.length && '' === link.text() ) {
+
+					// Update or remove an existing link wrapped around the image
+					if ( imageData.linkUrl ) {
+						link.attr( linkAttrs );
+					} else {
+						link.remove();
+					}
+				} else if ( imageData.linkUrl ) {
+					if ( link.length ) {
+
+						// The image is inside a link together with other nodes,
+						// or is nested in another node, move it out
+						link.insertAfter( $image );
+					}
+
+					// Add link wrapped around the image
+					link = $( '<a />' ).attr( linkAttrs );
+					$image.parent().insertBefore( link );
+					link.append( $image );
+				}
+
+				caption = $( '.wp-caption' );
+
+				if ( link.length && '' === link.text() ) {
+					node = link;
+				} else {
+					node = $image;
+				}
+
+				if ( imageData.caption ) {
+					id = imageData.attachment_id ? 'attachment_' + imageData.attachment_id : null;
+					align = 'align' + ( imageData.align || 'none' );
+					width = parseInt( width, 10 ) + captionPadding;
+					className = 'wp-caption ' + align;
+
+					if ( imageData.captionClassName ) {
+						className += ' ' + imageData.captionClassName.replace( /[<>&]+/g,  '' );
+					}
+
+					if ( caption.length ) {
+						caption.attr( {
+							id: id,
+							'class': className,
+							style: 'width: ' + width + 'px'
+						} );
+
+						captionText = $( '.wp-caption-text', caption );
+						if ( captionText.length ) {
+							captionText.html( imageData.caption );
+						}
+
+					} else {
+						wrap = $( '<figure />' )
+									.attr( { id: id ? id : '', 'class': className } )
+									.width( width )
+									.append( node )
+									.append( $( '<figcaption />' ).addClass( 'wp-caption-text' ).html( imageData.caption ) );
+
+						$( '#' + widgetId ).append( wrap );
+
+					}
+				} else if ( caption ) {
+
+					// Remove the caption wrapper and place the image in new paragraph
+					parent = $( '#' + widgetId );
+					parent.append( node );
+					caption.remove();
+				}
+
+				srcset = $image.attr( 'srcset' );
+				src    = $image.attr( 'src' );
+
+				// Remove srcset and sizes if the image file was edited or the image was replaced.
+				if ( srcset && src ) {
+					src = src.replace( /[?#].*/, '' );
+
+					if ( srcset.indexOf( src ) === -1 ) {
+						$image.attr( { srcset: null, sizes: null } );
+					}
+				}
 
 				// @todo Changing the ID is not causing the image to update.
 				widgetContent.find( '.id' ).val( imageData.attachment_id ).trigger( 'change' );
