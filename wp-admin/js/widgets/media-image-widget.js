@@ -48,7 +48,7 @@
 				caption: attachment.caption,
 				alt: attachment.alt,
 				link_type: displaySettings.link,
-				link_url: displaySettings.link_url
+				link_url: displaySettings.linkUrl
 			};
 
 			return props;
