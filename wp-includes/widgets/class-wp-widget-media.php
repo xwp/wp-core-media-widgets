@@ -17,34 +17,6 @@
 abstract class WP_Widget_Media extends WP_Widget {
 
 	/**
-	 * Get instance schema.
-	 *
-	 * This is protected because it may become part of WP_Widget eventually.
-	 *
-	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
-	 */
-	protected function get_instance_schema() {
-		return array(
-			'attachment_id' => array(
-				'type' => 'integer',
-				'default' => 0,
-				'minimum' => 0,
-			),
-			'url' => array(
-				'type' => 'string',
-				'default' => '',
-				'format' => 'uri',
-			),
-			'title' => array(
-				'type' => 'string',
-				'default' => '',
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-		);
-	}
-
-	/**
 	 * Translation labels.
 	 *
 	 * @since 4.8.0
@@ -99,6 +71,34 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
 		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
+	}
+
+	/**
+	 * Get instance schema.
+	 *
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
+	 */
+	protected function get_instance_schema() {
+		return array(
+			'attachment_id' => array(
+				'type' => 'integer',
+				'default' => 0,
+				'minimum' => 0,
+			),
+			'url' => array(
+				'type' => 'string',
+				'default' => '',
+				'format' => 'uri',
+			),
+			'title' => array(
+				'type' => 'string',
+				'default' => '',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
 	}
 
 	/**
