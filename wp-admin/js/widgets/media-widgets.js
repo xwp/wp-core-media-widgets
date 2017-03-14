@@ -60,7 +60,9 @@ wp.mediaWidgets = ( function( $ ) {
 			control.attachmentFetched = $.Deferred();
 			control.selectedAttachment = new wp.media.model.Attachment();
 			if ( control.model.get( 'attachment_id' ) ) {
-				control.selectedAttachment.set( { id: control.model.get( 'attachment_id' ) } );
+				control.selectedAttachment.set( {
+					id: control.model.get( 'attachment_id' )
+				} );
 				control.selectedAttachment.fetch().done( function() {
 					control.attachmentFetched.resolve();
 				} );
@@ -81,11 +83,14 @@ wp.mediaWidgets = ( function( $ ) {
 					input.val( value );
 					input.trigger( 'change' );
 				} );
+
+				control.render();
 			} );
 
 			// Re-render the preview when the attachment changes.
 			control.listenTo( control.selectedAttachment, 'change', function() {
-				control.renderPreview();
+				control.attachmentFetched.resolve();
+				control.render();
 			} );
 
 			// Update the title.
@@ -153,7 +158,9 @@ wp.mediaWidgets = ( function( $ ) {
 		 */
 		isSelected: function isSelected() {
 			var control = this;
-			return Boolean( control.model.get( 'attachment_id' ) || control.model.get( 'url' ) );
+
+			// @todo attachment_id should always be an integer, but it can be "0" here.
+			return Boolean( Number( control.model.get( 'attachment_id' ) ) || control.model.get( 'url' ) );
 		},
 
 		/**

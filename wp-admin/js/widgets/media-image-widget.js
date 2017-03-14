@@ -4,6 +4,7 @@
 
 	var ImageWidgetModel, ImageWidgetControl;
 
+	// @todo Implement validate methods to force the right type.
 	// Defaults will get set via WP_Widget_Image::enqueue_admin_scripts().
 	ImageWidgetModel = component.MediaWidgetModel.extend( {} );
 
