@@ -29,14 +29,17 @@ abstract class WP_Widget_Media extends WP_Widget {
 			'attachment_id' => array(
 				'type' => 'integer',
 				'default' => 0,
+				'minimum' => 0,
 			),
 			'url' => array(
 				'type' => 'string',
 				'default' => '',
+				'format' => 'uri',
 			),
 			'title' => array(
 				'type' => 'string',
 				'default' => '',
+				'sanitize_callback' => 'sanitize_text_field',
 			),
 		);
 	}
@@ -141,10 +144,27 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function update( $new_instance, $instance ) {
 
-		// @todo Array items may not exist. If using schema, we can iterate. Otherwise, isset() checks are needed.
-		$instance['attachment_id'] = (int) $new_instance['attachment_id'];
-		$instance['url'] = esc_url_raw( $new_instance['url'] );
-		$instance['title'] = sanitize_text_field( $new_instance['title'] );
+		$schema = $this->get_instance_schema();
+		foreach ( $schema as $field => $field_schema ) {
+			if ( ! array_key_exists( $field, $new_instance ) ) {
+				continue;
+			}
+			$value = $new_instance[ $field ];
+			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
+				continue;
+			}
+			$value = rest_sanitize_value_from_schema( $value, $field_schema );
+			if ( is_wp_error( $value ) ) {
+				continue;
+			}
+			if ( isset( $field_schema['sanitize_callback'] ) ) {
+				$value = call_user_func( $field_schema['sanitize_callback'], $value );
+			}
+			if ( is_wp_error( $value ) ) {
+				continue;
+			}
+			$instance[ $field ] = $value;
+		}
 
 		return $instance;
 	}

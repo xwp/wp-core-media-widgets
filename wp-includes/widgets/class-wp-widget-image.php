@@ -28,16 +28,9 @@ class WP_Widget_Image extends WP_Widget_Media {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
-				'attachment_id' => array(
-					'type' => 'integer',
-					'default' => 0,
-				),
-				'url' => array(
-					'type' => 'string',
-					'default' => '',
-				),
 				'size' => array(
-					'type' => 'string', // @todo enum.
+					'type' => 'string',
+					'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
 					'default' => 'full',
 				),
 				'width' => array( // Via 'customWidth', only when size=custom; otherwise via 'width'.
@@ -52,36 +45,44 @@ class WP_Widget_Image extends WP_Widget_Media {
 				),
 
 				'align' => array(
-					'type' => 'string', // @todo enum.
-					'default' => '',
+					'type' => 'string',
+					'enum' => array( 'none', 'left', 'right', 'center' ),
+					'default' => 'none',
 				),
 				'caption' => array(
 					'type' => 'string',
 					'default' => '',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'alt' => array(
 					'type' => 'string',
 					'default' => '',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'link_type' => array( // Via 'link' property.
-					'type' => 'string', // @todo enum.
+					'type' => 'string',
+					'enum' => array( 'none', 'file', 'post', 'custom' ),
 					'default' => 'none',
 				),
 				'link_url' => array( // Via 'linkUrl' property.
 					'type' => 'string',
 					'default' => '',
+					'format' => 'uri',
 				),
 				'image_classes' => array( // Via 'extraClasses' property.
 					'type' => 'string',
 					'default' => '',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'link_classes' => array( // Via 'linkClassName' property.
 					'type' => 'string',
 					'default' => '',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'link_rel' => array( // Via 'linkRel' property.
 					'type' => 'string',
 					'default' => '',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'link_target_blank' => array( // Via 'linkTargetBlank' property.
 					'type' => 'boolean',
@@ -90,6 +91,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'image_title' => array( // Via 'title' property.
 					'type' => 'string',
 					'default' => '',
+					'sanitize_callback' => 'sanitize_text_field',
 				),
 
 				/*
@@ -123,51 +125,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'change_media' => __( 'Change Image' ),
 			'select_media' => __( 'Select Image' ),
 		) );
-	}
-
-	/**
-	 * Sanitizes the widget form values as they are saved.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 *
-	 * @see WP_Widget::update()
-	 *
-	 * @param array $new_instance Values just sent to be saved.
-	 * @param array $instance Previously saved values from database.
-	 * @return array Updated safe values to be saved.
-	 */
-	public function update( $new_instance, $instance ) {
-		$instance = parent::update( $new_instance, $instance );
-
-		if ( in_array( $new_instance['align'], array( 'none', 'left', 'right', 'center' ), true ) ) {
-			$instance['align'] = $new_instance['align'];
-		}
-
-		$image_sizes = array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) );
-		if ( in_array( $new_instance['size'], $image_sizes, true ) ) {
-			$instance['size'] = $new_instance['size'];
-		}
-
-		$instance['width'] = intval( $new_instance['width'] );
-		$instance['height'] = intval( $new_instance['height'] );
-
-		if ( in_array( $new_instance['link_type'], array( 'none', 'file', 'post', 'custom' ), true ) ) {
-			$instance['link_type'] = $new_instance['link_type'];
-		}
-
-		$instance['link_url'] = esc_url_raw( $new_instance['link_url'] );
-
-		$instance['caption'] = sanitize_text_field( $new_instance['caption'] );
-		$instance['alt'] = sanitize_text_field( $new_instance['alt'] );
-
-		$instance['image_classes'] = sanitize_text_field( $new_instance['image_classes'] );
-		$instance['link_classes'] = sanitize_text_field( $new_instance['link_classes'] );
-		$instance['link_rel'] = sanitize_text_field( $new_instance['link_rel'] );
-		$instance['image_title'] = sanitize_text_field( $new_instance['image_title'] );
-		$instance['link_target_blank'] = (bool) $new_instance['link_target_blank'];
-
-		return $instance;
 	}
 
 	/**
