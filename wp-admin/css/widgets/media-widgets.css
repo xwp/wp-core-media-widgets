@@ -1,0 +1,29 @@
+
+.media-widget-control.selected .not-selected,
+.media-widget-control:not(.selected) .selected {
+	display: none;
+}
+
+.media-widget-buttons {
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+}
+
+.media-widget-buttons .button {
+	-webkit-box-flex: 1;
+	-webkit-flex-grow: 1;
+	-moz-box-flex: 1;
+	-ms-flex-positive: 1;
+	-ms-flex: 1;
+	flex-grow: 1;
+}
+.media-widget-buttons .button {
+	margin-left: 10px;
+}
+.media-widget-control:not(.selected) .media-widget-buttons .button,
+.media-widget-buttons .button:first-child {
+	margin-left: 0;
+}

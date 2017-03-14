@@ -31,23 +31,30 @@ class WP_Widget_Video extends WP_Widget_Media {
 		if ( $this->is_preview() ) {
 			$this->enqueue_mediaelement_script();
 		}
-
-		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ) );
 	}
 
 	/**
-	 * Renders a single media attachment
+	 * Render the media on the frontend.
 	 *
 	 * @since  4.8.0
 	 * @access public
 	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
+	 * @param array $instance Widget instance props.
 	 *
 	 * @return void
 	 */
-	public function render_media( $attachment, $widget_id, $instance ) {
+	public function render_media( $instance ) {
+
+		// @todo Support external video defined by 'url' only.
+		if ( empty( $instance['attachment_id'] ) ) {
+			return;
+		}
+
+		$attachment = get_post( $instance['attachment_id'] );
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return;
+		}
+
 		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
 			echo $this->create_link_for( $attachment, $instance['link'] );
 		} else {
@@ -58,14 +65,16 @@ class WP_Widget_Video extends WP_Widget_Media {
 	}
 
 	/**
-	 * Prints footer scripts.
+	 * Render form template scripts.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 */
-	public function admin_print_footer_scripts() {
+	public function render_control_template_scripts() {
+		parent::render_control_template_scripts();
+
 		?>
-		<script type="text/html" id="tmpl-wp-media-widget-video">
+		<script type="text/html" id="tmpl-wp-media-widget-video-preview">
 			<?php wp_underscore_video_template() ?>
 		</script>
 		<?php

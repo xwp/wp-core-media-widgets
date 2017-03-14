@@ -30,7 +30,11 @@
  * @param WP_Scripts $scripts Scripts.
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
-	$scripts->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widget.js', array( 'jquery', 'media-models', 'media-views', 'wp-mediaelement' ) );
+	$scripts->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js', array( 'jquery', 'media-models', 'media-views' ) );
+
+	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
+	// @todo $scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) );
+	// @todo  $scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) );
 
 	$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
 }
@@ -42,7 +46,7 @@ add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
  * @param WP_Styles $styles Styles.
  */
 function wp32417_default_styles( WP_Styles $styles ) {
-	$styles->add( 'wp-media-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widget.css', array( 'media-views' ) );
+	$styles->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css', array( 'media-views' ) );
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
 
@@ -51,12 +55,12 @@ add_action( 'wp_default_styles', 'wp32417_default_styles' );
  */
 function wp32417_widgets_init() {
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' );
+	// require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' );
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php' );
+	// require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php' );
 
-	register_widget( 'WP_Widget_Audio' );
+	// register_widget( 'WP_Widget_Audio' );
 	register_widget( 'WP_Widget_Image' );
-	register_widget( 'WP_Widget_Video' );
+	// register_widget( 'WP_Widget_Video' );
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );
