@@ -61,7 +61,7 @@
 		selectMedia: function selectMedia() {
 			var control = this, selection, mediaFrame;
 
-			selection = new wp.media.model.Selection( [ control.model.get( 'attachment_id' ) ] );
+			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
 			mediaFrame = wp.media( {
 				frame: 'select',

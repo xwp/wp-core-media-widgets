@@ -52,7 +52,7 @@ wp.mediaWidgets = ( function( $ ) {
 					}
 					return false;
 				} );
-				if ( ! control.idBase ) {
+				if ( ! control.id_base ) {
 					throw new Error( 'Missing id_base.' );
 				}
 			}
