@@ -170,7 +170,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		$size = $instance['size'];
-		if ( 'custom' === $size || ! has_image_size( $size ) ) {
+		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ) ) ) {
 			$size = array( $instance['width'], $instance['height'] );
 		}
 

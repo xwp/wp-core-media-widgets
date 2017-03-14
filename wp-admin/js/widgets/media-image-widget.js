@@ -40,7 +40,7 @@
 
 			props = {
 				attachment_id: attachment.id,
-				url: attachment.url,
+				url: attachment.sizes[ displaySettings.size ].url,
 				size: displaySettings.size,
 				width: 0, // Reset.
 				height: 0, // Reset.
