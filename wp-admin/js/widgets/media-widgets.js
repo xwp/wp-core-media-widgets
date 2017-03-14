@@ -68,7 +68,11 @@ wp.mediaWidgets = ( function( $ ) {
 				} );
 			}
 
-			// Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+			/*
+			 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+			 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
+			 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
+			 */
 			control.listenTo( control.model, 'change', function() {
 				control.$el.next( '.widget-content' ).find( '.media-widget-instance-property' ).each( function() {
 					var input = $( this ), value;
@@ -232,6 +236,11 @@ wp.mediaWidgets = ( function( $ ) {
 
 		ModelConstructor = component.modelConstructors[ idBase ] || component.MediaWidgetModel;
 
+		/*
+		 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+		 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
+		 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
+		 */
 		// @todo Warning: One of the fields must have the 'title' name, and the value must be a bare string for the sake of populating the widget title.
 		widgetId = widgetForm.find( '> .widget-id' ).val();
 		controlContainer = $( '<div class="media-widget-control"></div>' );
