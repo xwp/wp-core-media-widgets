@@ -137,6 +137,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @access public
 	 *
 	 * @see WP_Widget::update()
+	 * @see WP_REST_Request::has_valid_params()
+	 * @see WP_REST_Request::sanitize_params()
 	 *
 	 * @param array $new_instance Values just sent to be saved.
 	 * @param array $instance     Previously saved values from database.
