@@ -110,8 +110,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$this->render_media( $instance );
 
-		var_dump($instance);
-
 		echo $args['after_widget'];
 	}
 
@@ -218,28 +216,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 		wp_enqueue_media();
 		wp_enqueue_style( 'media-widgets' );
 		wp_enqueue_script( 'media-widgets' );
-
-		wp_add_inline_script(
-			'media-widgets',
-			sprintf(
-				'wp.mediaWidgets.modelConstructors[ %s ].prototype.defaults = %s;',
-				wp_json_encode( $this->id_base ),
-				wp_json_encode( $this->default_instance )
-			)
-		);
-
-		wp_add_inline_script(
-			'media-widgets',
-			sprintf(
-				'
-					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
-					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
-				',
-				wp_json_encode( $this->id_base ),
-				wp_json_encode( $this->widget_options['mime_type'] ),
-				wp_json_encode( $this->l10n )
-			)
-		);
 	}
 
 	/**

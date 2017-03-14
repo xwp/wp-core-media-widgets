@@ -203,6 +203,41 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
+	 * Loads the required media files for the media manager and scripts for .
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function enqueue_admin_scripts() {
+		parent::enqueue_admin_scripts();
+
+		$handle = 'media-image-widget';
+		wp_enqueue_script( $handle );
+
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				'wp.mediaWidgets.modelConstructors[ %s ].prototype.defaults = %s;',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $this->default_instance )
+			)
+		);
+
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				'
+					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
+					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+				',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $this->widget_options['mime_type'] ),
+				wp_json_encode( $this->l10n )
+			)
+		);
+	}
+
+	/**
 	 * Render form template scripts.
 	 *
 	 * @since 4.8.0
