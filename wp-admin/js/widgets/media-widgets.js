@@ -290,8 +290,15 @@ wp.mediaWidgets = ( function( $ ) {
 	} ) )();
 	component.widgetControls = {};
 
-	$( document ).on( 'widget-added', function( event, widgetContainer ) {
-		var widgetContent, controlContainer, widgetForm, widgetId, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, model;
+	/**
+	 * Handle widget being added or initialized for the first time at the widget-added event.
+	 *
+	 * @param {jQuery.Event} event - Event.
+	 * @param {jQuery}       widgetContainer - Widget container element.
+	 * @returns {void}
+	 */
+	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
+		var widgetContent, controlContainer, widgetForm, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, widgetModel;
 		widgetForm = widgetContainer.find( '> .widget-inside > .form' );
 		widgetContent = widgetForm.find( '> .widget-content' );
 		idBase = widgetForm.find( '> .id_base' ).val();
@@ -304,37 +311,64 @@ wp.mediaWidgets = ( function( $ ) {
 		ModelConstructor = component.modelConstructors[ idBase ] || component.MediaWidgetModel;
 
 		/*
+		 * Create a container element for the widget control (Backbone.View).
+		 * This is inserted into the DOM immediately before the the .widget-control
+		 * element because the contents of this element are essentially "managed"
+		 * by PHP, where each widget update cause the entire element to be emptied
+		 * and replaced with the rendered output of WP_Widget::form() which is
+		 * sent back in Ajax request made to save/update the widget instance.
+		 * To prevent a "flash of replaced DOM elements and re-initialized JS
+		 * components", the JS template is rendered outside of the normal form
+		 * container.
+		 */
+		controlContainer = $( '<div class="media-widget-control"></div>' );
+		widgetContent.before( controlContainer );
+
+		/*
 		 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
 		 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
 		 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 		 */
-		widgetId = widgetForm.find( '> .widget-id' ).val();
-		controlContainer = $( '<div class="media-widget-control"></div>' );
-		widgetContent.before( controlContainer );
 		modelAttributes = {
-			id: widgetId
+			id: widgetForm.find( '> .widget-id' ).val()
 		};
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var input = $( this );
 			modelAttributes[ input.data( 'property' ) ] = input.val();
 		} );
 
-		model = new ModelConstructor( modelAttributes );
+		widgetModel = new ModelConstructor( modelAttributes );
 
 		widgetControl = new ControlConstructor( {
 			el: controlContainer,
-			model: model
+			model: widgetModel
 		} );
 		widgetControl.render();
 
-		// @todo Sync the properties from the inputs into the model upon widget-synced and widget-updated?
-		// @todo There is no widget-removed event.
-		component.modelCollection.add( [ model ] );
+		/*
+		 * Note that the model and control currently won't ever get garbage-collected
+		 * when a widget gets removed/deleted because there is no widget-removed event.
+		 */
+		component.modelCollection.add( [ widgetModel ] );
+		component.widgetControls[ widgetModel.get( 'id' ) ] = widgetControl;
+	};
 
-		// @todo Register model?
-		component.widgetControls[ widgetId ] = widgetControl;
-	} );
+	/**
+	 * Initialize functionality.
+	 *
+	 * This function exists to prevent the JS file from having to boot itself.
+	 * When WordPress enqueues this script, it should have an inline script
+	 * attached which calls wp.mediaWidgets.init().
+	 *
+	 * @returns {void}
+	 */
+	component.init = function init() {
+		$( function onDomReady() {
+			$( document ).on( 'widget-added', component.handleWidgetAdded );
+		} );
+	};
 
+	// @todo Sync the properties from the inputs into the model upon widget-synced and widget-updated?
 	// @todo When widget-updated and widget-synced, make sure properties in model are updated.
 
 	return component;
