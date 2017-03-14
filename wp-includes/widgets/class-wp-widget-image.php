@@ -17,6 +17,95 @@
 class WP_Widget_Image extends WP_Widget_Media {
 
 	/**
+	 * Get instance schema.
+	 *
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
+	 */
+	protected function get_instance_schema() {
+		return array_merge(
+			parent::get_instance_schema(),
+			array(
+				'attachment_id' => array(
+					'type' => 'integer',
+					'default' => 0,
+				),
+				'url' => array(
+					'type' => 'string',
+					'default' => '',
+				),
+				'size' => array(
+					'type' => 'string', // @todo enum.
+					'default' => 'full',
+				),
+				'width' => array( // Via 'customWidth', only when size=custom; otherwise via 'width'.
+					'type' => 'integer',
+					'minimum' => 0,
+					'default' => 0,
+				),
+				'height' => array( // Via 'customHeight', only when size=custom; otherwise via 'height'.
+					'type' => 'integer',
+					'minimum' => 0,
+					'default' => 0,
+				),
+
+				'align' => array(
+					'type' => 'string', // @todo enum.
+					'default' => '',
+				),
+				'caption' => array(
+					'type' => 'string',
+					'default' => '',
+				),
+				'alt' => array(
+					'type' => 'string',
+					'default' => '',
+				),
+				'link_type' => array( // Via 'link' property.
+					'type' => 'string', // @todo enum.
+					'default' => 'none',
+				),
+				'link_url' => array( // Via 'linkUrl' property.
+					'type' => 'string',
+					'default' => '',
+				),
+				'image_classes' => array( // Via 'extraClasses' property.
+					'type' => 'string',
+					'default' => '',
+				),
+				'link_classes' => array( // Via 'linkClassName' property.
+					'type' => 'string',
+					'default' => '',
+				),
+				'link_rel' => array( // Via 'linkRel' property.
+					'type' => 'string',
+					'default' => '',
+				),
+				'link_target_blank' => array( // Via 'linkTargetBlank' property.
+					'type' => 'boolean',
+					'default' => false,
+				),
+				'image_title' => array( // Via 'title' property.
+					'type' => 'string',
+					'default' => '',
+				),
+
+				/*
+				 * There are two additional properties exposed by the PostImage modal
+				 * that don't seem to be relevant, as they may only be derived read-only
+				 * values:
+				 * - originalUrl
+				 * - aspectRatio
+				 * - height (redundant when size is not custom)
+				 * - width (redundant when size is not custom)
+				 */
+			)
+		);
+	}
+
+	/**
 	 * Constructor.
 	 *
 	 * @since  4.8.0
@@ -34,42 +123,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'change_media' => __( 'Change Image' ),
 			'select_media' => __( 'Select Image' ),
 		) );
-
-		// @todo The following should be broken out into a schema that has the requisite types and sanitize_callbacks defined.
-		$this->default_instance = array_merge(
-			$this->default_instance,
-			array(
-				'attachment_id' => 0,
-				'url' => '', // This should only be set in the instance if attachment_id is empty.
-
-				'size' => 'full',
-				'width' => 0, // Via 'customWidth', only when size=custom; otherwise via 'width'.
-				'height' => 0, // Via 'customHeight', only when size=custom; otherwise via 'height'.
-
-				'align' => '',
-				'caption' => '',
-				'alt' => '',
-
-				'link_type' => 'none', // Via 'link' property.
-				'link_url' => '', // Via 'linkUrl' property.
-
-				'image_classes' => '', // Via 'extraClasses' property.
-				'link_classes' => '', // Via 'linkClassName' property.
-				'link_rel' => '', // Via 'linkRel' property.
-				'link_target_blank' => false, // Via 'linkTargetBlank' property.
-				'image_title' => '', // Via 'title' property.
-
-				/*
-				 * There are two additional properties exposed by the PostImage modal
-				 * that don't seem to be relevant, as they may only be derived read-only
-				 * values:
-				 * - originalUrl
-				 * - aspectRatio
-				 * - height (redundant when size is not custom)
-				 * - width (redundant when size is not custom)
-				 */
-			)
-		);
 	}
 
 	/**
@@ -127,7 +180,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
-		$instance = array_merge( $this->default_instance, $instance );
+		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
 		$instance = wp_parse_args( $instance, array(
 			'size' => 'thumbnail',
 		) );
@@ -219,7 +272,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 			sprintf(
 				'wp.mediaWidgets.modelConstructors[ %s ].prototype.defaults = %s;',
 				wp_json_encode( $this->id_base ),
-				wp_json_encode( $this->default_instance )
+				wp_json_encode( wp_list_pluck( $this->get_instance_schema(), 'default' ) )
 			)
 		);
 

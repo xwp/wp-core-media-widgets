@@ -17,16 +17,29 @@
 abstract class WP_Widget_Media extends WP_Widget {
 
 	/**
-	 * Default instance.
+	 * Get instance schema.
 	 *
-	 * @todo The fields in this should be expanded out into full schema entries, with types and sanitize_callbacks.
-	 * @var array
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
 	 */
-	protected $default_instance = array(
-		'attachment_id' => 0,
-		'url' => '',
-		'title' => '',
-	);
+	protected function get_instance_schema() {
+		return array(
+			'attachment_id' => array(
+				'type' => 'integer',
+				'default' => 0,
+			),
+			'url' => array(
+				'type' => 'string',
+				'default' => '',
+			),
+			'title' => array(
+				'type' => 'string',
+				'default' => '',
+			),
+		);
+	}
 
 	/**
 	 * Translation labels.
@@ -97,7 +110,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$instance = wp_parse_args( $instance, $this->default_instance );
+		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
 		echo $args['before_widget'];
 
@@ -177,9 +190,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @return void
 	 */
 	public function form( $instance ) {
+		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
-			wp_parse_args( (array) $instance, $this->default_instance ),
-			array_keys( $this->default_instance )
+			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
+			array_keys( wp_list_pluck( $instance_schema, 'default' ) )
 		);
 		?>
 		<?php foreach ( $instance as $name => $value ) : ?>
