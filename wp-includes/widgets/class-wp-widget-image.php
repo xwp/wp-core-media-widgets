@@ -224,12 +224,16 @@ class WP_Widget_Image extends WP_Widget_Media {
 		$handle = 'media-image-widget';
 		wp_enqueue_script( $handle );
 
+		$exported_schema = array();
+		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
+		}
 		wp_add_inline_script(
 			$handle,
 			sprintf(
-				'wp.mediaWidgets.modelConstructors[ %s ].prototype.defaults = %s;',
+				'wp.mediaWidgets.modelConstructors[ %s ].prototype.schema = %s;',
 				wp_json_encode( $this->id_base ),
-				wp_json_encode( wp_list_pluck( $this->get_instance_schema(), 'default' ) )
+				wp_json_encode( $exported_schema )
 			)
 		);
 
