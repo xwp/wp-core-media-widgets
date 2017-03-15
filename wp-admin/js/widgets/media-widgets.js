@@ -427,8 +427,9 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @returns {void}
 	 */
 	component.init = function init() {
-		$( document ).on( 'widget-added', component.handleWidgetAdded );
-		$( document ).on( 'widget-synced widget-updated', component.handleWidgetUpdated );
+		var $document = $( document );
+		$document.on( 'widget-added', component.handleWidgetAdded );
+		$document.on( 'widget-synced widget-updated', component.handleWidgetUpdated );
 
 		/*
 		 * Manually trigger widget-added events for media widgets on the admin
