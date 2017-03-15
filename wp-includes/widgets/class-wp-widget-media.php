@@ -87,16 +87,19 @@ abstract class WP_Widget_Media extends WP_Widget {
 				'type' => 'integer',
 				'default' => 0,
 				'minimum' => 0,
+				'description' => __( 'Attachment post ID' ),
 			),
 			'url' => array(
 				'type' => 'string',
 				'default' => '',
 				'format' => 'uri',
+				'description' => __( 'URL to the media file' ),
 			),
 			'title' => array(
 				'type' => 'string',
 				'default' => '',
 				'sanitize_callback' => 'sanitize_text_field',
+				'description' => __( 'Title for the widget' ),
 			),
 		);
 	}
@@ -132,7 +135,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Sanitizes the widget form values as they are saved.
 	 *
-	 * @todo This method could read from an instance property schema definitions to apply sanitize callbacks.
 	 * @since 4.8.0
 	 * @access public
 	 *
@@ -215,7 +217,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
-			array_keys( wp_list_pluck( $instance_schema, 'default' ) )
+			array_keys( $instance_schema )
 		);
 		?>
 		<?php foreach ( $instance as $name => $value ) : ?>
@@ -224,7 +226,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 				data-property="<?php echo esc_attr( $name ); ?>"
 				class="media-widget-instance-property"
 				name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>"
-				value="<?php echo esc_attr( strval( $value ) ); // @todo Encode as JSON? ?>"
+				id="<?php echo esc_attr( $this->get_field_id( $name ) ); // Needed specifically by wpWidgets.appendTitle(). ?>"
+				value="<?php echo esc_attr( strval( $value ) ); ?>"
 			/>
 		<?php endforeach; ?>
 		<?php
@@ -275,7 +278,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	public function render_control_template_scripts() {
 		?>
 		<script type="text/html" id="tmpl-widget-media-<?php echo $this->id_base; ?>-control">
-			<# var elementIdPrefix = 'el' + String( Math.random() ) + '-' #>
+			<# var elementIdPrefix = 'el' + String( Math.random() ) + '_' #>
 			<p>
 				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
 				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">

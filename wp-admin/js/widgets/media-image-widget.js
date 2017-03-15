@@ -4,9 +4,24 @@
 
 	var ImageWidgetModel, ImageWidgetControl;
 
-	// Defaults will get set via WP_Widget_Image::enqueue_admin_scripts().
+	/**
+	 * Image widget model.
+	 *
+	 * See WP_Widget_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 *
+	 * @class ImageWidgetModel
+	 * @constructor
+	 */
 	ImageWidgetModel = component.MediaWidgetModel.extend( {} );
 
+	/**
+	 * Image widget control.
+	 *
+	 * See WP_Widget_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 *
+	 * @class ImageWidgetModel
+	 * @constructor
+	 */
 	ImageWidgetControl = component.MediaWidgetControl.extend( {
 
 		/**
@@ -134,6 +149,10 @@
 			} );
 
 			updateCallback = function( imageData ) {
+
+				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
+				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
+
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
 					url: imageData.url,
@@ -151,9 +170,6 @@
 					width: 'custom' === imageData.size ? imageData.customWidth : imageData.width,
 					height: 'custom' === imageData.size ? imageData.customHeight : imageData.height
 				} );
-
-				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
 			};
 
 			mediaFrame.state( 'image-details' ).on( 'update', updateCallback );

@@ -31,6 +31,7 @@
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
 	$scripts->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js', array( 'jquery', 'media-models', 'media-views' ) );
+	$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
 
 	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
 	// @todo $scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) );
