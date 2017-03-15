@@ -425,15 +425,16 @@ wp.mediaWidgets = ( function( $ ) {
 		 * the same for the widgets admin screen, to invoke the widget-added
 		 * handler when a pre-existing media widget is expanded.
 		 */
-		$( function domReady() {
-			if ( 'widgets' === window.pagenow ) {
-				$( '.widgets-holder-wrap:not(#available-widgets)' ).find( 'div.widget' ).one( 'click.media-widget-toggle', function() {
-					component.handleWidgetAdded(
-						new jQuery.Event( 'widget-added' ),
-						$( this )
-					);
-				} );
+		$( function initializeExistingWidgetContainers() {
+			var widgetContainers;
+			if ( 'widgets' !== window.pagenow ) {
+				return;
 			}
+			widgetContainers = $( '.widgets-holder-wrap:not(#available-widgets)' ).find( 'div.widget' );
+			widgetContainers.one( 'click.toggle-widget-expanded', function toggleWidgetExpanded() {
+				var widgetContainer = $( this );
+				component.handleWidgetAdded( new jQuery.Event( 'widget-added' ), widgetContainer );
+			} );
 		});
 	};
 
