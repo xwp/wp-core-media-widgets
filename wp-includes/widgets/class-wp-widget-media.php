@@ -153,9 +153,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 			if ( ! array_key_exists( $field, $new_instance ) ) {
 				continue;
 			}
-			if ( ! empty( $field_schema['readonly'] ) ) {
-				continue;
-			}
 			$value = $new_instance[ $field ];
 			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
 				continue;
