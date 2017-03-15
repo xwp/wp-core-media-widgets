@@ -4,27 +4,74 @@ wp.mediaWidgets = ( function( $ ) {
 
 	var component = {};
 
-	// Media widget subclasses assign subclasses of MediaWidgetControl onto this object by widget ID base.
+	/**
+	 * Widget control (view) constructors, mapping widget id_base to subclass of MediaWidgetControl.
+	 *
+	 * Media widgets register themselves by assigning subclasses of MediaWidgetControl onto this object by widget ID base.
+	 *
+	 * @type {Object.<string, wp.mediaWidgets.MediaWidgetModel>}
+	 */
 	component.controlConstructors = {};
+
+	/**
+	 * Widget model constructors, mapping widget id_base to subclass of MediaWidgetModel.
+	 *
+	 * Media widgets register themselves by assigning subclasses of MediaWidgetControl onto this object by widget ID base.
+	 *
+	 * @type {Object.<string, wp.mediaWidgets.MediaWidgetModel>}
+	 */
 	component.modelConstructors = {};
 
 	/**
 	 * Media widget control.
 	 *
+	 * @class MediaWidgetControl
 	 * @constructor
 	 * @abstract
 	 */
 	component.MediaWidgetControl = Backbone.View.extend( {
 
+		/**
+		 * Translation strings.
+		 *
+		 * The mapping of translation strings is handled by media widget subclasses,
+		 * exported from PHP to JS such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 *
+		 * @type {Object}
+		 */
 		l10n: {
 			add_to_widget: '{{add_to_widget}}',
 			select_media: '{{select_media}}'
 		},
 
+		/**
+		 * Widget ID base.
+		 *
+		 * This may be defined by the subclass. It may be exported from PHP to JS
+		 * such as is done in WP_Widget_Image::enqueue_admin_scripts(). If not,
+		 * it will attempt to be discovered by looking to see if this control
+		 * instance extends each member of component.controlConstructors, and if
+		 * it does extend one, will use the key as the id_base.
+		 *
+		 * @type {string}
+		 */
 		id_base: '',
 
+		/**
+		 * Mime type.
+		 *
+		 * This must be defined by the subclass. It may be exported from PHP to JS
+		 * such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 *
+		 * @type {string}
+		 */
 		mime_type: '',
 
+		/**
+		 * View events.
+		 *
+		 * @type {Object}
+		 */
 		events: {
 			'click .select-media': 'selectMedia',
 			'click .edit-media': 'editMedia'
@@ -33,7 +80,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Initialize.
 		 *
-		 * @param {object}         options - Options.
+		 * @param {Object}         options - Options.
 		 * @param {Backbone.Model} options.model - Model.
 		 * @param {function}       options.template - Control template.
 		 * @param {jQuery}         options.el - Control container element.
@@ -202,7 +249,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Get the instance props from the media selection frame.
 		 *
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @return {object} Props.
+		 * @return {Object} Props.
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
 			var attachment, props;
@@ -231,7 +278,22 @@ wp.mediaWidgets = ( function( $ ) {
 		}
 	} );
 
+	/**
+	 * Media widget model.
+	 *
+	 * @class MediaWidgetModel
+	 * @constructor
+	 */
 	component.MediaWidgetModel = Backbone.Model.extend( {
+
+		/**
+		 * Instance schema.
+		 *
+		 * This adheres to JSON Schema and subclasses should have their schema
+		 * exported from PHP to JS such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 *
+		 * @param {Object.<string, Object>}
+		 */
 		schema: {
 			title: {
 				type: 'string',
@@ -250,7 +312,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Get default attribute values.
 		 *
-		 * @returns {object} Default values.
+		 * @returns {Object} Mapping of property names to their default values.
 		 */
 		defaults: function() {
 			var defaults = {};
@@ -267,9 +329,9 @@ wp.mediaWidgets = ( function( $ ) {
 		 * cast the attribute values from the hidden inputs' string values into
 		 * the appropriate data types (integers or booleans).
 		 *
-		 * @param {string|object} key       Attribute name or attribute pairs.
-		 * @param {mixed|object}  [val]     Attribute value or options object.
-		 * @param {object}        [options] Options when attribute name and value are passed separately.
+		 * @param {string|Object} key       Attribute name or attribute pairs.
+		 * @param {mixed|Object}  [val]     Attribute value or options object.
+		 * @param {Object}        [options] Options when attribute name and value are passed separately.
 		 * @return {wp.mediaWidgets.MediaWidgetModel} This model.
 		 */
 		set: function set( key, val, options ) {
@@ -307,9 +369,20 @@ wp.mediaWidgets = ( function( $ ) {
 		}
 	} );
 
+	/**
+	 * Collection of all widget model instances.
+	 *
+	 * @type {Backbone.Collection}
+	 */
 	component.modelCollection = new ( Backbone.Collection.extend( {
 		model: component.MediaWidgetModel
 	} ) )();
+
+	/**
+	 * Mapping of widget ID to instances of MediaWidgetControl subclasses.
+	 *
+	 * @type {Object.<string, wp.mediaWidgets.MediaWidgetControl>}
+	 */
 	component.widgetControls = {};
 
 	/**

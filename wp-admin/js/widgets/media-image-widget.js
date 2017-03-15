@@ -4,9 +4,24 @@
 
 	var ImageWidgetModel, ImageWidgetControl;
 
-	// Defaults will get set via WP_Widget_Image::enqueue_admin_scripts().
+	/**
+	 * Image widget model.
+	 *
+	 * See WP_Widget_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 *
+	 * @class ImageWidgetModel
+	 * @constructor
+	 */
 	ImageWidgetModel = component.MediaWidgetModel.extend( {} );
 
+	/**
+	 * Image widget control.
+	 *
+	 * See WP_Widget_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 *
+	 * @class ImageWidgetModel
+	 * @constructor
+	 */
 	ImageWidgetControl = component.MediaWidgetControl.extend( {
 
 		/**
