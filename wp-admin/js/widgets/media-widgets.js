@@ -299,7 +299,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 */
 	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
 		var widgetContent, controlContainer, widgetForm, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, widgetModel, widgetId;
-		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' );
+		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' ); // Note: '.form' appears in the customizer, whereas 'form' on the widgets admin screen.
 		widgetContent = widgetForm.find( '> .widget-content' );
 		idBase = widgetForm.find( '> .id_base' ).val();
 		widgetId = widgetForm.find( '> .widget-id' ).val();
@@ -374,8 +374,6 @@ wp.mediaWidgets = ( function( $ ) {
 		/*
 		 * Manually trigger widget-added events for media widgets on the admin
 		 * screen once they are expanded.
-		 *
-		 * @todo Widget title is now showing up on the widgets admin screen.
 		 */
 		$( function domReady() {
 			if ( 'widgets' === window.pagenow ) {

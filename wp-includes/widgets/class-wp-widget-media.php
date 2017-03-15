@@ -224,7 +224,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 				data-property="<?php echo esc_attr( $name ); ?>"
 				class="media-widget-instance-property"
 				name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>"
-				value="<?php echo esc_attr( strval( $value ) ); // @todo Encode as JSON? ?>"
+				id="<?php echo esc_attr( $this->get_field_id( $name ) ); // Needed specifically by wpWidgets.appendTitle(). ?>"
+				value="<?php echo esc_attr( strval( $value ) ); ?>"
 			/>
 		<?php endforeach; ?>
 		<?php
@@ -275,7 +276,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	public function render_control_template_scripts() {
 		?>
 		<script type="text/html" id="tmpl-widget-media-<?php echo $this->id_base; ?>-control">
-			<# var elementIdPrefix = 'el' + String( Math.random() ) + '-' #>
+			<# var elementIdPrefix = 'el' + String( Math.random() ) + '_' #>
 			<p>
 				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
 				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
