@@ -165,11 +165,6 @@
 				url: control.model.get( 'url' )
 			};
 
-			wp.media.events.trigger( 'editor:image-edit', {
-				metadata: metadata,
-				image: control.$el.find( 'img:first' )
-			} );
-
 			// Set up the media frame.
 			mediaFrame = wp.media({
 				frame: 'image',
