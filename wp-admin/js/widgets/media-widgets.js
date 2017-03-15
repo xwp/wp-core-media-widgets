@@ -362,6 +362,32 @@ wp.mediaWidgets = ( function( $ ) {
 	};
 
 	/**
+	 * Handle widget being updated after submission for saving (mainly on widgets admin screen).
+	 *
+	 * @param {jQuery.Event} event - Event.
+	 * @param {jQuery}       widgetContainer - Widget container element.
+	 * @returns {void}
+	 */
+	component.handleWidgetUpdated = function handleWidgetUpdated( event, widgetContainer ) {
+		var widgetForm, widgetContent, widgetId, widgetControl, attributes = {};
+		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' );
+		widgetContent = widgetForm.find( '> .widget-content' );
+		widgetId = widgetForm.find( '> .widget-id' ).val();
+
+		widgetControl = component.widgetControls[ widgetId ];
+		if ( ! widgetControl ) {
+			return;
+		}
+
+		// Make sure the server-sanitized values get synced back into the model.
+		widgetContent.find( '.media-widget-instance-property' ).each( function() {
+			attributes[ $( this ).data( 'property' ) ] = $( this ).val();
+		} );
+		delete attributes.id; // Read only.
+		widgetControl.model.set( attributes );
+	};
+
+	/**
 	 * Initialize functionality.
 	 *
 	 * This function exists to prevent the JS file from having to boot itself.
@@ -372,6 +398,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 */
 	component.init = function init() {
 		$( document ).on( 'widget-added', component.handleWidgetAdded );
+		$( document ).on( 'widget-updated', component.handleWidgetUpdated );
 
 		/*
 		 * Manually trigger widget-added events for media widgets on the admin
