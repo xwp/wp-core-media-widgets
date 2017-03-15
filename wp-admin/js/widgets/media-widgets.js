@@ -163,8 +163,7 @@ wp.mediaWidgets = ( function( $ ) {
 		isSelected: function isSelected() {
 			var control = this;
 
-			// @todo attachment_id should always be an integer, but it can be "0" here.
-			return Boolean( Number( control.model.get( 'attachment_id' ) ) || control.model.get( 'url' ) );
+			return Boolean( control.model.get( 'attachment_id' ) || control.model.get( 'url' ) );
 		},
 
 		/**
