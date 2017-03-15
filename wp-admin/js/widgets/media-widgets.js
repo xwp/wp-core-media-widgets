@@ -45,7 +45,7 @@ wp.mediaWidgets = ( function( $ ) {
 			Backbone.View.prototype.initialize.call( control, options );
 
 			// Allow methods to be passed in with control context preserved.
-			_.bindAll( control, 'syncModelToInputs', 'render', 'fetchSelectedAttachment' );
+			_.bindAll( control, 'syncModelToInputs', 'render', 'fetchSelectedAttachment', 'renderPreview' );
 
 			if ( ! control.id_base ) {
 				_.find( component.controlConstructors, function( Constructor, idBase ) {
@@ -62,9 +62,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
-			control.listenTo( control.selectedAttachment, 'change', function() {
-				control.renderPreview();
-			} );
+			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change:attachment_id', control.fetchSelectedAttachment );
