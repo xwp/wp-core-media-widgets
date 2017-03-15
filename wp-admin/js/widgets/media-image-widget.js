@@ -114,8 +114,7 @@
 
 			mediaFrame.open();
 
-			// @todo There must be a better way to access this view.
-			displaySettingsView = mediaFrame.views.get( '.media-frame-content' )[0].sidebar._views.display;
+			displaySettingsView = mediaFrame.views.get( '.media-frame-content' )[0].sidebar.get( 'display' );
 
 			displaySettingsView.model.set( {
 				align: control.model.get( 'align' ),
