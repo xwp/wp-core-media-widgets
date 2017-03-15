@@ -39,15 +39,20 @@
 
 			props = {
 				attachment_id: attachment.id,
-				url: attachment.sizes[ displaySettings.size ].url,
-				size: displaySettings.size,
-				width: 0, // Reset.
-				height: 0, // Reset.
 				align: displaySettings.align,
-				caption: attachment.caption,
 				alt: attachment.alt,
+				caption: attachment.caption,
+				image_classes: '',
+				image_title: '',
+				link_classes: '',
+				link_rel: '',
+				link_url: displaySettings.linkUrl,
+				link_target_blank: false,
 				link_type: displaySettings.link,
-				link_url: displaySettings.linkUrl
+				size: displaySettings.size,
+				url: attachment.sizes[ displaySettings.size ].url,
+				width: 0, // Reset.
+				height: 0 // Reset.
 			};
 
 			return props;
@@ -105,19 +110,19 @@
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
-				align: control.model.get( 'align' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' ),
-				size: control.model.get( 'size' ),
-				caption: control.model.get( 'caption' ),
 				alt: control.model.get( 'alt' ),
+				align: control.model.get( 'align' ),
+				caption: control.model.get( 'caption' ),
+				customWidth: control.model.get( 'width' ),
+				customHeight: control.model.get( 'height' ),
 				extraClasses: control.model.get( 'image_classes' ),
+				link: control.model.get( 'link_type' ),
 				linkClassName: control.model.get( 'link_classes' ),
 				linkRel: control.model.get( 'link_rel' ),
 				linkTargetBlank: control.model.get( 'link_target_blank' ),
+				linkUrl: control.model.get( 'link_url' ),
+				size: control.model.get( 'size' ),
 				title: control.model.get( 'image_title' ),
-				customWidth: control.model.get( 'width' ),
-				customHeight: control.model.get( 'height' ),
 				url: control.model.get( 'url' )
 			};
 
@@ -140,18 +145,18 @@
 
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
-					url: imageData.url,
-					align: imageData.align,
-					link_type: imageData.link,
-					link_url: imageData.linkUrl,
-					size: imageData.size,
-					caption: imageData.caption,
 					alt: imageData.alt,
+					align: imageData.align,
+					caption: imageData.caption,
 					image_classes: imageData.extraClasses,
+					image_title: imageData.title,
 					link_classes: imageData.linkClassName,
 					link_rel: imageData.linkRel,
 					link_target_blank: imageData.linkTargetBlank,
-					image_title: imageData.title,
+					link_type: imageData.link,
+					link_url: imageData.linkUrl,
+					size: imageData.size,
+					url: imageData.url,
 					width: 'custom' === imageData.size ? imageData.customWidth : imageData.width,
 					height: 'custom' === imageData.size ? imageData.customHeight : imageData.height
 				} );
