@@ -134,6 +134,10 @@
 			} );
 
 			updateCallback = function( imageData ) {
+
+				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
+				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
+
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
 					url: imageData.url,
@@ -151,9 +155,6 @@
 					width: 'custom' === imageData.size ? imageData.customWidth : imageData.width,
 					height: 'custom' === imageData.size ? imageData.customHeight : imageData.height
 				} );
-
-				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
 			};
 
 			mediaFrame.state( 'image-details' ).on( 'update', updateCallback );

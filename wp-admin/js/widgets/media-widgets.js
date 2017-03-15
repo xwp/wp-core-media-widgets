@@ -44,6 +44,9 @@ wp.mediaWidgets = ( function( $ ) {
 
 			Backbone.View.prototype.initialize.call( control, options );
 
+			// Allow methods to be passed in with control context preserved.
+			_.bindAll( control, 'syncModelToInputs', 'render', 'fetchSelectedAttachment' );
+
 			if ( ! control.id_base ) {
 				_.find( component.controlConstructors, function( Constructor, idBase ) {
 					if ( control instanceof Constructor ) {
@@ -57,25 +60,15 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			}
 
-			// @todo The following logic for re-rendering previews need to be improved.
 			// Re-render the preview when the attachment changes.
-			control.attachmentFetched = $.Deferred();
-			control.selectedAttachment = new wp.media.model.Attachment();
-			if ( control.model.get( 'attachment_id' ) ) {
-				control.selectedAttachment.set( {
-					id: control.model.get( 'attachment_id' )
-				} );
-				control.selectedAttachment.fetch().done( function() {
-					control.attachmentFetched.resolve();
-				} );
-			}
+			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
 			control.listenTo( control.selectedAttachment, 'change', function() {
-				control.attachmentFetched.resolve();
-				control.render();
+				control.renderPreview();
 			} );
 
-			// Allow methods to be passed in with control context preserved.
-			_.bindAll( control, 'syncModelToInputs', 'render' );
+			// Make sure a copy of the selected attachment is always fetched.
+			control.model.on( 'change:attachment_id', control.fetchSelectedAttachment );
+			control.fetchSelectedAttachment();
 
 			/*
 			 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
@@ -92,6 +85,32 @@ wp.mediaWidgets = ( function( $ ) {
 					title: $.trim( $( this ).val() )
 				} );
 			} );
+		},
+
+		/**
+		 * Fetch the selected attachment if necessary.
+		 *
+		 * @return {void}
+		 */
+		fetchSelectedAttachment: function fetchSelectedAttachment() {
+			var control = this, attachment;
+
+			// Skip if selectedAttachment is already updated.
+			if ( control.model.get( 'attachment_id' ) === control.selectedAttachment.get( 'id' ) ) {
+				return;
+			}
+
+			control.selectedAttachment.clear( { silent: true } );
+			if ( ! control.model.get( 'attachment_id' ) ) {
+				control.selectedAttachment.set( { id: 0 } );
+			} else {
+				attachment = new wp.media.model.Attachment( {
+					id: control.model.get( 'attachment_id' )
+				} );
+				attachment.fetch().done( function() {
+					control.selectedAttachment.set( attachment.attributes );
+				} );
+			}
 		},
 
 		/**
@@ -146,10 +165,6 @@ wp.mediaWidgets = ( function( $ ) {
 			if ( ! titleInput.is( document.activeElement ) ) {
 				titleInput.val( control.model.get( 'title' ) );
 			}
-
-			control.attachmentFetched.done( function() {
-				control.renderPreview();
-			} );
 
 			control.$el.toggleClass( 'selected', control.isSelected() );
 		},
