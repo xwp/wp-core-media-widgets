@@ -128,6 +128,15 @@
 			 * the linkUrl if linkUrl change gets made before the link change.
 			 */
 			displaySettingsView.model.set( 'link', control.model.get( 'link_type' ) );
+
+			/*
+			 * Make sure focus is set inside of modal so that hitting Esc will close
+			 * the modal and not inadvertently cause the widget to collapse in the
+			 * customizer. Setting the focus is also needed here because the
+			 * AttachmentDisplay.updateLinkTo() function will set focus on the
+			 * linkUrl input when the link changes above.
+			 */
+			mediaFrame.$el.find( ':focusable:first' ).focus();
 		},
 
 		/**
@@ -136,7 +145,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback;
+			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
@@ -199,6 +208,18 @@
 			});
 
 			mediaFrame.open();
+
+			/*
+			 * Make sure focus is set inside of modal so that hitting Esc will close
+			 * the modal and not inadvertently cause the widget to collapse in the
+			 * customizer.
+			 */
+			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
+			mediaFrameContentView.model.dfd.done( function() {
+				_.defer( function() { // Next tick.
+					mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
+				} );
+			} );
 		}
 	} );
 
