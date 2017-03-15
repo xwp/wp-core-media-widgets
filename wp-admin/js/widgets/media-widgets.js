@@ -155,7 +155,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, titleInput;
 
 			if ( ! control.templateRendered ) {
-				control.$el.html( control.template( control.model.attributes ) );
+				control.$el.html( control.template()( control.model.attributes ) );
 				control.templateRendered = true;
 			}
 
