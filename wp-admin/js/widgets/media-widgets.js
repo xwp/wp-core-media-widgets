@@ -57,6 +57,8 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			}
 
+			// @todo The following logic for re-rendering previews need to be improved.
+			// Re-render the preview when the attachment changes.
 			control.attachmentFetched = $.Deferred();
 			control.selectedAttachment = new wp.media.model.Attachment();
 			if ( control.model.get( 'attachment_id' ) ) {
@@ -67,35 +69,22 @@ wp.mediaWidgets = ( function( $ ) {
 					control.attachmentFetched.resolve();
 				} );
 			}
+			control.listenTo( control.selectedAttachment, 'change', function() {
+				control.attachmentFetched.resolve();
+				control.render();
+			} );
+
+			// Allow methods to be passed in with control context preserved.
+			_.bindAll( control, 'syncModelToInputs', 'render' );
 
 			/*
 			 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
 			 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
 			 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 			 */
-			control.listenTo( control.model, 'change', function() {
-				control.$el.next( '.widget-content' ).find( '.media-widget-instance-property' ).each( function() {
-					var input = $( this ), value;
-					value = control.model.get( input.data( 'property' ) );
-					if ( _.isUndefined( value ) ) {
-						return;
-					}
-					value = String( value );
-					if ( input.val() === value ) {
-						return;
-					}
-					input.val( value );
-					input.trigger( 'change' );
-				} );
+			control.listenTo( control.model, 'change', control.syncModelToInputs );
 
-				control.render();
-			} );
-
-			// Re-render the preview when the attachment changes.
-			control.listenTo( control.selectedAttachment, 'change', function() {
-				control.attachmentFetched.resolve();
-				control.render();
-			} );
+			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
 			control.$el.on( 'input', '.title', function() {
@@ -103,8 +92,28 @@ wp.mediaWidgets = ( function( $ ) {
 					title: $.trim( $( this ).val() )
 				} );
 			} );
+		},
 
-			// @todo Make sure that updates to the hidden inputs sync back to the model.
+		/**
+		 * Sync the model attributes to the hidden inputs.
+		 *
+		 * @returns {void}
+		 */
+		syncModelToInputs: function syncModelToInputs() {
+			var control = this;
+			control.$el.next( '.widget-content' ).find( '.media-widget-instance-property' ).each( function() {
+				var input = $( this ), value;
+				value = control.model.get( input.data( 'property' ) );
+				if ( _.isUndefined( value ) ) {
+					return;
+				}
+				value = String( value );
+				if ( input.val() === value ) {
+					return;
+				}
+				input.val( value );
+				input.trigger( 'change' );
+			} );
 		},
 
 		/**
@@ -361,7 +370,11 @@ wp.mediaWidgets = ( function( $ ) {
 	};
 
 	/**
-	 * Handle widget being updated after submission for saving (mainly on widgets admin screen).
+	 * Sync widget instance data sanitized from server back onto widget model.
+	 *
+	 * This gets called via the 'widget-updated' event when saving a widget from
+	 * the widgets admin screen and also via the 'widget-synced' event when making
+	 * a change to a widget in the customizer.
 	 *
 	 * @param {jQuery.Event} event - Event.
 	 * @param {jQuery}       widgetContainer - Widget container element.
@@ -380,10 +393,15 @@ wp.mediaWidgets = ( function( $ ) {
 
 		// Make sure the server-sanitized values get synced back into the model.
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
-			attributes[ $( this ).data( 'property' ) ] = $( this ).val();
+			var property = $( this ).data( 'property' );
+			attributes[ property ] = $( this ).val();
 		} );
 		delete attributes.id; // Read only.
+
+		// Suspend syncing model back to inputs when syncing from inputs to model, preventing infinite loop.
+		widgetControl.stopListening( widgetControl.model, 'change', widgetControl.syncModelToInputs );
 		widgetControl.model.set( attributes );
+		widgetControl.listenTo( widgetControl.model, 'change', widgetControl.syncModelToInputs );
 	};
 
 	/**
@@ -397,11 +415,17 @@ wp.mediaWidgets = ( function( $ ) {
 	 */
 	component.init = function init() {
 		$( document ).on( 'widget-added', component.handleWidgetAdded );
-		$( document ).on( 'widget-updated', component.handleWidgetUpdated );
+		$( document ).on( 'widget-synced widget-updated', component.handleWidgetUpdated );
 
 		/*
 		 * Manually trigger widget-added events for media widgets on the admin
-		 * screen once they are expanded.
+		 * screen once they are expanded. The widget-added event is not triggered
+		 * for each pre-existing widget on the widgets admin screen like it is
+		 * on the customizer. Likewise, the customizer only triggers widget-added
+		 * when the widget is expanded to just-in-time construct the widget form
+		 * when it is actually going to be displayed. So the following implements
+		 * the same for the widgets admin screen, to invoke the widget-added
+		 * handler when a pre-existing media widget is expanded.
 		 */
 		$( function domReady() {
 			if ( 'widgets' === window.pagenow ) {
@@ -413,12 +437,7 @@ wp.mediaWidgets = ( function( $ ) {
 				} );
 			}
 		});
-
-		// @todo Handle customizer setting changes?
 	};
-
-	// @todo Sync the properties from the inputs into the model upon widget-synced and widget-updated?
-	// @todo When widget-updated and widget-synced, make sure properties in model are updated.
 
 	return component;
 } )( jQuery );
