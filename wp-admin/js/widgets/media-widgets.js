@@ -298,10 +298,16 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @returns {void}
 	 */
 	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
-		var widgetContent, controlContainer, widgetForm, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, widgetModel;
-		widgetForm = widgetContainer.find( '> .widget-inside > .form' );
+		var widgetContent, controlContainer, widgetForm, idBase, ControlConstructor, ModelConstructor, modelAttributes, widgetControl, widgetModel, widgetId;
+		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' );
 		widgetContent = widgetForm.find( '> .widget-content' );
 		idBase = widgetForm.find( '> .id_base' ).val();
+		widgetId = widgetForm.find( '> .widget-id' ).val();
+
+		// Prevent initializing already-added widgets.
+		if ( component.widgetControls[ widgetId ] ) {
+			return;
+		}
 
 		ControlConstructor = component.controlConstructors[ idBase ];
 		if ( ! ControlConstructor ) {
@@ -330,7 +336,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 		 */
 		modelAttributes = {
-			id: widgetForm.find( '> .widget-id' ).val()
+			id: widgetId
 		};
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var input = $( this );
@@ -363,9 +369,26 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @returns {void}
 	 */
 	component.init = function init() {
-		$( function onDomReady() {
-			$( document ).on( 'widget-added', component.handleWidgetAdded );
-		} );
+		$( document ).on( 'widget-added', component.handleWidgetAdded );
+
+		/*
+		 * Manually trigger widget-added events for media widgets on the admin
+		 * screen once they are expanded.
+		 *
+		 * @todo Widget title is now showing up on the widgets admin screen.
+		 */
+		$( function domReady() {
+			if ( 'widgets' === window.pagenow ) {
+				$( '.widgets-holder-wrap:not(#available-widgets)' ).find( 'div.widget' ).one( 'click.media-widget-toggle', function() {
+					component.handleWidgetAdded(
+						new jQuery.Event( 'widget-added' ),
+						$( this )
+					);
+				} );
+			}
+		});
+
+		// @todo Handle customizer setting changes?
 	};
 
 	// @todo Sync the properties from the inputs into the model upon widget-synced and widget-updated?
