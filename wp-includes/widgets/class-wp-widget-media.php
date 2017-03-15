@@ -83,12 +83,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	protected function get_instance_schema() {
 		return array(
-			'id' => array(
-				'type' => 'string',
-				'readonly' => true,
-				'description' => __( 'Widget ID' ),
-				'default' => '',
-			),
 			'attachment_id' => array(
 				'type' => 'integer',
 				'default' => 0,

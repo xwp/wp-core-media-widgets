@@ -220,9 +220,6 @@ wp.mediaWidgets = ( function( $ ) {
 
 	component.MediaWidgetModel = Backbone.Model.extend( {
 		schema: {
-			id: {
-				type: 'string'
-			},
 			title: {
 				type: 'string',
 				'default': ''
@@ -280,6 +277,7 @@ wp.mediaWidgets = ( function( $ ) {
 			_.each( attrs, function( value, name ) { // eslint-disable-line complexity
 				var type;
 				if ( ! model.schema[ name ] ) {
+					castedAttrs[ name ] = value;
 					return;
 				}
 				type = model.schema[ name ].type;
