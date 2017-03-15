@@ -83,20 +83,29 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	protected function get_instance_schema() {
 		return array(
+			'id' => array(
+				'type' => 'string',
+				'readonly' => true,
+				'description' => __( 'Widget ID' ),
+				'default' => '',
+			),
 			'attachment_id' => array(
 				'type' => 'integer',
 				'default' => 0,
 				'minimum' => 0,
+				'description' => __( 'Attachment post ID' ),
 			),
 			'url' => array(
 				'type' => 'string',
 				'default' => '',
 				'format' => 'uri',
+				'description' => __( 'URL to the media file' ),
 			),
 			'title' => array(
 				'type' => 'string',
 				'default' => '',
 				'sanitize_callback' => 'sanitize_text_field',
+				'description' => __( 'Title for the widget' ),
 			),
 		);
 	}
@@ -132,7 +141,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Sanitizes the widget form values as they are saved.
 	 *
-	 * @todo This method could read from an instance property schema definitions to apply sanitize callbacks.
 	 * @since 4.8.0
 	 * @access public
 	 *
@@ -149,6 +157,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$schema = $this->get_instance_schema();
 		foreach ( $schema as $field => $field_schema ) {
 			if ( ! array_key_exists( $field, $new_instance ) ) {
+				continue;
+			}
+			if ( ! empty( $field_schema['readonly'] ) ) {
 				continue;
 			}
 			$value = $new_instance[ $field ];
@@ -215,7 +226,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
-			array_keys( wp_list_pluck( $instance_schema, 'default' ) )
+			array_keys( $instance_schema )
 		);
 		?>
 		<?php foreach ( $instance as $name => $value ) : ?>

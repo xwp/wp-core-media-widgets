@@ -212,6 +212,9 @@ wp.mediaWidgets = ( function( $ ) {
 
 	component.MediaWidgetModel = Backbone.Model.extend( {
 		schema: {
+			id: {
+				type: 'string'
+			},
 			title: {
 				type: 'string',
 				'default': ''
@@ -335,13 +338,12 @@ wp.mediaWidgets = ( function( $ ) {
 		 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
 		 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 		 */
-		modelAttributes = {
-			id: widgetId
-		};
+		modelAttributes = {};
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var input = $( this );
 			modelAttributes[ input.data( 'property' ) ] = input.val();
 		} );
+		modelAttributes.id = widgetId;
 
 		widgetModel = new ModelConstructor( modelAttributes );
 
