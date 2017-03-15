@@ -17,6 +17,26 @@
 class WP_Widget_Image extends WP_Widget_Media {
 
 	/**
+	 * Constructor.
+	 *
+	 * @since  4.8.0
+	 * @access public
+	 */
+	public function __construct() {
+		parent::__construct( 'media_image', __( 'Image' ), array(
+			'description' => __( 'Displays an image file.' ),
+			'mime_type'   => 'image',
+		) );
+
+		$this->l10n = array_merge( $this->l10n, array(
+			'no_media_selected' => __( 'No image selected' ),
+			'edit_media' => __( 'Edit Image' ),
+			'change_media' => __( 'Change Image' ),
+			'select_media' => __( 'Select Image' ),
+		) );
+	}
+
+	/**
 	 * Get instance schema.
 	 *
 	 * This is protected because it may become part of WP_Widget eventually.
@@ -105,26 +125,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 				 */
 			)
 		);
-	}
-
-	/**
-	 * Constructor.
-	 *
-	 * @since  4.8.0
-	 * @access public
-	 */
-	public function __construct() {
-		parent::__construct( 'media_image', __( 'Image' ), array(
-			'description' => __( 'Displays an image file.' ),
-			'mime_type'   => 'image',
-		) );
-
-		$this->l10n = array_merge( $this->l10n, array(
-			'no_media_selected' => __( 'No image selected' ),
-			'edit_media' => __( 'Edit Image' ),
-			'change_media' => __( 'Change Image' ),
-			'select_media' => __( 'Select Image' ),
-		) );
 	}
 
 	/**
