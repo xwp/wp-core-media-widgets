@@ -4,7 +4,6 @@
 
 	var ImageWidgetModel, ImageWidgetControl;
 
-	// @todo Implement validate methods to force the right type.
 	// Defaults will get set via WP_Widget_Image::enqueue_admin_scripts().
 	ImageWidgetModel = component.MediaWidgetModel.extend( {} );
 
@@ -40,7 +39,7 @@
 
 			props = {
 				attachment_id: attachment.id,
-				url: attachment.url,
+				url: attachment.sizes[ displaySettings.size ].url,
 				size: displaySettings.size,
 				width: 0, // Reset.
 				height: 0, // Reset.
@@ -48,7 +47,7 @@
 				caption: attachment.caption,
 				alt: attachment.alt,
 				link_type: displaySettings.link,
-				link_url: displaySettings.link_url
+				link_url: displaySettings.linkUrl
 			};
 
 			return props;

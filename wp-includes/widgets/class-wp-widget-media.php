@@ -17,18 +17,6 @@
 abstract class WP_Widget_Media extends WP_Widget {
 
 	/**
-	 * Default instance.
-	 *
-	 * @todo The fields in this should be expanded out into full schema entries, with types and sanitize_callbacks.
-	 * @var array
-	 */
-	protected $default_instance = array(
-		'attachment_id' => 0,
-		'url' => '',
-		'title' => '',
-	);
-
-	/**
 	 * Translation labels.
 	 *
 	 * @since 4.8.0
@@ -86,6 +74,34 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
+	 * Get instance schema.
+	 *
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
+	 */
+	protected function get_instance_schema() {
+		return array(
+			'attachment_id' => array(
+				'type' => 'integer',
+				'default' => 0,
+				'minimum' => 0,
+			),
+			'url' => array(
+				'type' => 'string',
+				'default' => '',
+				'format' => 'uri',
+			),
+			'title' => array(
+				'type' => 'string',
+				'default' => '',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+	}
+
+	/**
 	 * Displays the widget on the front-end.
 	 *
 	 * @since 4.8.0
@@ -97,7 +113,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$instance = wp_parse_args( $instance, $this->default_instance );
+		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
 		echo $args['before_widget'];
 
@@ -121,6 +137,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @access public
 	 *
 	 * @see WP_Widget::update()
+	 * @see WP_REST_Request::has_valid_params()
+	 * @see WP_REST_Request::sanitize_params()
 	 *
 	 * @param array $new_instance Values just sent to be saved.
 	 * @param array $instance     Previously saved values from database.
@@ -128,10 +146,27 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function update( $new_instance, $instance ) {
 
-		// @todo Array items may not exist. If using schema, we can iterate. Otherwise, isset() checks are needed.
-		$instance['attachment_id'] = (int) $new_instance['attachment_id'];
-		$instance['url'] = esc_url_raw( $new_instance['url'] );
-		$instance['title'] = sanitize_text_field( $new_instance['title'] );
+		$schema = $this->get_instance_schema();
+		foreach ( $schema as $field => $field_schema ) {
+			if ( ! array_key_exists( $field, $new_instance ) ) {
+				continue;
+			}
+			$value = $new_instance[ $field ];
+			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
+				continue;
+			}
+			$value = rest_sanitize_value_from_schema( $value, $field_schema );
+			if ( is_wp_error( $value ) ) {
+				continue;
+			}
+			if ( isset( $field_schema['sanitize_callback'] ) ) {
+				$value = call_user_func( $field_schema['sanitize_callback'], $value );
+			}
+			if ( is_wp_error( $value ) ) {
+				continue;
+			}
+			$instance[ $field ] = $value;
+		}
 
 		return $instance;
 	}
@@ -177,9 +212,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @return void
 	 */
 	public function form( $instance ) {
+		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
-			wp_parse_args( (array) $instance, $this->default_instance ),
-			array_keys( $this->default_instance )
+			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
+			array_keys( wp_list_pluck( $instance_schema, 'default' ) )
 		);
 		?>
 		<?php foreach ( $instance as $name => $value ) : ?>

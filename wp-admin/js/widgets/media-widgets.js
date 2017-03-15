@@ -68,7 +68,11 @@ wp.mediaWidgets = ( function( $ ) {
 				} );
 			}
 
-			// Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+			/*
+			 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+			 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
+			 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
+			 */
 			control.listenTo( control.model, 'change', function() {
 				control.$el.next( '.widget-content' ).find( '.media-widget-instance-property' ).each( function() {
 					var input = $( this ), value;
@@ -159,8 +163,7 @@ wp.mediaWidgets = ( function( $ ) {
 		isSelected: function isSelected() {
 			var control = this;
 
-			// @todo attachment_id should always be an integer, but it can be "0" here.
-			return Boolean( Number( control.model.get( 'attachment_id' ) ) || control.model.get( 'url' ) );
+			return Boolean( control.model.get( 'attachment_id' ) || control.model.get( 'url' ) );
 		},
 
 		/**
@@ -207,10 +210,77 @@ wp.mediaWidgets = ( function( $ ) {
 	} );
 
 	component.MediaWidgetModel = Backbone.Model.extend( {
-		defaults: {
-			title: '',
-			attachment_id: 0,
-			url: ''
+		schema: {
+			title: {
+				type: 'string',
+				'default': ''
+			},
+			attachment_id: {
+				type: 'integer',
+				'default': 0
+			},
+			url: {
+				type: 'string',
+				'default': ''
+			}
+		},
+
+		/**
+		 * Get default attribute values.
+		 *
+		 * @returns {object} Default values.
+		 */
+		defaults: function() {
+			var defaults = {};
+			_.each( this.schema, function( fieldSchema, field ) {
+				defaults[ field ] = fieldSchema['default'];
+			} );
+			return defaults;
+		},
+
+		/**
+		 * Set attribute value(s).
+		 *
+		 * This is a wrapped version of Backbone.Model#set() which allows us to
+		 * cast the attribute values from the hidden inputs' string values into
+		 * the appropriate data types (integers or booleans).
+		 *
+		 * @param {string|object} key       Attribute name or attribute pairs.
+		 * @param {mixed|object}  [val]     Attribute value or options object.
+		 * @param {object}        [options] Options when attribute name and value are passed separately.
+		 * @return {wp.mediaWidgets.MediaWidgetModel} This model.
+		 */
+		set: function set( key, val, options ) {
+			var model = this, attrs, opts, castedAttrs; // eslint-disable-line consistent-this
+			if ( null === key ) {
+				return model;
+			}
+			if ( 'object' === typeof key ) {
+				attrs = key;
+				opts = val;
+			} else {
+				attrs = {};
+				attrs[ key ] = val;
+				opts = options;
+			}
+
+			castedAttrs = {};
+			_.each( attrs, function( value, name ) { // eslint-disable-line complexity
+				var type;
+				if ( ! model.schema[ name ] ) {
+					return;
+				}
+				type = model.schema[ name ].type;
+				if ( 'integer' === type ) {
+					castedAttrs[ name ] = parseInt( value, 10 );
+				} else if ( 'boolean' === type ) {
+					castedAttrs[ name ] = ! ( ! value || '0' === value || 'false' === value );
+				} else {
+					castedAttrs[ name ] = value;
+				}
+			} );
+
+			return Backbone.Model.prototype.set.call( this, castedAttrs, opts );
 		}
 	} );
 
@@ -232,7 +302,11 @@ wp.mediaWidgets = ( function( $ ) {
 
 		ModelConstructor = component.modelConstructors[ idBase ] || component.MediaWidgetModel;
 
-		// @todo Warning: One of the fields must have the 'title' name, and the value must be a bare string for the sake of populating the widget title.
+		/*
+		 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
+		 * In the future, when widgets are JS-driven, the underlying widget instance data should be exposed as a model
+		 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
+		 */
 		widgetId = widgetForm.find( '> .widget-id' ).val();
 		controlContainer = $( '<div class="media-widget-control"></div>' );
 		widgetContent.before( controlContainer );
