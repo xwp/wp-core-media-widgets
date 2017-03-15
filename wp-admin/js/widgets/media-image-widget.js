@@ -79,7 +79,7 @@
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame;
+			var control = this, selection, mediaFrame, displaySettingsView;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
@@ -113,6 +113,21 @@
 			} );
 
 			mediaFrame.open();
+
+			// @todo There must be a better way to access this view.
+			displaySettingsView = mediaFrame.views.get( '.media-frame-content' )[0].sidebar._views.display;
+
+			displaySettingsView.model.set( {
+				align: control.model.get( 'align' ),
+				linkUrl: control.model.get( 'link_url' ),
+				size: control.model.get( 'size' )
+			} );
+
+			/*
+			 * Set link type last due to AttachmentDisplay.updateLinkTo() blowing
+			 * the linkUrl if linkUrl change gets made before the link change.
+			 */
+			displaySettingsView.model.set( 'link', control.model.get( 'link_type' ) );
 		},
 
 		/**
