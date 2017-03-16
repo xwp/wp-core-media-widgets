@@ -34,6 +34,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'change_media' => __( 'Change Image' ),
 			'select_media' => __( 'Select Image' ),
 		) );
+
+		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 	}
 
 	/**
@@ -210,6 +212,27 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		echo $image;
+	}
+
+	/**
+	 * Filters the default media display states for items in the Media list table.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param array   $states An array of media states.
+	 * @param WP_Post $post   The current attachment object.
+	 * @return array
+	 */
+	public function display_media_state( $states, $post ) {
+		$settings      = $this->get_settings();
+		$attachment_id = empty( $settings[ $this->number ]['attachment_id'] ) ? 0 : $settings[ $this->number ]['attachment_id'];
+
+		if ( $attachment_id === $post->ID ) {
+			$states[] = __( 'Image Widget' );
+		}
+
+		return $states;
 	}
 
 	/**

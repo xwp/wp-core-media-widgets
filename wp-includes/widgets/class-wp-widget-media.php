@@ -71,6 +71,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
 		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
+		add_action( 'delete_attachment', array( $this, 'delete_attachment_data' ) );
 	}
 
 	/**
@@ -232,6 +233,45 @@ abstract class WP_Widget_Media extends WP_Widget {
 			/>
 		<?php endforeach; ?>
 		<?php
+	}
+
+	/**
+	 * Deletes the Widget when the attachment file is deleted.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param int $post_id Attachment ID.
+	 */
+	public function delete_attachment_data( $post_id ) {
+		$settings      = $this->get_settings();
+		$attachment_id = empty( $settings[ $this->number ]['attachment_id'] ) ? 0 : $settings[ $this->number ]['attachment_id'];
+
+		if ( $attachment_id !== $post_id ) {
+			return;
+		}
+
+		$sidebars   = wp_get_sidebars_widgets();
+		$sidebar_id = '';
+
+		foreach ( $sidebars as $sidebar_id => $widgets ) {
+			if ( $widgets && false !== $key = array_search( $this->id, $widgets ) ) {
+				unset( $sidebars[ $sidebar_id ][ $key ] );
+				break;
+			}
+		}
+
+		$_POST = array(
+			'delete_widget'            => '1',
+			'sidebar'                  => $sidebar_id,
+			'the-widget-id'            => $this->id,
+			'widget-' . $this->id_base => array(),
+		);
+
+		/** This action is documented in wp-admin/widgets.php */
+		do_action( 'delete_widget', $this->id, $sidebar_id, $this->id_base );
+
+		wp_set_sidebars_widgets( $sidebars );
 	}
 
 	/**
