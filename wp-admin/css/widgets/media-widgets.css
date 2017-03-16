@@ -30,3 +30,6 @@
 .media-widget-control .media-widget-preview {
 	text-align: center;
 }
+.media-widget-control .media-widget-preview img {
+	max-width: 100%;
+}
