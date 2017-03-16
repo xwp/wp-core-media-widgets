@@ -172,7 +172,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		$size = $instance['size'];
-		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ) ) ) {
+		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ), true ) ) {
 			$size = array( $instance['width'], $instance['height'] );
 		}
 
@@ -225,10 +225,24 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @return array
 	 */
 	public function display_media_state( $states, $post ) {
-		$settings      = $this->get_settings();
-		$attachment_id = empty( $settings[ $this->number ]['attachment_id'] ) ? 0 : $settings[ $this->number ]['attachment_id'];
 
-		if ( $attachment_id === $post->ID ) {
+		// Short-circuit if the post is not an image attachment.
+		if ( 'attachment' !== $post->post_type || 0 !== strpos( $post->post_mime_type, 'image/' ) ) {
+			return $states;
+		}
+
+		// Count how many times this image attachment is used in image widgets.
+		$image_used_count = 0;
+		foreach ( $this->get_settings() as $instance ) {
+			if ( isset( $instance['attachment_id'] ) && $instance['attachment_id'] === $post->ID ) {
+				$image_used_count++;
+			}
+		}
+
+		if ( $image_used_count > 1 ) {
+			/* translators: %d is widget count */
+			$states[] = sprintf( __( 'Image Widgets (%d)' ), $image_used_count );
+		} elseif ( 1 === $image_used_count ) {
 			$states[] = __( 'Image Widget' );
 		}
 
