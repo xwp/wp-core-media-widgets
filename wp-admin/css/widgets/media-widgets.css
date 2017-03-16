@@ -27,3 +27,6 @@
 .media-widget-buttons .button:first-child {
 	margin-left: 0;
 }
+.media-widget-control .media-widget-preview {
+	text-align: center;
+}
