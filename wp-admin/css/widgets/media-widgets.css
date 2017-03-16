@@ -10,15 +10,16 @@
 	display: -ms-flexbox;
 	display: -webkit-flex;
 	display: flex;
+	flex-wrap: wrap;
 }
 
 .media-widget-buttons .button {
-	-webkit-box-flex: 1;
-	-webkit-flex-grow: 1;
-	-moz-box-flex: 1;
-	-ms-flex-positive: 1;
-	-ms-flex: 1;
-	flex-grow: 1;
+	-webkit-box-flex: 0 0 auto;
+	-webkit-flex-grow: 0 0 auto;
+	-moz-box-flex: 0 0 auto;
+	-ms-flex-positive: 0 0 auto;
+	-ms-flex: 0 0 auto;
+	flex-grow: 0 0 auto;
 }
 .media-widget-buttons .button {
 	margin-left: 10px;
