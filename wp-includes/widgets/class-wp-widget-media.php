@@ -23,11 +23,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @var array
 	 */
 	public $l10n = array(
-		'no_media_selected' => '',
-		'edit_media' => '',
-		'change_media' => '',
-		'select_media' => '',
 		'add_to_widget' => '',
+		'change_media' => '',
+		'edit_media' => '',
+		'error' => '',
+		'media_library_state' => '',
+		'no_media_selected' => '',
+		'select_media' => '',
 	);
 
 	/**
@@ -53,15 +55,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$control_opts = wp_parse_args( $control_options, array() );
 
 		$l10n_defaults = array(
-			'no_media_selected' => __( 'No media selected' ),
-			'edit_media' => __( 'Edit Media' ),
-			'change_media' => __( 'Change Media' ),
-			'select_media' => __( 'Select Media' ),
 			'add_to_widget' => __( 'Add to Widget' ),
+			'change_media' => __( 'Change Media' ),
+			'edit_media' => __( 'Edit Media' ),
 			'error' => sprintf(
 				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
 				esc_url( admin_url( 'upload.php' ) )
 			),
+			'media_library_state' => __( 'Media Widget' ),
+			'no_media_selected' => __( 'No media selected' ),
+			'select_media' => __( 'Select Media' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
@@ -264,7 +267,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			/* translators: %d is widget count */
 			$states[] = sprintf( __( 'Media Widgets (%d)' ), $use_count );
 		} elseif ( 1 === $use_count ) {
-			$states[] = $this->name;
+			$states[] = $this->l10n['media_library_state'];
 		}
 
 		return $states;
