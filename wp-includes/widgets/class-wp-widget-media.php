@@ -288,7 +288,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<div class="selected rendered">
 					<!-- Media rendering goes here. -->
 				</div>
-				<div class="not-selected">
+				<div class="attachment-media-view not-selected">
 					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
 				</div>
 			</div>
