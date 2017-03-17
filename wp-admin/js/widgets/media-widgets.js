@@ -152,9 +152,13 @@ wp.mediaWidgets = ( function( $ ) {
 				attachment = new wp.media.model.Attachment( {
 					id: control.model.get( 'attachment_id' )
 				} );
-				attachment.fetch().done( function() {
-					control.selectedAttachment.set( attachment.attributes );
-				} );
+				attachment.fetch()
+					.done( function() {
+						control.selectedAttachment.set( attachment.attributes );
+					} )
+					.fail( function() {
+						control.selectedAttachment.set( { error: true } );
+					} );
 			}
 		},
 

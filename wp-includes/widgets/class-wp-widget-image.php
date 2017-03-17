@@ -33,6 +33,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'edit_media' => __( 'Edit Image' ),
 			'change_media' => __( 'Change Image' ),
 			'select_media' => __( 'Select Image' ),
+			'error' => __( 'Image could not be loaded. Please verify it was not deleted.' ),
 		) );
 	}
 
@@ -266,6 +267,10 @@ class WP_Widget_Image extends WP_Widget_Media {
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.medium.url }}" draggable="false" alt="" />
 			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.full ) { #>
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.full.url }}" draggable="false" alt="" />
+			<# } else if ( data.attachment.error ) { #>
+				<div class="notice notice-error notice-alt">
+					<p><?php echo esc_html( $this->l10n['error'] ); ?></p>
+				</div>
 			<# } #>
 		</script>
 		<?php
