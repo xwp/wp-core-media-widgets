@@ -71,7 +71,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
 		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
-		add_action( 'delete_attachment', array( $this, 'delete_attachment_data' ) );
+
+		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 	}
 
 	/**
@@ -236,42 +237,33 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Deletes the Widget when the attachment file is deleted.
+	 * Filters the default media display states for items in the Media list table.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @param int $post_id Attachment ID.
+	 * @param array   $states An array of media states.
+	 * @param WP_Post $post   The current attachment object.
+	 * @return array
 	 */
-	public function delete_attachment_data( $post_id ) {
-		$settings      = $this->get_settings();
-		$attachment_id = empty( $settings[ $this->number ]['attachment_id'] ) ? 0 : $settings[ $this->number ]['attachment_id'];
+	public function display_media_state( $states, $post ) {
 
-		if ( $attachment_id !== $post_id ) {
-			return;
-		}
-
-		$sidebars   = wp_get_sidebars_widgets();
-		$sidebar_id = '';
-
-		foreach ( $sidebars as $sidebar_id => $widgets ) {
-			if ( $widgets && false !== $key = array_search( $this->id, $widgets ) ) {
-				unset( $sidebars[ $sidebar_id ][ $key ] );
-				break;
+		// Count how many times this attachment is used in widgets.
+		$use_count = 0;
+		foreach ( $this->get_settings() as $instance ) {
+			if ( isset( $instance['attachment_id'] ) && $instance['attachment_id'] === $post->ID ) {
+				$use_count++;
 			}
 		}
 
-		$_POST = array(
-			'delete_widget'            => '1',
-			'sidebar'                  => $sidebar_id,
-			'the-widget-id'            => $this->id,
-			'widget-' . $this->id_base => array(),
-		);
+		if ( $use_count > 1 ) {
+			/* translators: %d is widget count */
+			$states[] = sprintf( __( 'Media Widgets (%d)' ), $use_count );
+		} elseif ( 1 === $use_count ) {
+			$states[] = $this->name;
+		}
 
-		/** This action is documented in wp-admin/widgets.php */
-		do_action( 'delete_widget', $this->id, $sidebar_id, $this->id_base );
-
-		wp_set_sidebars_widgets( $sidebars );
+		return $states;
 	}
 
 	/**
