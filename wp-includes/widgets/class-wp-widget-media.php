@@ -205,15 +205,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Outputs the settings update form.
 	 *
-	 * Note that the widget UI itself is rendered with JavaScript.
+	 * Note that the widget UI itself is rendered with JavaScript via `MediaWidgetControl#render()`.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
+	 * @see \WP_Widget_Media::render_control_template_scripts() Where the JS template is located.
 	 * @param array $instance Current settings.
 	 * @return void
 	 */
-	public function form( $instance ) {
+	final public function form( $instance ) {
 		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
@@ -277,7 +278,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function render_control_template_scripts() {
 		?>
-		<script type="text/html" id="tmpl-widget-media-<?php echo $this->id_base; ?>-control">
+		<script type="text/html" id="tmpl-widget-media-<?php echo esc_attr( $this->id_base ); ?>-control">
 			<# var elementIdPrefix = 'el' + String( Math.random() ) + '_' #>
 			<p>
 				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
