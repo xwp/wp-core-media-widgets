@@ -31,7 +31,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		$this->l10n = array_merge( $this->l10n, array(
 			'change_media' => __( 'Change Image' ),
 			'edit_media' => __( 'Edit Image' ),
-			'error' => sprintf(
+			'missing_attachment' => sprintf(
 				__( 'We can&#8217;t find that image. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
 				esc_url( admin_url( 'upload.php' ) )
 			),
@@ -271,9 +271,9 @@ class WP_Widget_Image extends WP_Widget_Media {
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.medium.url }}" draggable="false" alt="" />
 			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.full ) { #>
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.full.url }}" draggable="false" alt="" />
-			<# } else if ( data.attachment.error ) { #>
-				<div class="notice notice-error notice-alt">
-					<p><?php echo $this->l10n['error']; ?></p>
+			<# } else if ( data.attachment.error && data.attachment.error.missing_attachment ) { #>
+				<div class="notice notice-error notice-alt notice-missing-attachment">
+					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
 			<# } #>
 		</script>

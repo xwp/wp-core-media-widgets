@@ -73,7 +73,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @type {Object}
 		 */
 		events: {
-			'click .notice a': 'selectMedia',
+			'click .notice-missing-attachment a': 'selectMedia',
 			'click .select-media': 'selectMedia',
 			'click .edit-media': 'editMedia'
 		},
@@ -155,10 +155,10 @@ wp.mediaWidgets = ( function( $ ) {
 				} );
 				attachment.fetch()
 					.done( function() {
-						control.selectedAttachment.set( attachment.attributes );
+						control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
 					} )
 					.fail( function() {
-						control.selectedAttachment.set( { error: true } );
+						control.selectedAttachment.set( { error: 'missing_attachment' } );
 					} );
 			}
 		},

@@ -26,8 +26,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		'add_to_widget' => '',
 		'change_media' => '',
 		'edit_media' => '',
-		'error' => '',
 		'media_library_state' => '',
+		'missing_attachment' => '',
 		'no_media_selected' => '',
 		'select_media' => '',
 	);
@@ -58,11 +58,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 			'add_to_widget' => __( 'Add to Widget' ),
 			'change_media' => __( 'Change Media' ),
 			'edit_media' => __( 'Edit Media' ),
-			'error' => sprintf(
+			'media_library_state' => __( 'Media Widget' ),
+			'missing_attachment' => sprintf(
 				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
 				esc_url( admin_url( 'upload.php' ) )
 			),
-			'media_library_state' => __( 'Media Widget' ),
 			'no_media_selected' => __( 'No media selected' ),
 			'select_media' => __( 'Select Media' ),
 		);
