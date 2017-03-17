@@ -58,6 +58,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 			'change_media' => __( 'Change Media' ),
 			'select_media' => __( 'Select Media' ),
 			'add_to_widget' => __( 'Add to Widget' ),
+			'error' => sprintf(
+				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
