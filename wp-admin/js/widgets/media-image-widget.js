@@ -76,10 +76,13 @@
 		/**
 		 * Open the media select frame to chose an item.
 		 *
+		 * @param {jQuery.Event} event - Event.
 		 * @returns {void}
 		 */
-		selectMedia: function selectMedia() {
+		selectMedia: function selectMedia( event ) {
 			var control = this, selection, mediaFrame;
+
+			event.preventDefault();
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 

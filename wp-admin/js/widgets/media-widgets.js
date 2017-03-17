@@ -73,6 +73,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @type {Object}
 		 */
 		events: {
+			'click .notice a': 'selectMedia',
 			'click .select-media': 'selectMedia',
 			'click .edit-media': 'editMedia'
 		},
