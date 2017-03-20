@@ -269,7 +269,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-image-preview">
-			<# if ( data.attachment.error && data.attachment.error.missing_attachment ) { #>
+			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
