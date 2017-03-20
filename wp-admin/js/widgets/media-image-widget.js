@@ -117,6 +117,16 @@
 			} );
 
 			mediaFrame.open();
+
+			// Clear the selected attachment when it is deleted in the media select frame.
+			selection.on( 'destroy', function( attachment ) {
+				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
+					control.model.set( {
+						attachment_id: 0,
+						url: ''
+					} );
+				}
+			} );
 		},
 
 		/**
