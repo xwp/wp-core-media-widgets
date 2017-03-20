@@ -27,6 +27,20 @@
 .media-widget-buttons .button:first-child {
 	margin-left: 0;
 }
+
+.media-widget-control .placeholder {
+	border: 1px dashed #b4b9be;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	cursor: default;
+	line-height: 20px;
+	padding: 9px 0;
+	position: relative;
+	text-align: center;
+	width: 100%;
+}
+
 .media-widget-control .media-widget-preview {
 	text-align: center;
 }
