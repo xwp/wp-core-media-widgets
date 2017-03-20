@@ -263,11 +263,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 			}
 		}
 
-		if ( $use_count > 1 ) {
-			/* translators: %d is widget count */
-			$states[] = sprintf( __( 'Media Widgets (%d)' ), $use_count );
-		} elseif ( 1 === $use_count ) {
-			$states[] = $this->l10n['media_library_state'];
+		if ( $use_count > 0 ) {
+			$states[] = translate_nooped_plural( $this->l10n['media_library_state'], number_format_i18n( $use_count ) );
 		}
 
 		return $states;
