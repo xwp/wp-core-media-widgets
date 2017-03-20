@@ -109,6 +109,7 @@
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+				attachment.error = false;
 				control.selectedAttachment.set( attachment );
 
 				// Update widget instance.
@@ -157,9 +158,12 @@
 			} );
 
 			updateCallback = function( imageData ) {
+				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
+				attachment = mediaFrame.state().attributes.image.toJSON();
+				attachment.error = false;
+				control.selectedAttachment.set( attachment );
 
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
