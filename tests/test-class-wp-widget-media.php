@@ -47,7 +47,27 @@ class Test_WP_Media_Widget extends WP_UnitTestCase {
 	function test_widget() {
 		$widget = new Test_Media_Widget( 'media', 'Media' );
 
-		$this->assertObjectHasAttribute( 'l10n', $widget );
+		$args = array(
+			'before_title'  => '<h2>',
+			'after_title'   => "</h2>\n",
+			'before_widget' => '<section>',
+			'after_widget'  => "</section>\n",
+		);
+		$instance = array( 'title' => 'Buscar' );
+
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+
+		$this->assertContains( '<h2>Buscar</h2>', $output );
+		$this->assertContains( '<section>', $output );
+		$this->assertContains( '</section>', $output );
+
+		// No title
+		ob_start();
+		$widget->widget( $args, array() );
+		$output = ob_get_clean();
+		$this->assertNotContains( '<h2>Buscar</h2>', $output );
 	}
 }
 
