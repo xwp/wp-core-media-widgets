@@ -3,6 +3,36 @@
 class Test_WP_Widget_Image extends WP_UnitTestCase {
 
 	/**
+	 * @covers WP_Widget_Image::get_instance_schema
+	 */
+	function test_get_instance_schema() {
+		$WP_Widget_Image     = new ReflectionClass( 'WP_Widget_Image' );
+		$get_instance_schema = $WP_Widget_Image->getMethod( 'get_instance_schema' );
+		$get_instance_schema->setAccessible( true );
+
+		$schema = $get_instance_schema->invoke( new WP_Widget_Image );
+
+		$this->assertEqualSets( array(
+			'align',
+			'alt',
+			'attachment_id',
+			'caption',
+			'height',
+			'image_classes',
+			'image_title',
+			'link_classes',
+			'link_rel',
+			'link_target_blank',
+			'link_type',
+			'link_url',
+			'size',
+			'title',
+			'url',
+			'width',
+		), array_keys( $schema ) );
+	}
+
+	/**
 	 * @covers WP_Widget_Image::update
 	 */
 	function test_update() {
