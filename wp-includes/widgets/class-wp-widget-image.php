@@ -37,7 +37,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 				esc_url( admin_url( 'upload.php' ) )
 			),
 			/* translators: %d is widget count */
-			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
+			'media_library_state' => _n_noop( 'Image Widget', 'Image Widget (%d)' ),
 			'no_media_selected' => __( 'No image selected' ),
 			'select_media' => __( 'Select Image' ),
 		) );
