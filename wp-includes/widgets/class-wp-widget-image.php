@@ -29,8 +29,10 @@ class WP_Widget_Image extends WP_Widget_Media {
 		) );
 
 		$this->l10n = array_merge( $this->l10n, array(
-			'change_media' => __( 'Change Image' ),
-			'edit_media' => __( 'Edit Image' ),
+			'no_media_selected' => __( 'No image selected' ),
+			'select_media' => _x( 'Select Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 			'missing_attachment' => sprintf(
 				/* translators: placeholder is URL to media library */
 				__( 'We can&#8217;t find that image. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
@@ -38,8 +40,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 			),
 			/* translators: %d is widget count */
 			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
-			'no_media_selected' => __( 'No image selected' ),
-			'select_media' => __( 'Select Image' ),
 		) );
 	}
 
