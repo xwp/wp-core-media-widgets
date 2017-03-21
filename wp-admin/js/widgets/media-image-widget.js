@@ -76,19 +76,78 @@
 		/**
 		 * Open the media select frame to chose an item.
 		 *
+		 * @param {jQuery.Event} event - Event.
 		 * @returns {void}
 		 */
-		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame;
+		selectMedia: function selectMedia( event ) {
+			var control = this, selection, mediaFrame, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
+
+			event.preventDefault();
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+
+			/*
+			 * Copy current display settings from the widget model to serve as basis
+			 * of customized display settings for the current media frame session.
+			 * Changes to display settings will be synced into this model, and
+			 * when a new selection is made, the settings from this will be synced
+			 * into that AttachmentDisplay's model to persist the setting changes.
+			 */
+			customizedDisplaySettings = new Backbone.Model( {
+				align: control.model.get( 'align' ),
+				size: control.model.get( 'size' ),
+				link: control.model.get( 'link_type' ),
+				linkUrl: control.model.get( 'link_url' )
+			} );
+
+			/**
+			 * Library which persists the customized display settings across selections.
+			 *
+			 * @class
+			 */
+			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
+
+				/**
+				 * Sync changes to the current display settings back into the current customized
+				 *
+				 * @param {Backbone.Model} displaySettings Modified display settings.
+				 * @returns {void}
+				 */
+				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
+					customizedDisplaySettings.set( displaySettings.attributes );
+				},
+
+				/**
+				 * Get the display settings model.
+				 *
+				 * Model returned is updated with the current customized display settings,
+				 * and an event listener is added so that changes made to the settings
+				 * will sync back into the model storing the session's customized display
+				 * settings.
+				 *
+				 * @param {Backbone.Model} model Display settings model.
+				 * @returns {Backbone.Model} Display settings model.
+				 */
+				display: function getDisplaySettingsModel( model ) {
+					var display;
+					display = wp.media.controller.Library.prototype.display.call( this, model );
+
+					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
+					display.set( customizedDisplaySettings.attributes );
+					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
+						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
+					}
+					display.on( 'change', this.handleDisplaySettingChange );
+					return display;
+				}
+			} );
 
 			mediaFrame = wp.media( {
 				frame: 'select',
 				button: {
 					text: control.l10n.add_to_widget
 				},
-				states: new wp.media.controller.Library( {
+				states: new CustomizedDisplaySettingsLibrary( {
 					library: wp.media.query( {
 						type: control.mime_type
 					} ),
@@ -101,11 +160,13 @@
 				} )
 			} );
 
+			// Handle selection of a media item.
 			mediaFrame.on( 'select', function() {
 				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+				attachment.error = false;
 				control.selectedAttachment.set( attachment );
 
 				// Update widget instance.
@@ -113,6 +174,22 @@
 			} );
 
 			mediaFrame.open();
+
+			// Clear the selected attachment when it is deleted in the media select frame.
+			selection.on( 'destroy', function( attachment ) {
+				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
+					control.model.set( {
+						attachment_id: 0,
+						url: ''
+					} );
+				}
+			} );
+
+			/*
+			 * Make sure focus is set inside of modal so that hitting Esc will close
+			 * the modal and not inadvertently cause the widget to collapse in the customizer.
+			 */
+			mediaFrame.$el.find( ':focusable:first' ).focus();
 		},
 
 		/**
@@ -121,7 +198,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback;
+			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
@@ -141,11 +218,6 @@
 				url: control.model.get( 'url' )
 			};
 
-			wp.media.events.trigger( 'editor:image-edit', {
-				metadata: metadata,
-				image: control.$el.find( 'img:first' )
-			} );
-
 			// Set up the media frame.
 			mediaFrame = wp.media({
 				frame: 'image',
@@ -154,9 +226,12 @@
 			} );
 
 			updateCallback = function( imageData ) {
+				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
+				attachment = mediaFrame.state().attributes.image.toJSON();
+				attachment.error = false;
+				control.selectedAttachment.set( attachment );
 
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
@@ -184,6 +259,18 @@
 			});
 
 			mediaFrame.open();
+
+			/*
+			 * Make sure focus is set inside of modal so that hitting Esc will close
+			 * the modal and not inadvertently cause the widget to collapse in the
+			 * customizer.
+			 */
+			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
+			mediaFrameContentView.model.dfd.done( function() {
+				_.defer( function() { // Next tick.
+					mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
+				} );
+			} );
 		}
 	} );
 

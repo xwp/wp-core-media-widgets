@@ -23,11 +23,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @var array
 	 */
 	public $l10n = array(
-		'no_media_selected' => '',
-		'edit_media' => '',
-		'change_media' => '',
-		'select_media' => '',
 		'add_to_widget' => '',
+		'change_media' => '',
+		'edit_media' => '',
+		'media_library_state' => '',
+		'missing_attachment' => '',
+		'no_media_selected' => '',
+		'select_media' => '',
 	);
 
 	/**
@@ -54,10 +56,17 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$l10n_defaults = array(
 			'no_media_selected' => __( 'No media selected' ),
-			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
-			'change_media' => _x( 'Change Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'select_media' => _x( 'Select Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'add_to_widget' => __( 'Add to Widget' ),
+			'missing_attachment' => sprintf(
+				/* translators: placeholder is URL to media library */
+				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Media Widget (%d instance)', 'Media Widget (%d instances)' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
@@ -71,6 +80,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
 		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
+
+		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 	}
 
 	/**
@@ -232,6 +243,33 @@ abstract class WP_Widget_Media extends WP_Widget {
 			/>
 		<?php endforeach; ?>
 		<?php
+	}
+
+	/**
+	 * Filters the default media display states for items in the Media list table.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param array   $states An array of media states.
+	 * @param WP_Post $post   The current attachment object.
+	 * @return array
+	 */
+	public function display_media_state( $states, $post ) {
+
+		// Count how many times this attachment is used in widgets.
+		$use_count = 0;
+		foreach ( $this->get_settings() as $instance ) {
+			if ( isset( $instance['attachment_id'] ) && $instance['attachment_id'] === $post->ID ) {
+				$use_count++;
+			}
+		}
+
+		if ( $use_count > 0 ) {
+			$states[] = sprintf( translate_nooped_plural( $this->l10n['media_library_state'], $use_count ), number_format_i18n( $use_count ) );
+		}
+
+		return $states;
 	}
 
 	/**

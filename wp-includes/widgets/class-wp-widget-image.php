@@ -30,9 +30,16 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No image selected' ),
-			'edit_media' => _x( 'Edit Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
-			'change_media' => _x( 'Change Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 			'select_media' => _x( 'Select Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'missing_attachment' => sprintf(
+				/* translators: placeholder is URL to media library */
+				__( 'We can&#8217;t find that image. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
 		) );
 	}
 
@@ -262,7 +269,15 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-image-preview">
-			<# if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.medium ) { #>
+			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
+				<div class="notice notice-error notice-alt notice-missing-attachment">
+					<p><?php echo $this->l10n['missing_attachment']; ?></p>
+				</div>
+			<# } else if ( data.attachment.error ) { #>
+				<div class="notice notice-error notice-alt">
+					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
+				</div>
+			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.medium ) { #>
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.medium.url }}" draggable="false" alt="" />
 			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.full ) { #>
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.full.url }}" draggable="false" alt="" />
