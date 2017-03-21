@@ -73,7 +73,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @type {Object}
 		 */
 		events: {
-			'click .notice-missing-attachment a': 'selectMedia',
+			'click .notice-missing-attachment a': 'handleMediaLibraryLinkClick',
 			'click .select-media': 'selectMedia',
 			'click .edit-media': 'editMedia'
 		},
@@ -238,6 +238,18 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this;
 
 			return Boolean( control.model.get( 'attachment_id' ) || control.model.get( 'url' ) );
+		},
+
+		/**
+		 * Handle click on link to Media Library to open modal, such as the link that appears when in the missing attachment error notice.
+		 *
+		 * @param {jQuery.Event} event - Event.
+		 * @returns {void}
+		 */
+		handleMediaLibraryLinkClick: function handleMediaLibraryLinkClick( event ) {
+			var control = this;
+			event.preventDefault();
+			control.selectMedia();
 		},
 
 		/**
