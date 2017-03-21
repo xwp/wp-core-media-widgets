@@ -55,18 +55,18 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$control_opts = wp_parse_args( $control_options, array() );
 
 		$l10n_defaults = array(
+			'no_media_selected' => __( 'No media selected' ),
+			'select_media' => _x( 'Select Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'add_to_widget' => __( 'Add to Widget' ),
-			'change_media' => __( 'Change Media' ),
-			'edit_media' => __( 'Edit Media' ),
-			/* translators: %d is widget count */
-			'media_library_state' => _n_noop( 'Media Widget', 'Media Widget (%d)' ),
 			'missing_attachment' => sprintf(
 				/* translators: placeholder is URL to media library */
 				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
 				esc_url( admin_url( 'upload.php' ) )
 			),
-			'no_media_selected' => __( 'No media selected' ),
-			'select_media' => __( 'Select Media' ),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Media Widget', 'Media Widget (%d)' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
