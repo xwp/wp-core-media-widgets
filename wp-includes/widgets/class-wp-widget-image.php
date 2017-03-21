@@ -30,9 +30,9 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No image selected' ),
-			'edit_media' => __( 'Edit Image' ),
-			'change_media' => __( 'Change Image' ),
-			'select_media' => __( 'Select Image' ),
+			'edit_media' => _x( 'Edit Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'select_media' => _x( 'Select Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 		) );
 	}
 
@@ -170,7 +170,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		$size = $instance['size'];
-		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ) ) ) {
+		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ), true ) ) {
 			$size = array( $instance['width'], $instance['height'] );
 		}
 

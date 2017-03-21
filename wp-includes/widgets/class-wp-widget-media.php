@@ -54,9 +54,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$l10n_defaults = array(
 			'no_media_selected' => __( 'No media selected' ),
-			'edit_media' => __( 'Edit Media' ),
-			'change_media' => __( 'Change Media' ),
-			'select_media' => __( 'Select Media' ),
+			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'select_media' => _x( 'Select Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'add_to_widget' => __( 'Add to Widget' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
