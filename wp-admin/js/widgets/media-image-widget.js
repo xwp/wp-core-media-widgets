@@ -76,10 +76,13 @@
 		/**
 		 * Open the media select frame to chose an item.
 		 *
+		 * @param {jQuery.Event} event - Event.
 		 * @returns {void}
 		 */
-		selectMedia: function selectMedia() {
+		selectMedia: function selectMedia( event ) {
 			var control = this, selection, mediaFrame, displaySettingsView;
+
+			event.preventDefault();
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
@@ -106,6 +109,7 @@
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+				attachment.error = false;
 				control.selectedAttachment.set( attachment );
 
 				// Update widget instance.
@@ -113,6 +117,16 @@
 			} );
 
 			mediaFrame.open();
+
+			// Clear the selected attachment when it is deleted in the media select frame.
+			selection.on( 'destroy', function( attachment ) {
+				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
+					control.model.set( {
+						attachment_id: 0,
+						url: ''
+					} );
+				}
+			} );
 
 			displaySettingsView = mediaFrame.views.get( '.media-frame-content' )[0].sidebar.get( 'display' );
 
@@ -172,9 +186,12 @@
 			} );
 
 			updateCallback = function( imageData ) {
+				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.selectedAttachment.set( mediaFrame.state().attributes.image.attachment.attributes );
+				attachment = mediaFrame.state().attributes.image.toJSON();
+				attachment.error = false;
+				control.selectedAttachment.set( attachment );
 
 				control.model.set( {
 					attachment_id: imageData.attachment_id,

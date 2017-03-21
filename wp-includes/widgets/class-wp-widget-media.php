@@ -23,11 +23,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @var array
 	 */
 	public $l10n = array(
-		'no_media_selected' => '',
-		'edit_media' => '',
-		'change_media' => '',
-		'select_media' => '',
 		'add_to_widget' => '',
+		'change_media' => '',
+		'edit_media' => '',
+		'media_library_state' => '',
+		'missing_attachment' => '',
+		'no_media_selected' => '',
+		'select_media' => '',
 	);
 
 	/**
@@ -53,11 +55,18 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$control_opts = wp_parse_args( $control_options, array() );
 
 		$l10n_defaults = array(
-			'no_media_selected' => __( 'No media selected' ),
-			'edit_media' => __( 'Edit Media' ),
-			'change_media' => __( 'Change Media' ),
-			'select_media' => __( 'Select Media' ),
 			'add_to_widget' => __( 'Add to Widget' ),
+			'change_media' => __( 'Change Media' ),
+			'edit_media' => __( 'Edit Media' ),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Media Widget (%d instance)', 'Media Widget (%d instances)' ),
+			'missing_attachment' => sprintf(
+				/* translators: placeholder is URL to media library */
+				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
+			'no_media_selected' => __( 'No media selected' ),
+			'select_media' => __( 'Select Media' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
@@ -71,6 +80,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
 		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
+
+		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 	}
 
 	/**
@@ -205,15 +216,16 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Outputs the settings update form.
 	 *
-	 * Note that the widget UI itself is rendered with JavaScript.
+	 * Note that the widget UI itself is rendered with JavaScript via `MediaWidgetControl#render()`.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
+	 * @see \WP_Widget_Media::render_control_template_scripts() Where the JS template is located.
 	 * @param array $instance Current settings.
 	 * @return void
 	 */
-	public function form( $instance ) {
+	final public function form( $instance ) {
 		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
@@ -231,6 +243,33 @@ abstract class WP_Widget_Media extends WP_Widget {
 			/>
 		<?php endforeach; ?>
 		<?php
+	}
+
+	/**
+	 * Filters the default media display states for items in the Media list table.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param array   $states An array of media states.
+	 * @param WP_Post $post   The current attachment object.
+	 * @return array
+	 */
+	public function display_media_state( $states, $post ) {
+
+		// Count how many times this attachment is used in widgets.
+		$use_count = 0;
+		foreach ( $this->get_settings() as $instance ) {
+			if ( isset( $instance['attachment_id'] ) && $instance['attachment_id'] === $post->ID ) {
+				$use_count++;
+			}
+		}
+
+		if ( $use_count > 0 ) {
+			$states[] = sprintf( translate_nooped_plural( $this->l10n['media_library_state'], $use_count ), number_format_i18n( $use_count ) );
+		}
+
+		return $states;
 	}
 
 	/**
@@ -277,7 +316,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function render_control_template_scripts() {
 		?>
-		<script type="text/html" id="tmpl-widget-media-<?php echo $this->id_base; ?>-control">
+		<script type="text/html" id="tmpl-widget-media-<?php echo esc_attr( $this->id_base ); ?>-control">
 			<# var elementIdPrefix = 'el' + String( Math.random() ) + '_' #>
 			<p>
 				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
@@ -287,7 +326,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<div class="selected rendered">
 					<!-- Media rendering goes here. -->
 				</div>
-				<div class="not-selected">
+				<div class="attachment-media-view not-selected">
 					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
 				</div>
 			</div>
