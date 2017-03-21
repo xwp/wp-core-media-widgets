@@ -102,4 +102,17 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$output = ob_get_clean();
 		$this->assertNotContains( '<h2>Foo</h2>', $output );
 	}
+
+	/**
+	 * @covers WP_Widget_Media::render_control_template_scripts
+	 */
+	function test_render_control_template_scripts() {
+		$widget = $this->get_mocked_class_instance();
+
+		ob_start();
+		$widget->render_control_template_scripts();
+		$output = ob_get_clean();
+
+		$this->assertContains( '<script type="text/html" id="tmpl-widget-media-mocked-control">', $output );
+	}
 }
