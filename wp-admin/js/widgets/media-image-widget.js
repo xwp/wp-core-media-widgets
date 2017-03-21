@@ -80,7 +80,7 @@
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia( event ) {
-			var control = this, selection, mediaFrame, library, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
+			var control = this, selection, mediaFrame, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
 
 			event.preventDefault();
 
@@ -142,24 +142,22 @@
 				}
 			} );
 
-			library = new CustomizedDisplaySettingsLibrary( {
-				library: wp.media.query( {
-					type: control.mime_type
-				} ),
-				title: control.l10n.select_media,
-				selection: selection,
-				multiple: false,
-				priority: 20,
-				display: true, // Attachment display setting.
-				filterable: false
-			} );
-
 			mediaFrame = wp.media( {
 				frame: 'select',
 				button: {
 					text: control.l10n.add_to_widget
 				},
-				states: library
+				states: new CustomizedDisplaySettingsLibrary( {
+					library: wp.media.query( {
+						type: control.mime_type
+					} ),
+					title: control.l10n.select_media,
+					selection: selection,
+					multiple: false,
+					priority: 20,
+					display: true, // Attachment display setting.
+					filterable: false
+				} )
 			} );
 
 			// Handle selection of a media item.
