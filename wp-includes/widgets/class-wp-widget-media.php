@@ -58,7 +58,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 			'add_to_widget' => __( 'Add to Widget' ),
 			'change_media' => __( 'Change Media' ),
 			'edit_media' => __( 'Edit Media' ),
-			'media_library_state' => __( 'Media Widget' ),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Media Widget (%d instance)', 'Media Widget (%d instances)' ),
 			'missing_attachment' => sprintf(
 				/* translators: placeholder is URL to media library */
 				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),

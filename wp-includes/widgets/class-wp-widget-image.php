@@ -36,8 +36,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				__( 'We can&#8217;t find that image. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
 				esc_url( admin_url( 'upload.php' ) )
 			),
-			/* translators: %s is widget count */
-			'media_library_state' => _n_noop( 'Image Widget', 'Image Widget (%s)' ),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
 			'no_media_selected' => __( 'No image selected' ),
 			'select_media' => __( 'Select Image' ),
 		) );
