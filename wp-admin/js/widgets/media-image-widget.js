@@ -80,30 +80,89 @@
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia( event ) {
-			var control = this, selection, mediaFrame, displaySettingsView;
+			var control = this, selection, mediaFrame, library, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
 
 			event.preventDefault();
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+
+			/*
+			 * Copy current display settings from the widget model to serve as basis
+			 * of customized display settings for the current media frame session.
+			 * Changes to display settings will be synced into this model, and
+			 * when a new selection is made, the settings from this will be synced
+			 * into that AttachmentDisplay's model to persist the setting changes.
+			 */
+			customizedDisplaySettings = new Backbone.Model( {
+				align: control.model.get( 'align' ),
+				size: control.model.get( 'size' ),
+				link: control.model.get( 'link_type' ),
+				linkUrl: control.model.get( 'link_url' )
+			} );
+
+			/**
+			 * Library which persists the customized display settings across selections.
+			 *
+			 * @class
+			 */
+			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
+
+				/**
+				 * Sync changes to the current display settings back into the current customized
+				 *
+				 * @param {Backbone.Model} displaySettings Modified display settings.
+				 * @returns {void}
+				 */
+				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
+					customizedDisplaySettings.set( displaySettings.attributes );
+				},
+
+				/**
+				 * Get the display settings model.
+				 *
+				 * Model returned is updated with the current customized display settings,
+				 * and an event listener is added so that changes made to the settings
+				 * will sync back into the model storing the session's customized display
+				 * settings.
+				 *
+				 * @param {Backbone.Model} model Display settings model.
+				 * @returns {Backbone.Model} Display settings model.
+				 */
+				display: function getDisplaySettingsModel( model ) {
+					var display;
+					display = wp.media.controller.Library.prototype.display.call( this, model );
+
+					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
+					display.set( customizedDisplaySettings.attributes );
+					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
+						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
+					}
+					display.on( 'change', this.handleDisplaySettingChange );
+					return display;
+				}
+			} );
+
+			library = new CustomizedDisplaySettingsLibrary( {
+				library: wp.media.query( {
+					type: control.mime_type
+				} ),
+				title: control.l10n.select_media,
+				selection: selection,
+				multiple: false,
+				priority: 20,
+				display: true, // Attachment display setting.
+				filterable: false
+			} );
 
 			mediaFrame = wp.media( {
 				frame: 'select',
 				button: {
 					text: control.l10n.add_to_widget
 				},
-				states: new wp.media.controller.Library( {
-					library: wp.media.query( {
-						type: control.mime_type
-					} ),
-					title: control.l10n.select_media,
-					selection: selection,
-					multiple: false,
-					priority: 20,
-					display: true, // Attachment display setting.
-					filterable: false
-				} )
+				states: library
 			} );
 
+			// Handle selection of a media item.
 			mediaFrame.on( 'select', function() {
 				var attachment;
 
@@ -128,26 +187,9 @@
 				}
 			} );
 
-			displaySettingsView = mediaFrame.views.get( '.media-frame-content' )[0].sidebar.get( 'display' );
-
-			displaySettingsView.model.set( {
-				align: control.model.get( 'align' ),
-				linkUrl: control.model.get( 'link_url' ),
-				size: control.model.get( 'size' )
-			} );
-
-			/*
-			 * Set link type last due to AttachmentDisplay.updateLinkTo() blowing
-			 * the linkUrl if linkUrl change gets made before the link change.
-			 */
-			displaySettingsView.model.set( 'link', control.model.get( 'link_type' ) );
-
 			/*
 			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the
-			 * customizer. Setting the focus is also needed here because the
-			 * AttachmentDisplay.updateLinkTo() function will set focus on the
-			 * linkUrl input when the link changes above.
+			 * the modal and not inadvertently cause the widget to collapse in the customizer.
 			 */
 			mediaFrame.$el.find( ':focusable:first' ).focus();
 		},
