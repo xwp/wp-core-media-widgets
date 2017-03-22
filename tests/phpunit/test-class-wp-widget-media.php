@@ -209,6 +209,11 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media::create_link_for()
 	 */
 	function test_create_link_for() {
+		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+			return;
+		}
+
 		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
 			'post_mime_type' => 'image/jpeg',
 		) );
