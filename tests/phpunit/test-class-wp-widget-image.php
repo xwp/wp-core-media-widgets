@@ -19,6 +19,10 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	 * @covers WP_Widget_Image::get_instance_schema
 	 */
 	function test_get_instance_schema() {
+		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+			return $this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+		}
+
 		$wp_widget_image     = new ReflectionClass( 'WP_Widget_Image' );
 		$get_instance_schema = $wp_widget_image->getMethod( 'get_instance_schema' );
 		$get_instance_schema->setAccessible( true );
@@ -170,7 +174,9 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$result = $widget->update( array(
 			'alt' => '"><i onload="alert(\'hello\')" />',
 		), $instance );
-		$this->assertSame( $result, array( 'alt' => '">' ) );
+		$this->assertSame( $result, array(
+			'alt' => '">',
+		) );
 
 		// Should return valid link type.
 		$expected = array(
