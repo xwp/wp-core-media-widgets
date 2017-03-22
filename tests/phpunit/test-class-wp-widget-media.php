@@ -194,16 +194,15 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media::form()
 	 */
 	function test_form() {
-		$this->markTestIncomplete();
-	}
+		$widget = $this->get_mocked_class_instance();
 
-	/**
-	 * Test maybe_enqueue_admin_scripts method.
-	 *
-	 * @covers WP_Widget_Media::maybe_enqueue_admin_scripts()
-	 */
-	function test_maybe_enqueue_admin_scripts() {
-		$this->markTestIncomplete();
+		ob_start();
+		$widget->form( array() );
+		$output = ob_get_clean();
+
+		$this->assertContains( 'name="widget-mocked[][attachment_id]"', $output );
+		$this->assertContains( 'name="widget-mocked[][title]"', $output );
+		$this->assertContains( 'name="widget-mocked[][url]"', $output );
 	}
 
 	/**
@@ -212,16 +211,11 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media::enqueue_admin_scripts()
 	 */
 	function test_enqueue_admin_scripts() {
-		$this->markTestIncomplete();
-	}
+		$widget = $this->get_mocked_class_instance();
+		$widget->enqueue_admin_scripts();
 
-	/**
-	 * Test maybe_print_control_templates method.
-	 *
-	 * @covers WP_Widget_Media::maybe_print_control_templates()
-	 */
-	function test_maybe_print_control_templates() {
-		$this->markTestIncomplete();
+		$this->assertTrue( wp_script_is( 'media-widgets' ) );
+		$this->assertTrue( wp_style_is( 'media-widgets' ) );
 	}
 
 	/**
