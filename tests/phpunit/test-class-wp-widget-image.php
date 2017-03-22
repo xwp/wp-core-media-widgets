@@ -20,14 +20,15 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	 */
 	function test_get_instance_schema() {
 		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			return $this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+			return;
 		}
 
 		$wp_widget_image     = new ReflectionClass( 'WP_Widget_Image' );
 		$get_instance_schema = $wp_widget_image->getMethod( 'get_instance_schema' );
 		$get_instance_schema->setAccessible( true );
 
-		$schema = $get_instance_schema->invoke( new WP_Widget_Image );
+		$schema = $get_instance_schema->invoke( new WP_Widget_Image() );
 
 		$this->assertEqualSets( array(
 			'align',
