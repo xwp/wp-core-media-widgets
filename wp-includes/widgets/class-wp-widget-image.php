@@ -79,7 +79,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'caption' => array(
 					'type' => 'string',
 					'default' => '',
-					'sanitize_callback' => 'sanitize_text_field',
+					'sanitize_callback' => 'wp_kses_post',
 				),
 				'alt' => array(
 					'type' => 'string',

@@ -45,7 +45,15 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'description', $widget->widget_options );
 		$this->assertTrue( $widget->widget_options['customize_selective_refresh'] );
 		$this->assertEmpty( $widget->widget_options['mime_type'] );
-		$this->assertEqualSets( array( 'no_media_selected', 'edit_media', 'change_media', 'select_media', 'add_to_widget' ), array_keys( $widget->l10n ) );
+		$this->assertEqualSets( array(
+			'add_to_widget',
+			'change_media',
+			'edit_media',
+			'media_library_state',
+			'missing_attachment',
+			'no_media_selected',
+			'select_media',
+		), array_keys( $widget->l10n ) );
 		$this->assertEquals( count( $widget->l10n ), count( array_filter( $widget->l10n ) ), 'Expected all translation strings to be defined.' );
 		$this->assertEquals( 10, has_action( 'admin_enqueue_scripts', array( $widget, 'maybe_enqueue_admin_scripts' ) ) );
 		$this->assertEquals( 10, has_action( 'admin_footer-widgets.php', array( $widget, 'maybe_print_control_templates' ) ) );

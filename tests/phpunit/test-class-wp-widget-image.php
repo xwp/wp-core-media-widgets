@@ -161,7 +161,9 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$result = $widget->update( array(
 			'caption' => '"><i onload="alert(\'hello\')" />',
 		), $instance );
-		$this->assertSame( $result, $instance );
+		$this->assertSame( $result, array(
+			'caption' => '"&gt;<i />',
+		) );
 
 		// Should return valid alt text.
 		$expected = array(
