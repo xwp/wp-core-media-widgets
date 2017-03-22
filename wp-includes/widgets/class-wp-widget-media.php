@@ -77,9 +77,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$control_opts
 		);
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
-		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
-		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
+		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+
+		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
+		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
 
 		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 	}
@@ -273,18 +275,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Check if is admin and if so call method to register scripts.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 */
-	final public function maybe_enqueue_admin_scripts() {
-		if ( 'widgets.php' === $GLOBALS['pagenow'] || 'customize.php' === $GLOBALS['pagenow'] ) {
-			$this->enqueue_admin_scripts();
-		}
-	}
-
-	/**
 	 * Loads the required media files for the media manager and scripts for .
 	 *
 	 * @since 4.8.0
@@ -294,18 +284,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 		wp_enqueue_media();
 		wp_enqueue_style( 'media-widgets' );
 		wp_enqueue_script( 'media-widgets' );
-	}
-
-	/**
-	 * Check if is admin and if so call method to register scripts.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 */
-	final public function maybe_print_control_templates() {
-		if ( 'widgets.php' === $GLOBALS['pagenow'] || 'customize.php' === $GLOBALS['pagenow'] ) {
-			$this->render_control_template_scripts();
-		}
 	}
 
 	/**
