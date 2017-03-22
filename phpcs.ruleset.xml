@@ -28,6 +28,11 @@
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
 
+	<!-- @todo Remove this once the video and audio widgets are implemented. -->
+	<rule ref="Squiz.PHP.CommentedOutCode.Found">
+		<exclude-pattern>core-media-widgets.php</exclude-pattern>
+	</rule>
+
 	<exclude-pattern>*/dev-lib/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>

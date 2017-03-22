@@ -35,7 +35,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	/**
 	 * Test constructor.
 	 *
-	 * @covers WP_Widget_Media::__constructor()
+	 * @covers WP_Widget_Media::__construct()
 	 */
 	function test_constructor() {
 		$widget = $this->get_mocked_class_instance();
