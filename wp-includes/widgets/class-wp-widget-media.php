@@ -125,11 +125,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 *
 	 * @link http://w3c.github.io/html/infrastructure.html#space-separated-tokens
 	 * @link https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
-	 * @param string $token_list List of tokens separated by spaces.
+	 * @param string|array $tokens List of tokens separated by spaces, or an array of tokens.
 	 * @return string Sanitized token string list.
 	 */
-	function sanitize_token_list_string( $token_list ) {
-		$tokens = preg_split( '/\s+/', trim( $token_list ) );
+	function sanitize_token_list( $tokens ) {
+		if ( is_string( $tokens ) ) {
+			$tokens = preg_split( '/\s+/', trim( $tokens ) );
+		}
 		$tokens = array_map( 'sanitize_html_class', $tokens );
 		$tokens = array_filter( $tokens );
 		return join( ' ', $tokens );

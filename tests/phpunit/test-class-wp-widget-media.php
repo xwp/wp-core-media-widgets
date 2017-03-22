@@ -82,15 +82,18 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test sanitize_token_list_string method.
+	 * Test sanitize_token_list method.
 	 *
-	 * @covers WP_Widget_Media::sanitize_token_list_string
+	 * @covers WP_Widget_Media::sanitize_token_list
 	 */
 	function test_sanitize_token_list_string() {
 		$widget = $this->get_mocked_class_instance();
 
-		$result = $widget->sanitize_token_list_string( 'What A false class with-token <a href="#">and link</a>' );
+		$result = $widget->sanitize_token_list( 'What A false class with-token <a href="#">and link</a>' );
 		$this->assertEquals( 'What A false class with-token a hrefand linka', $result );
+
+		$result = $widget->sanitize_token_list( array( 'foo', '<i>bar', '">NO' ) );
+		$this->assertEquals( $result, 'foo ibar NO' );
 	}
 
 	/**

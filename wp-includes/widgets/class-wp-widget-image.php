@@ -99,17 +99,17 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'image_classes' => array( // Via 'extraClasses' property.
 					'type' => 'string',
 					'default' => '',
-					'sanitize_callback' => array( $this, 'sanitize_token_list_string' ),
+					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
 				),
 				'link_classes' => array( // Via 'linkClassName' property.
 					'type' => 'string',
 					'default' => '',
-					'sanitize_callback' => array( $this, 'sanitize_token_list_string' ),
+					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
 				),
 				'link_rel' => array( // Via 'linkRel' property.
 					'type' => 'string',
 					'default' => '',
-					'sanitize_callback' => array( $this, 'sanitize_token_list_string' ),
+					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
 				),
 				'link_target_blank' => array( // Via 'linkTargetBlank' property.
 					'type' => 'boolean',
