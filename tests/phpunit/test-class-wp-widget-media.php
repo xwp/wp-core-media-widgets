@@ -72,8 +72,12 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$widget          = $this->get_mocked_class_instance( $id_base, $name, $widget_options, $control_options );
 		$this->assertEquals( $id_base, $widget->id_base );
 		$this->assertEquals( $name, $widget->name );
-		$this->assertArraySubset( $widget_options, $widget->widget_options );
-		$this->assertArraySubset( $control_options, $widget->control_options );
+
+		// Method assertArraySubset doesn't exist in phpunit versions compatible with PHP 5.2.
+		if ( method_exists( $this, 'assertArraySubset' ) ) {
+			$this->assertArraySubset( $widget_options, $widget->widget_options );
+			$this->assertArraySubset( $control_options, $widget->control_options );
+		}
 	}
 
 	/**
