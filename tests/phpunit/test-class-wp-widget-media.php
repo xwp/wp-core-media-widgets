@@ -214,7 +214,9 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			return;
 		}
 
-		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
+		$attachment_id = self::factory()->attachment->create_object( array(
+			'file' => DIR_TESTDATA . '/images/canola.jpg',
+			'post_parent' => 0,
 			'post_mime_type' => 'image/jpeg',
 		) );
 
@@ -308,7 +310,9 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 */
 	function test_display_media_state() {
 		$widget        = $this->get_mocked_class_instance();
-		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
+		$attachment_id = self::factory()->attachment->create_object( array(
+			'file' => DIR_TESTDATA . '/images/canola.jpg',
+			'post_parent' => 0,
 			'post_mime_type' => 'image/jpeg',
 		) );
 

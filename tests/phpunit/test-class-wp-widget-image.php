@@ -316,7 +316,9 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	 */
 	function test_render_media() {
 		$widget        = new WP_Widget_Image();
-		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
+		$attachment_id = self::factory()->attachment->create_object( array(
+			'file' => DIR_TESTDATA . '/images/canola.jpg',
+			'post_parent' => 0,
 			'post_mime_type' => 'image/jpeg',
 			'post_title' => 'Canola',
 		) );
