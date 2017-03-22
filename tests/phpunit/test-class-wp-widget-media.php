@@ -236,7 +236,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			get_post( $attachment_id ),
 			'file',
 		) );
-		$this->assertSame( '<a href="http://example.org/wp-content/uploads//srv/www/wordpress-develop/tests/phpunit/includes/../data/images/canola.jpg">Attachment Title</a>',$result );
+		$this->assertSame( '<a href="' . esc_url( wp_get_attachment_url( $attachment_id ) ) . '">Attachment Title</a>',$result );
 
 		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
 			get_post( $attachment_id ),
