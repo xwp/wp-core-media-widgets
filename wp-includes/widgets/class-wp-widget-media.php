@@ -116,6 +116,23 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
+	 * Sanitize a token list string, such as used in HTML rel and class attributes.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @link https://www.w3.org/TR/2011/WD-html5-20110525/common-microsyntaxes.html#set-of-space-separated-tokens
+	 * @param string $token_list List of tokens separated by spaces.
+	 * @return string Sanitized token string list.
+	 */
+	function sanitize_token_list_string( $token_list ) {
+		$tokens = preg_split( '/\s+/', trim( $token_list ) );
+		$tokens = array_map( 'sanitize_html_class', $tokens );
+		$tokens = array_filter( $tokens );
+		return join( ' ', $tokens );
+	}
+
+	/**
 	 * Displays the widget on the front-end.
 	 *
 	 * @since 4.8.0

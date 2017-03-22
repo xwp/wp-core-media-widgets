@@ -219,7 +219,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 			'image_classes' => '"><i onload="alert(\'hello\')" />',
 		), $instance );
 		$this->assertSame( $result, array(
-			'image_classes' => '">',
+			'image_classes' => 'i onloadalerthello',
 		) );
 
 		// Should return valid link classes.
@@ -234,7 +234,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 			'link_classes' => '"><i onload="alert(\'hello\')" />',
 		), $instance );
 		$this->assertSame( $result, array(
-			'link_classes' => '">',
+			'link_classes' => 'i onloadalerthello',
 		) );
 
 		// Should return valid rel text.
@@ -249,7 +249,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 			'link_rel' => '"><i onload="alert(\'hello\')" />',
 		), $instance );
 		$this->assertSame( $result, array(
-			'link_rel' => '">',
+			'link_rel' => 'i onloadalerthello',
 		) );
 
 		// Should return valid link target.
