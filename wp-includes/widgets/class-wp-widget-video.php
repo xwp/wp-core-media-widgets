@@ -12,6 +12,8 @@
  *
  * @since 4.8.0
  *
+ * @todo Refactor this for latest WP_Widget_Media and remove codeCoverageIgnore
+ * @codeCoverageIgnore
  * @see WP_Widget
  */
 class WP_Widget_Video extends WP_Widget_Media {

@@ -47,7 +47,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function __construct( $id_base, $name, $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
-			'description' => __( 'An image, video, or audio file.' ),
+			'description' => __( 'A media item.' ),
 			'customize_selective_refresh' => true,
 			'mime_type' => '',
 		) );
@@ -118,6 +118,26 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
+	 * Sanitize a token list string, such as used in HTML rel and class attributes.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @link http://w3c.github.io/html/infrastructure.html#space-separated-tokens
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
+	 * @param string|array $tokens List of tokens separated by spaces, or an array of tokens.
+	 * @return string Sanitized token string list.
+	 */
+	function sanitize_token_list( $tokens ) {
+		if ( is_string( $tokens ) ) {
+			$tokens = preg_split( '/\s+/', trim( $tokens ) );
+		}
+		$tokens = array_map( 'sanitize_html_class', $tokens );
+		$tokens = array_filter( $tokens );
+		return join( ' ', $tokens );
+	}
+
+	/**
 	 * Displays the widget on the front-end.
 	 *
 	 * @since 4.8.0
@@ -170,10 +190,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
 				continue;
 			}
+
 			$value = rest_sanitize_value_from_schema( $value, $field_schema );
+
+			// @codeCoverageIgnoreStart
 			if ( is_wp_error( $value ) ) {
-				continue;
+				continue; // Handle case when rest_sanitize_value_from_schema() ever returns WP_Error as its phpdoc @return tag indicates.
 			}
+
+			// @codeCoverageIgnoreEnd
 			if ( isset( $field_schema['sanitize_callback'] ) ) {
 				$value = call_user_func( $field_schema['sanitize_callback'], $value );
 			}
