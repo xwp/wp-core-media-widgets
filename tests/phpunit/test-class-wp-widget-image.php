@@ -50,6 +50,30 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test constructor.
+	 *
+	 * @covers WP_Widget_Image::__construct()
+	 */
+	function test_constructor() {
+		$widget = new WP_Widget_Image();
+
+		$this->assertArrayHasKey( 'mime_type', $widget->widget_options );
+		$this->assertArrayHasKey( 'customize_selective_refresh', $widget->widget_options );
+		$this->assertArrayHasKey( 'description', $widget->widget_options );
+		$this->assertTrue( $widget->widget_options['customize_selective_refresh'] );
+		$this->assertEquals( 'image', $widget->widget_options['mime_type'] );
+		$this->assertEqualSets( array(
+			'add_to_widget',
+			'change_media',
+			'edit_media',
+			'media_library_state',
+			'missing_attachment',
+			'no_media_selected',
+			'select_media',
+		), array_keys( $widget->l10n ) );
+	}
+
+	/**
 	 * Test get_instance_schema method.
 	 *
 	 * @covers WP_Widget_Image::update
@@ -304,6 +328,14 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$output = ob_get_clean();
 		$this->assertEmpty( $output );
 
+		// Should be empty when there is an invalid attachment_id.
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => 666,
+		) );
+		$output = ob_get_clean();
+		$this->assertEmpty( $output );
+
 		ob_start();
 		$widget->render_media( array(
 			'attachment_id' => $attachment_id,
@@ -323,6 +355,9 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 			'image_title' => 'Custom Title',
 			'image_classes' => 'custom-class',
 			'alt' => 'A flower',
+			'size' => 'custom',
+			'width' => 100,
+			'height' => 100,
 		) );
 		$output = ob_get_clean();
 
@@ -331,6 +366,8 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		// Custom image class.
 		$this->assertContains( 'class="image wp-image-' . $attachment_id . ' custom-class', $output );
 		$this->assertContains( 'alt="A flower"', $output );
+		$this->assertContains( 'width="100"', $output );
+		$this->assertContains( 'height="100"', $output );
 
 		// Link settings.
 		ob_start();
