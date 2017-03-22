@@ -55,9 +55,10 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			'select_media',
 		), array_keys( $widget->l10n ) );
 		$this->assertEquals( count( $widget->l10n ), count( array_filter( $widget->l10n ) ), 'Expected all translation strings to be defined.' );
-		$this->assertEquals( 10, has_action( 'admin_enqueue_scripts', array( $widget, 'maybe_enqueue_admin_scripts' ) ) );
-		$this->assertEquals( 10, has_action( 'admin_footer-widgets.php', array( $widget, 'maybe_print_control_templates' ) ) );
-		$this->assertEquals( 10, has_action( 'customize_controls_print_footer_scripts', array( $widget, 'maybe_print_control_templates' ) ) );
+		$this->assertEquals( 10, has_action( 'admin_print_scripts-widgets.php', array( $widget, 'enqueue_admin_scripts' ) ) );
+		$this->assertEquals( 10, has_action( 'customize_controls_print_scripts', array( $widget, 'enqueue_admin_scripts' ) ) );
+		$this->assertEquals( 10, has_action( 'admin_footer-widgets.php', array( $widget, 'render_control_template_scripts' ) ) );
+		$this->assertEquals( 10, has_action( 'customize_controls_print_footer_scripts', array( $widget, 'render_control_template_scripts' ) ) );
 
 		// With non-default args.
 		$id_base         = 'media_pdf';
