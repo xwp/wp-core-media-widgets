@@ -82,6 +82,42 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test sanitize_token_list_string method.
+	 *
+	 * @covers WP_Widget_Media::sanitize_token_list_string
+	 */
+	function test_sanitize_token_list_string() {
+		$widget = $this->get_mocked_class_instance();
+
+		$result = $widget->sanitize_token_list_string( 'What A false class with-token <a href="#">and link</a>' );
+		$this->assertEquals( 'What A false class with-token a hrefand linka', $result );
+	}
+
+	/**
+	 * Test get_instance_schema method.
+	 *
+	 * @covers WP_Widget_Media::get_instance_schema
+	 */
+	function test_get_instance_schema() {
+		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+			return;
+		}
+
+		$wp_widget_media     = new ReflectionClass( 'WP_Widget_Media' );
+		$get_instance_schema = $wp_widget_media->getMethod( 'get_instance_schema' );
+		$get_instance_schema->setAccessible( true );
+
+		$schema = $get_instance_schema->invoke( $this->get_mocked_class_instance() );
+
+		$this->assertEqualSets( array(
+			'attachment_id',
+			'title',
+			'url',
+		), array_keys( $schema ) );
+	}
+
+	/**
 	 * Test update method.
 	 *
 	 * @covers WP_Widget_Media::update()
@@ -147,7 +183,61 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		);
 		$this->assertSame( $result, $instance );
 
-		$widget->render_media( array(), array() );
+		add_filter( 'sanitize_text_field', array( $this, '_return_wp_error' ) );
+		$result = $widget->update(
+			array(
+				'title' => 'Title',
+			),
+			$instance
+		);
+		remove_filter( 'sanitize_text_field', array( $this, '_return_wp_error' ) );
+		$this->assertSame( $result, $instance );
+	}
+
+	/**
+	 * Helper function for Test_WP_Widget_Media::test_update().
+	 *
+	 * @return \WP_Error
+	 */
+	function _return_wp_error() {
+		return new WP_Error( 'some-error', 'This is not valid!' );
+	}
+
+	/**
+	 * Test create_link_for method.
+	 *
+	 * @covers WP_Widget_Media::create_link_for()
+	 */
+	function test_create_link_for() {
+		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
+			'post_mime_type' => 'image/jpeg',
+		) );
+
+		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
+		$create_link_for = $wp_widget_media->getMethod( 'create_link_for' );
+		$create_link_for->setAccessible( true );
+
+		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
+			get_post( $attachment_id ),
+		) );
+		$this->assertSame( '<a href="#"></a>',$result );
+
+		wp_update_post( array(
+			'ID' => $attachment_id,
+			'post_title' => 'Attachment Title',
+		) );
+
+		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
+			get_post( $attachment_id ),
+			'file',
+		) );
+		$this->assertSame( '<a href="http://example.org/wp-content/uploads//srv/www/wordpress-develop/tests/phpunit/includes/../data/images/canola.jpg">Attachment Title</a>',$result );
+
+		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
+			get_post( $attachment_id ),
+			'post',
+		) );
+		$this->assertSame( '<a href="http://example.org/?attachment_id=4">Attachment Title</a>',$result );
 	}
 
 	/**
@@ -204,6 +294,29 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$this->assertContains( 'name="widget-mocked[][attachment_id]"', $output );
 		$this->assertContains( 'name="widget-mocked[][title]"', $output );
 		$this->assertContains( 'name="widget-mocked[][url]"', $output );
+	}
+
+	/**
+	 * Test display_media_state method.
+	 *
+	 * @covers WP_Widget_Media::display_media_state()
+	 */
+	function test_display_media_state() {
+		$widget        = $this->get_mocked_class_instance();
+		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
+			'post_mime_type' => 'image/jpeg',
+		) );
+
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertEqualSets( array(), $result );
+
+		$widget->save_settings( array(
+			array(
+				'attachment_id' => $attachment_id,
+			),
+		) );
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertEqualSets( array( sprintf( $widget->l10n['media_library_state']['singular'], 1 ) ), $result );
 	}
 
 	/**

@@ -187,10 +187,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
 				continue;
 			}
+
 			$value = rest_sanitize_value_from_schema( $value, $field_schema );
-			if ( is_wp_error( $value ) ) {
-				continue;
-			}
+
 			if ( isset( $field_schema['sanitize_callback'] ) ) {
 				$value = call_user_func( $field_schema['sanitize_callback'], $value );
 			}
