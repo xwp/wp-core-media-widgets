@@ -244,7 +244,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			get_post( $attachment_id ),
 			'post',
 		) );
-		$this->assertSame( '<a href="http://example.org/?attachment_id=4">Attachment Title</a>',$result );
+		$this->assertSame( '<a href="' . esc_url( get_permalink( $attachment_id ) ) . '">Attachment Title</a>', $result );
 	}
 
 	/**
