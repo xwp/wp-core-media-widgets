@@ -291,7 +291,12 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	 * @covers WP_Widget_Image::render_media
 	 */
 	function test_render_media() {
-		$widget = new WP_Widget_Image();
+		$widget        = new WP_Widget_Image();
+		$attachment_id = self::factory()->attachment->create_object( DIR_TESTDATA . '/images/canola.jpg', 0, array(
+			'post_mime_type' => 'image/jpeg',
+			'post_title' => 'Canola',
+		) );
+		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, DIR_TESTDATA . '/images/canola.jpg' ) );
 
 		// Should be empty when there is no attachment_id.
 		ob_start();
@@ -299,7 +304,102 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$output = ob_get_clean();
 		$this->assertEmpty( $output );
 
-		// TODO: Check image rendering.
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+		) );
+		$output = ob_get_clean();
+
+		// Default title to image title.
+		$this->assertContains( 'title="Canola"', $output );
+		// Default image classes.
+		$this->assertContains( 'class="image wp-image-' . $attachment_id, $output );
+		$this->assertContains( 'style="max-width: 100%; height: auto;"', $output );
+		$this->assertContains( 'alt=""', $output );
+
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+			'image_title' => 'Custom Title',
+			'image_classes' => 'custom-class',
+			'alt' => 'A flower',
+		) );
+		$output = ob_get_clean();
+
+		// Custom image title.
+		$this->assertContains( 'title="Custom Title"', $output );
+		// Custom image class.
+		$this->assertContains( 'class="image wp-image-' . $attachment_id . ' custom-class', $output );
+		$this->assertContains( 'alt="A flower"', $output );
+
+		// Link settings.
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+			'link_type' => 'file',
+		) );
+		$output = ob_get_clean();
+
+		$link = '<a href="' . wp_get_attachment_url( $attachment_id ) . '"';
+		$this->assertContains( $link, $output );
+		$link .= ' class=""';
+		$this->assertContains( $link, $output );
+		$link .= ' rel=""';
+		$this->assertContains( $link, $output );
+		$link .= ' target=""';
+		$this->assertContains( $link, $output );
+
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+			'link_type' => 'post',
+			'link_classes' => 'custom-link-class',
+			'link_rel' => 'attachment',
+			'link_target_blank' => false,
+		) );
+		$output = ob_get_clean();
+
+		$this->assertContains( '<a href="' . get_attachment_link( $attachment_id ) . '"', $output );
+		$this->assertContains( 'class="custom-link-class"', $output );
+		$this->assertContains( 'rel="attachment"', $output );
+		$this->assertContains( 'target=""', $output );
+
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+			'link_type' => 'custom',
+			'link_url' => 'https://example.org',
+			'link_target_blank' => true,
+		) );
+		$output = ob_get_clean();
+
+		$this->assertContains( '<a href="https://example.org"', $output );
+		$this->assertContains( 'target="_blank"', $output );
+
+		// Caption settings.
+		wp_update_post( array(
+			'ID' => $attachment_id,
+			'post_excerpt' => 'Default caption',
+		) );
+
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+		) );
+		$output = ob_get_clean();
+
+		$this->assertContains( 'class="wp-caption alignnone"', $output );
+		$this->assertContains( '<p class="wp-caption-text">Default caption</p>', $output );
+
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => $attachment_id,
+			'caption' => 'Custom caption',
+		) );
+		$output = ob_get_clean();
+
+		$this->assertContains( 'class="wp-caption alignnone"', $output );
+		$this->assertContains( '<p class="wp-caption-text">Custom caption</p>', $output );
 	}
 
 	/**
