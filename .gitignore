@@ -1,1 +1,4 @@
 node_modules
+
+/vendor/
+/tests/wordpress-develop

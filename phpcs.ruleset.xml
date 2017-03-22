@@ -9,7 +9,14 @@
 		<exclude name="WordPress.XSS.EscapeOutput"/>
 	</rule>
 
+	<rule ref="WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents">
+		<exclude-pattern>php/class-media-widgets-wp-cli-command.php</exclude-pattern>
+	</rule>
+
 	<!-- @todo These should not be required since the WordPress-VIP ruleset isn't being included. -->
+	<rule ref="WordPress.VIP.FileSystemWritesDisallow.file_ops_file_put_contents">
+		<exclude-pattern>php/class-media-widgets-wp-cli-command.php</exclude-pattern>
+	</rule>
 	<rule ref="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents">
 		<severity>0</severity>
 	</rule>

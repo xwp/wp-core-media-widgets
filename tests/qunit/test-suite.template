@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Core Media Widgets QUnit Suite</title>
+		<link rel="stylesheet" href="../../node_modules/qunitjs/qunit/qunit.css">
+	</head>
+	<body>
+		<div id="qunit"></div>
+		<div id="qunit-fixture"></div>
+
+		<!-- Don't forget to run `npm install` and `composer install` first! -->
+		<script src="../../node_modules/qunitjs/qunit/qunit.js"></script>
+
+		<!-- Begin dependencies -->
+		{{dependencies}}
+		<!-- End dependencies -->
+
+		<!-- Unit tests -->
+		<script src="./test-media-widgets.js"></script>
+		<script src="./test-media-image-widget.js"></script>
+	</body>
+</html>

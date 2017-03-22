@@ -1,0 +1,25 @@
+{
+	"name": "xwp/wp-core-media-widgets",
+	"version": "0.1.0",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0",
+	"homepage": "https://github.com/xwp/wp-core-media-widgets",
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/xwp/wp-core-media-widgets.git"
+		}
+	],
+	"dist": {
+		"url": "https://downloads.wordpress.org/plugin/wp-core-media-widgets.zip",
+		"type": "zip"
+	},
+	"require": {
+		"php": ">=5.2.0"
+	},
+	"scripts": {
+		"post-install-cmd": [
+			"bin/install-wordpress-develop.sh"
+		]
+	}
+}

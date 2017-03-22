@@ -24,6 +24,12 @@
  * @package WordPress
  */
 
+// Register WP-CLI command for generating QUnit test suite.
+if ( defined( 'WP_CLI' ) ) {
+	require_once dirname( __FILE__ ) . '/php/class-media-widgets-wp-cli-command.php';
+	WP_CLI::add_command( 'media-widgets', new Media_Widgets_WP_CLI_Command() );
+}
+
 /**
  * Register widget scripts.
  *

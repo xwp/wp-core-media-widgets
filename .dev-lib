@@ -1,3 +1,5 @@
 CHECK_SCOPE=changed-files
 PHPCS_RULESET_FILE=phpcs.ruleset.xml
 WPCS_BRANCH=develop
+WP_CORE_DIR=$(pwd)/tests/wordpress-develop
+PATH_EXCLUDES_PATTERN='tests/wordpress-develop'
