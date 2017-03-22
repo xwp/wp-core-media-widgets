@@ -24,7 +24,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 			return;
 		}
 
-		$wp_widget_image     = new ReflectionClass( 'WP_Widget_Image' );
+		$wp_widget_image = new ReflectionClass( 'WP_Widget_Image' );
 		$get_instance_schema = $wp_widget_image->getMethod( 'get_instance_schema' );
 		$get_instance_schema->setAccessible( true );
 
@@ -80,14 +80,14 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	 * @covers WP_Widget_Image::update
 	 */
 	function test_update() {
-		$widget   = new WP_Widget_Image();
+		$widget = new WP_Widget_Image();
 		$instance = array();
 
 		// Should return valid attachment ID.
 		$expected = array(
 			'attachment_id' => 1,
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid attachment ID.
@@ -100,7 +100,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'url' => 'https://example.org',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid attachment url.
@@ -114,7 +114,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'title' => 'What a title',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid attachment title.
@@ -127,7 +127,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'size' => 'thumbnail',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image size.
@@ -140,7 +140,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'width' => 300,
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image width.
@@ -153,7 +153,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'height' => 200,
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image height.
@@ -166,7 +166,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'align' => 'right',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image alignment.
@@ -179,7 +179,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'caption' => 'A caption with <a href="#">link</a>',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image caption.
@@ -194,7 +194,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'alt' => 'A water tower',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid alt text.
@@ -209,7 +209,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'link_type' => 'file',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid link type.
@@ -222,7 +222,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'link_url' => 'https://example.org',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid link url.
@@ -236,7 +236,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'image_classes' => 'A water tower',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image classes.
@@ -251,7 +251,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'link_classes' => 'A water tower',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid link classes.
@@ -266,7 +266,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'link_rel' => 'previous',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid rel text.
@@ -281,7 +281,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'link_target_blank' => false,
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid  link target.
@@ -294,7 +294,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$expected = array(
 			'image_title' => 'What a title',
 		);
-		$result   = $widget->update( $expected, $instance );
+		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid image title.
@@ -316,7 +316,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	 * @covers WP_Widget_Image::render_media
 	 */
 	function test_render_media() {
-		$widget        = new WP_Widget_Image();
+		$widget = new WP_Widget_Image();
 		$attachment_id = self::factory()->attachment->create_object( array(
 			'file' => DIR_TESTDATA . '/images/canola.jpg',
 			'post_parent' => 0,
