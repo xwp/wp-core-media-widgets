@@ -88,7 +88,8 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		initialize: function initialize( options ) {
-			var control = this;
+			var control = this,
+				CustomizedDisplaySettingsLibrary;
 
 			Backbone.View.prototype.initialize.call( control, options );
 
@@ -133,8 +134,51 @@ wp.mediaWidgets = ( function( $ ) {
 			} );
 
 			/**
+			 * Library which persists the customized display settings across selections.
+			 *
+			 * @class
+			 */
+			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
+
+				/**
+				 * Sync changes to the current display settings back into the current customized
+				 *
+				 * @param {Backbone.Model} displaySettings Modified display settings.
+				 * @returns {void}
+				 */
+				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
+					customizedDisplaySettings.set( displaySettings.attributes );
+				},
+
+				/**
+				 * Get the display settings model.
+				 *
+				 * Model returned is updated with the current customized display settings,
+				 * and an event listener is added so that changes made to the settings
+				 * will sync back into the model storing the session's customized display
+				 * settings.
+				 *
+				 * @param {Backbone.Model} model Display settings model.
+				 * @returns {Backbone.Model} Display settings model.
+				 */
+				display: function getDisplaySettingsModel( model ) {
+					var display;
+					display = wp.media.controller.Library.prototype.display.call( this, model );
+
+					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
+					display.set( customizedDisplaySettings.attributes );
+					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
+						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
+					}
+					display.on( 'change', this.handleDisplaySettingChange );
+					return display;
+				}
+			} );
+
+			/**
 			 * Extend wp.media.view.MediaFrame.Post for our simplified media upload modal.
 			 */
+			control.originalButtonLanguage = _wpMediaViewsL10n.insertIntoPost;
 			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
 			control.customMediaFramePost = wp.media.view.MediaFrame.Post.extend({
 				/**
@@ -148,18 +192,17 @@ wp.mediaWidgets = ( function( $ ) {
 					this.states.add([
 
 						// Main states.
-						new Library({
+						new CustomizedDisplaySettingsLibrary({
 							id:         'insert',
-							title:      false,
+							title:      control.l10n.select_media,
 							priority:   20,
 							toolbar:    'main-insert',
 							filterable: 'dates',
-							library:    wp.media.query( options.library ),
-							multiple:   options.multiple ? 'reset' : false,
+							library:    wp.media.query( {
+											type: control.mime_type
+										} ),
+							multiple:   false,
 							editable:   true,
-							allowLocalEdits: true,
-							displaySettings: true,
-							displayUserSettings: true
 						}),
 
 						new wp.media.controller.EditImage( { model: options.editImage } ),
@@ -167,7 +210,9 @@ wp.mediaWidgets = ( function( $ ) {
 						// Embed states.
 						new wp.media.controller.Embed( { metadata: options.metadata } ),
 					]);
-				},
+
+				}
+
 			} );
 		},
 
@@ -296,7 +341,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
+			var control = this, selection, mediaFrame, customizedDisplaySettings;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
@@ -314,76 +359,23 @@ wp.mediaWidgets = ( function( $ ) {
 				linkUrl: control.model.get( 'link_url' )
 			} );
 
-			/**
-			 * Library which persists the customized display settings across selections.
-			 *
-			 * @class
-			 */
-			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
-
-				/**
-				 * Sync changes to the current display settings back into the current customized
-				 *
-				 * @param {Backbone.Model} displaySettings Modified display settings.
-				 * @returns {void}
-				 */
-				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
-					customizedDisplaySettings.set( displaySettings.attributes );
-				},
-
-				/**
-				 * Get the display settings model.
-				 *
-				 * Model returned is updated with the current customized display settings,
-				 * and an event listener is added so that changes made to the settings
-				 * will sync back into the model storing the session's customized display
-				 * settings.
-				 *
-				 * @param {Backbone.Model} model Display settings model.
-				 * @returns {Backbone.Model} Display settings model.
-				 */
-				display: function getDisplaySettingsModel( model ) {
-					var display;
-					display = wp.media.controller.Library.prototype.display.call( this, model );
-
-					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
-					display.set( customizedDisplaySettings.attributes );
-					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
-						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
-					}
-					display.on( 'change', this.handleDisplaySettingChange );
-					return display;
-				}
-			} );
+			_wpMediaViewsL10n.insertIntoPost = control.l10n.add_to_widget;
 
 			// Use our Post frame.
 			wp.media.view.MediaFrame.Post = control.customMediaFramePost;
 
 			mediaFrame = wp.media( {
 				frame: 'post',
-				button: {
-					text: control.l10n.add_to_widget
-				},
-				state: 'library',
-				states: new CustomizedDisplaySettingsLibrary( {
-					library: wp.media.query( {
-						type: control.mime_type
-					} ),
-					title: control.l10n.select_media,
-					selection: selection,
-					multiple: false,
-					priority: 20,
-					display: true, // Attachment display setting.
-					filterable: false
-				} )
+				text: control.l10n.add_to_widget,
 			} );
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'select', function() {
 				var attachment;
 
-				// Restore the original wp.media.view.MediaFrame.Post object.
+				// Restore the original wp.media.view.MediaFrame.Post object and language.
 				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
+				_wpMediaViewsL10n.insertIntoPost = control.originalButtonLanguage;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
