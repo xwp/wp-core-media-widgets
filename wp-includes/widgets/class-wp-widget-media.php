@@ -17,15 +17,19 @@
 abstract class WP_Widget_Media extends WP_Widget {
 
 	/**
-	 * Default instance.
+	 * Translation labels.
 	 *
+	 * @since 4.8.0
 	 * @var array
 	 */
-	protected $default_instance = array(
-		'id'          => '',
-		'title'       => '',
-		'link'        => '',
-		'align'       => 'none',
+	public $l10n = array(
+		'add_to_widget' => '',
+		'change_media' => '',
+		'edit_media' => '',
+		'media_library_state' => '',
+		'missing_attachment' => '',
+		'no_media_selected' => '',
+		'select_media' => '',
 	);
 
 	/**
@@ -43,11 +47,28 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function __construct( $id_base, $name, $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
-			'description' => __( 'An image, video, or audio file.' ),
+			'description' => __( 'A media item.' ),
 			'customize_selective_refresh' => true,
+			'mime_type' => '',
 		) );
 
 		$control_opts = wp_parse_args( $control_options, array() );
+
+		$l10n_defaults = array(
+			'no_media_selected' => __( 'No media selected' ),
+			'select_media' => _x( 'Select Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'add_to_widget' => __( 'Add to Widget' ),
+			'missing_attachment' => sprintf(
+				/* translators: placeholder is URL to media library */
+				__( 'We can&#8217;t find that file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
+			/* translators: %d is widget count */
+			'media_library_state' => _n_noop( 'Media Widget (%d instance)', 'Media Widget (%d instances)' ),
+		);
+		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
 		parent::__construct(
 			$id_base,
@@ -56,8 +77,64 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$control_opts
 		);
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+
+		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
+		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
+
+		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
+	}
+
+	/**
+	 * Get instance schema.
+	 *
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
+	 */
+	protected function get_instance_schema() {
+		return array(
+			'attachment_id' => array(
+				'type' => 'integer',
+				'default' => 0,
+				'minimum' => 0,
+				'description' => __( 'Attachment post ID' ),
+			),
+			'url' => array(
+				'type' => 'string',
+				'default' => '',
+				'format' => 'uri',
+				'description' => __( 'URL to the media file' ),
+			),
+			'title' => array(
+				'type' => 'string',
+				'default' => '',
+				'sanitize_callback' => 'sanitize_text_field',
+				'description' => __( 'Title for the widget' ),
+			),
+		);
+	}
+
+	/**
+	 * Sanitize a token list string, such as used in HTML rel and class attributes.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @link http://w3c.github.io/html/infrastructure.html#space-separated-tokens
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
+	 * @param string|array $tokens List of tokens separated by spaces, or an array of tokens.
+	 * @return string Sanitized token string list.
+	 */
+	function sanitize_token_list( $tokens ) {
+		if ( is_string( $tokens ) ) {
+			$tokens = preg_split( '/\s+/', trim( $tokens ) );
+		}
+		$tokens = array_map( 'sanitize_html_class', $tokens );
+		$tokens = array_filter( $tokens );
+		return join( ' ', $tokens );
 	}
 
 	/**
@@ -72,7 +149,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$instance = array_merge( $this->default_instance, $instance );
+		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
 		echo $args['before_widget'];
 
@@ -83,11 +160,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
 
-		// Render the media.
-		$attachment = $instance['id'] ? get_post( $instance['id'] ) : null;
-		if ( $attachment ) {
-			$this->render_media( $attachment, $args['widget_id'], $instance );
-		}
+		$this->render_media( $instance );
 
 		echo $args['after_widget'];
 	}
@@ -99,38 +172,55 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @access public
 	 *
 	 * @see WP_Widget::update()
+	 * @see WP_REST_Request::has_valid_params()
+	 * @see WP_REST_Request::sanitize_params()
 	 *
 	 * @param array $new_instance Values just sent to be saved.
-	 * @param array $old_instance Previously saved values from database.
+	 * @param array $instance     Previously saved values from database.
 	 * @return array Updated safe values to be saved.
 	 */
-	public function update( $new_instance, $old_instance ) {
-		$instance = $old_instance;
+	public function update( $new_instance, $instance ) {
 
-		// ID and title.
-		$instance['id']    = (int) $new_instance['id'];
-		$instance['title'] = sanitize_text_field( $new_instance['title'] );
+		$schema = $this->get_instance_schema();
+		foreach ( $schema as $field => $field_schema ) {
+			if ( ! array_key_exists( $field, $new_instance ) ) {
+				continue;
+			}
+			$value = $new_instance[ $field ];
+			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
+				continue;
+			}
 
-		// Everything else.
-		$instance['align'] = sanitize_text_field( $new_instance['align'] );
-		$instance['size']  = sanitize_text_field( $new_instance['size'] );
-		$instance['link']  = sanitize_text_field( $new_instance['link'] );
+			$value = rest_sanitize_value_from_schema( $value, $field_schema );
+
+			// @codeCoverageIgnoreStart
+			if ( is_wp_error( $value ) ) {
+				continue; // Handle case when rest_sanitize_value_from_schema() ever returns WP_Error as its phpdoc @return tag indicates.
+			}
+
+			// @codeCoverageIgnoreEnd
+			if ( isset( $field_schema['sanitize_callback'] ) ) {
+				$value = call_user_func( $field_schema['sanitize_callback'], $value );
+			}
+			if ( is_wp_error( $value ) ) {
+				continue;
+			}
+			$instance[ $field ] = $value;
+		}
 
 		return $instance;
 	}
 
 	/**
-	 * Renders a single media attachment
+	 * Render the media on the frontend.
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $widget_id  Widget ID.
-	 * @param array   $instance   Current widget instance arguments.
+	 * @param array $instance Widget instance props.
 	 * @return string
 	 */
-	abstract public function render_media( $attachment, $widget_id, $instance );
+	abstract public function render_media( $instance );
 
 	/**
 	 * Creates and returns a link for an attachment.
@@ -153,83 +243,108 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Outputs the settings update form.
 	 *
+	 * Note that the widget UI itself is rendered with JavaScript via `MediaWidgetControl#render()`.
+	 *
 	 * @since 4.8.0
 	 * @access public
 	 *
-	 * @param array $saved_instance Current settings.
+	 * @see \WP_Widget_Media::render_control_template_scripts() Where the JS template is located.
+	 * @param array $instance Current settings.
 	 * @return void
 	 */
-	public function form( $saved_instance ) {
-		$defaults = array(
-			'title'  => '',
-			// Attachment props.
-			'id'     => '',
-			'align'  => '',
-			'size'   => '',
-			'link'   => '',
+	final public function form( $instance ) {
+		$instance_schema = $this->get_instance_schema();
+		$instance = wp_array_slice_assoc(
+			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
+			array_keys( $instance_schema )
 		);
-
-		$instance   = wp_parse_args( (array) $saved_instance, $defaults );
-		$attachment = empty( $instance['id'] ) ? null : get_post( $instance['id'] );
-		$widget_id  = $this->id;
 		?>
-		<div class="<?php echo esc_attr( $widget_id ); ?> media-widget-preview">
-			<p>
-				<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php esc_html_e( 'Title:' ); ?></label>
-				<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
-			</p>
-
-			<div class="media-widget-admin-preview" id="<?php echo esc_attr( $widget_id ); ?>">
-				<?php if ( $attachment ) : ?>
-					<?php $this->render_media( $attachment, $widget_id, $instance ); ?>
-				<?php else : ?>
-					<p class="placeholder"><?php esc_html_e( 'No media selected' ); ?></p>
-				<?php endif; ?>
-			</div>
-
-			<p>
-				<button
-					type="button"
-					class="button select-media widefat"
-					data-id="<?php echo esc_attr( $widget_id ); ?>"
-					data-type="<?php echo esc_attr( $this->widget_options['mime_type'] ); ?>"
-				>
-					<?php $attachment ? esc_html_e( 'Change Media' ) : esc_html_e( 'Select Media' ); ?>
-				</button>
-			</p>
-
-			<?php
-			// Use hidden form fields to capture the attachment details from the media manager.
-			unset( $instance['title'] );
-			?>
-
-			<?php foreach ( $instance as $name => $value ) : ?>
-				<input type="hidden" id="<?php echo esc_attr( $this->get_field_id( $name ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>" value="<?php echo esc_attr( $value ); ?>" />
-			<?php endforeach; ?>
-		</div>
+		<?php foreach ( $instance as $name => $value ) : ?>
+			<input
+				type="hidden"
+				data-property="<?php echo esc_attr( $name ); ?>"
+				class="media-widget-instance-property"
+				name="<?php echo esc_attr( $this->get_field_name( $name ) ); ?>"
+				id="<?php echo esc_attr( $this->get_field_id( $name ) ); // Needed specifically by wpWidgets.appendTitle(). ?>"
+				value="<?php echo esc_attr( strval( $value ) ); ?>"
+			/>
+		<?php endforeach; ?>
 		<?php
 	}
 
 	/**
-	 * Registers the stylesheet for handling the widget in the back-end.
+	 * Filters the default media display states for items in the Media list table.
 	 *
 	 * @since 4.8.0
 	 * @access public
+	 *
+	 * @param array   $states An array of media states.
+	 * @param WP_Post $post   The current attachment object.
+	 * @return array
 	 */
-	public function enqueue_admin_styles() {
-		wp_enqueue_style( 'wp-media-widget' );
+	public function display_media_state( $states, $post ) {
+
+		// Count how many times this attachment is used in widgets.
+		$use_count = 0;
+		foreach ( $this->get_settings() as $instance ) {
+			if ( isset( $instance['attachment_id'] ) && $instance['attachment_id'] === $post->ID ) {
+				$use_count++;
+			}
+		}
+
+		if ( $use_count > 0 ) {
+			$states[] = sprintf( translate_nooped_plural( $this->l10n['media_library_state'], $use_count ), number_format_i18n( $use_count ) );
+		}
+
+		return $states;
 	}
 
 	/**
-	 * Loads the required media files for the media manager.
+	 * Loads the required media files for the media manager and scripts for .
 	 *
 	 * @since 4.8.0
 	 * @access public
 	 */
 	public function enqueue_admin_scripts() {
-		if ( 'widgets.php' === $GLOBALS['pagenow'] || $this->is_preview() ) {
-			wp_enqueue_media();
-			wp_enqueue_script( 'wp-media-widget' );
-		}
+		wp_enqueue_media();
+		wp_enqueue_style( 'media-widgets' );
+		wp_enqueue_script( 'media-widgets' );
+	}
+
+	/**
+	 * Render form template scripts.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function render_control_template_scripts() {
+		?>
+		<script type="text/html" id="tmpl-widget-media-<?php echo esc_attr( $this->id_base ); ?>-control">
+			<# var elementIdPrefix = 'el' + String( Math.random() ) + '_' #>
+			<p>
+				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
+				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
+			</p>
+			<div class="media-widget-preview">
+				<div class="selected rendered">
+					<!-- Media rendering goes here. -->
+				</div>
+				<div class="attachment-media-view not-selected">
+					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
+				</div>
+			</div>
+			<p class="media-widget-buttons">
+				<button type="button" class="button edit-media selected">
+					<?php echo esc_html( $this->l10n['edit_media'] ); ?>
+				</button>
+				<button type="button" class="button change-media select-media selected">
+					<?php echo esc_html( $this->l10n['change_media'] ); ?>
+				</button>
+				<button type="button" class="button select-media not-selected">
+					<?php echo esc_html( $this->l10n['select_media'] ); ?>
+				</button>
+			</p>
+		</script>
+		<?php
 	}
 }
