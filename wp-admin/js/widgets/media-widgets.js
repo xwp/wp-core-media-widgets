@@ -356,6 +356,9 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			} );
 
+			// Use our Post frame.
+			wp.media.view.MediaFrame.Post = control.customMediaFramePost;
+
 			mediaFrame = wp.media( {
 				frame: 'select',
 				button: {
@@ -377,6 +380,9 @@ wp.mediaWidgets = ( function( $ ) {
 			// Handle selection of a media item.
 			mediaFrame.on( 'select', function() {
 				var attachment;
+
+				// Restore the original wp.media.view.MediaFrame.Post object.
+				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
