@@ -360,10 +360,11 @@ wp.mediaWidgets = ( function( $ ) {
 			wp.media.view.MediaFrame.Post = control.customMediaFramePost;
 
 			mediaFrame = wp.media( {
-				frame: 'select',
+				frame: 'post',
 				button: {
 					text: control.l10n.add_to_widget
 				},
+				state: 'library',
 				states: new CustomizedDisplaySettingsLibrary( {
 					library: wp.media.query( {
 						type: control.mime_type
