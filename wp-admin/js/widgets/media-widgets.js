@@ -131,6 +131,44 @@ wp.mediaWidgets = ( function( $ ) {
 					title: $.trim( $( this ).val() )
 				} );
 			} );
+
+			/**
+			 * Extend wp.media.view.MediaFrame.Post for our simplified media upload modal.
+			 */
+			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
+			control.customMediaFramePost = wp.media.view.MediaFrame.Post.extend({
+				/**
+				 * Create the default states.
+				 */
+				createStates: function() {
+					var options = this.options,
+						Library = wp.media.controller.Library,
+						l10n = wp.media.view.l10n;
+
+					this.states.add([
+
+						// Main states.
+						new Library({
+							id:         'insert',
+							title:      false,
+							priority:   20,
+							toolbar:    'main-insert',
+							filterable: 'dates',
+							library:    wp.media.query( options.library ),
+							multiple:   options.multiple ? 'reset' : false,
+							editable:   true,
+							allowLocalEdits: true,
+							displaySettings: true,
+							displayUserSettings: true
+						}),
+
+						new wp.media.controller.EditImage( { model: options.editImage } ),
+
+						// Embed states.
+						new wp.media.controller.Embed( { metadata: options.metadata } ),
+					]);
+				},
+			} );
 		},
 
 		/**
