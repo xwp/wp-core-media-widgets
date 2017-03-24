@@ -16,10 +16,5 @@
 	},
 	"require": {
 		"php": ">=5.2.0"
-	},
-	"scripts": {
-		"post-install-cmd": [
-			"bin/install-wordpress-develop.sh"
-		]
 	}
 }

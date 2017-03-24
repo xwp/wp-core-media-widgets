@@ -1,4 +1,2 @@
-node_modules
-
-/vendor/
-/tests/wordpress-develop
+/node_modules
+/vendor

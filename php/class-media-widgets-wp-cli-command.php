@@ -32,7 +32,7 @@
  */
 class Media_Widgets_WP_CLI_Command extends WP_CLI_Command {
 
-	const CORE_BASE_HREF = '../wordpress-develop/src/';
+	const CORE_BASE_HREF = 'https://develop.svn.wordpress.org/trunk/src/';
 
 	const PLUGIN_BASE_HREF = '../../';
 
