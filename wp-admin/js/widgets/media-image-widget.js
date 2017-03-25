@@ -45,27 +45,25 @@
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
 			var attachment, displaySettings, props;
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
+			attachment = mediaFrame.content.get( '.attachments-browser' ).model.get( 'selection' ).at(0).toJSON();
 			if ( _.isEmpty( attachment ) ) {
 				return {};
 			}
 
-			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
 
 			props = {
 				attachment_id: attachment.id,
-				align: displaySettings.align,
 				alt: attachment.alt,
 				caption: attachment.caption,
 				image_classes: '',
 				image_title: '',
 				link_classes: '',
 				link_rel: '',
-				link_url: displaySettings.linkUrl,
+				link_url: attachment.link,
 				link_target_blank: false,
-				link_type: displaySettings.link,
-				size: displaySettings.size,
-				url: attachment.sizes[ displaySettings.size ].url,
+				link_type: attachment.link,
+				size: 'thumbnail',
+				url: attachment.sizes[ 'thumbnail' ].url,
 				width: 0, // Reset.
 				height: 0 // Reset.
 			};
