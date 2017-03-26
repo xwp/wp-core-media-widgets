@@ -281,6 +281,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.medium.url }}" draggable="false" alt="" />
 			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.full ) { #>
 				<img class="attachment-thumb" src="{{ data.attachment.sizes.full.url }}" draggable="false" alt="" />
+			<# } else if ( 0 === data.attachment.attachment_id && '' !== data.attachment.url ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment.url }}" draggable="false" alt="" />
 			<# } #>
 		</script>
 		<?php
