@@ -224,6 +224,21 @@ wp.mediaWidgets = ( function( $ ) {
 		fetchSelectedAttachment: function fetchSelectedAttachment() {
 			var control = this, attachment;
 
+			// This is an embed (by URL) image if the url is set and the attachment_id is 0.
+			if ( 0 === control.model.get( 'attachment_id' ) && control.model.get( 'url' ) ) {
+
+				// Construct an attachment model with the data we have.
+				attachment = new wp.media.model.Attachment( control.model.attributes );
+
+				// Once the widget renders, inject the preview.
+				_.defer( function() {
+					control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
+				} );
+
+				// Skip the rest.
+				return;
+			}
+
 			// Skip if selectedAttachment is already updated.
 			if ( control.model.get( 'attachment_id' ) === control.selectedAttachment.get( 'id' ) ) {
 				return;
@@ -387,9 +402,8 @@ wp.mediaWidgets = ( function( $ ) {
 						link: theUrl,
 						height: 250,
 						width: 250,
-						type: 'image',
 						sizes: {
-							medium: {
+							full: {
 								url: theUrl
 							}
 						}
