@@ -1,5 +1,5 @@
 /* eslint consistent-this: [ "error", "control" ] */
-wp.mediaWidgets = ( function( $ ) {
+wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 	'use strict';
 
 	var component = {};
@@ -89,7 +89,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 */
 		initialize: function initialize( options ) {
 			var control = this,
-				CustomizedDisplaySettingsLibrary;
+				customizedDisplaySettings, CustomizedDisplaySettingsLibrary;
 
 			Backbone.View.prototype.initialize.call( control, options );
 
@@ -131,6 +131,20 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( {
 					title: $.trim( $( this ).val() )
 				} );
+			} );
+
+			/*
+			 * Copy current display settings from the widget model to serve as basis
+			 * of customized display settings for the current media frame session.
+			 * Changes to display settings will be synced into this model, and
+			 * when a new selection is made, the settings from this will be synced
+			 * into that AttachmentDisplay's model to persist the setting changes.
+			 */
+			customizedDisplaySettings = new Backbone.Model( {
+				align: control.model.get( 'align' ),
+				size: control.model.get( 'size' ),
+				link: control.model.get( 'link_type' ),
+				linkUrl: control.model.get( 'link_url' )
 			} );
 
 			/**
@@ -180,36 +194,34 @@ wp.mediaWidgets = ( function( $ ) {
 			 */
 			control.originalButtonLanguage = _wpMediaViewsL10n.insertIntoPost;
 			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
-			control.customMediaFramePost = wp.media.view.MediaFrame.Post.extend({
+			control.customMediaFramePost = wp.media.view.MediaFrame.Post.extend( {
 				/**
 				 * Create the default states.
+				 *
+				 * @return {void}
 				 */
 				createStates: function() {
-					var options = this.options,
-						Library = wp.media.controller.Library,
-						l10n = wp.media.view.l10n;
-
-					this.states.add([
+					this.states.add( [
 
 						// Main states.
-						new CustomizedDisplaySettingsLibrary({
+						new CustomizedDisplaySettingsLibrary( {
 							id:         'insert',
 							title:      control.l10n.select_media,
 							priority:   20,
 							toolbar:    'main-insert',
 							filterable: 'dates',
 							library:    wp.media.query( {
-											type: control.mime_type
-										} ),
+								type: control.mime_type
+							} ),
 							multiple:   false,
-							editable:   true,
-						}),
+							editable:   true
+						} ),
 
-						new wp.media.controller.EditImage( { model: options.editImage } ),
+						new wp.media.controller.EditImage( { model: this.options.editImage } ),
 
 						// Embed states.
-						new wp.media.controller.Embed( { metadata: options.metadata } ),
-					]);
+						new wp.media.controller.Embed( { metadata: this.options.metadata } )
+					] );
 
 				}
 
@@ -356,23 +368,9 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, customizedDisplaySettings;
+			var control = this, selection, mediaFrame;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
-
-			/*
-			 * Copy current display settings from the widget model to serve as basis
-			 * of customized display settings for the current media frame session.
-			 * Changes to display settings will be synced into this model, and
-			 * when a new selection is made, the settings from this will be synced
-			 * into that AttachmentDisplay's model to persist the setting changes.
-			 */
-			customizedDisplaySettings = new Backbone.Model( {
-				align: control.model.get( 'align' ),
-				size: control.model.get( 'size' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' )
-			} );
 
 			_wpMediaViewsL10n.insertIntoPost = control.l10n.add_to_widget;
 
@@ -381,46 +379,44 @@ wp.mediaWidgets = ( function( $ ) {
 
 			mediaFrame = wp.media( {
 				frame: 'post',
-				text: control.l10n.add_to_widget,
+				text: control.l10n.add_to_widget
 			} );
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'close', function() {
-				var attachment,
-				selection = mediaFrame.state().get( 'selection' ),
-				id = mediaFrame.state().get( 'id' );
+				var attachment, url,
+					newSelection = mediaFrame.state().get( 'selection' ),
+					id = mediaFrame.state().get( 'id' );
 
 				// Restore the original wp.media.view.MediaFrame.Post object and language.
 				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
 				_wpMediaViewsL10n.insertIntoPost = control.originalButtonLanguage;
 
 				if ( 'embed' === id ) {
-					var theUrl = mediaFrame.state().props.get( 'url' );
-					var attachment = {
+					url = mediaFrame.state().props.get( 'url' );
+					attachment = {
 						attachment_id: 0,
-						url: theUrl,
-						link: theUrl,
+						url: url,
+						link: url,
 						height: 250,
 						width: 250,
 						sizes: {
 							full: {
-								url: theUrl
+								url: url
 							}
 						}
 					};
 					control.selectedAttachment.set( attachment );
 					control.model.set( attachment );
-					return {};
+				} else {
+					// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
+					attachment = newSelection.first().toJSON();
+					attachment.error = false;
+					control.selectedAttachment.set( attachment );
+
+					// Update widget instance.
+					control.model.set( control.getSelectFrameProps( mediaFrame ) );
 				}
-
-
-				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = selection.first().toJSON();
-				attachment.error = false;
-				control.selectedAttachment.set( attachment );
-
-				// Update widget instance.
-				control.model.set( control.getSelectFrameProps( mediaFrame ) );
 			} );
 
 			mediaFrame.open();
@@ -723,4 +719,4 @@ wp.mediaWidgets = ( function( $ ) {
 	};
 
 	return component;
-} )( jQuery );
+} )( jQuery, window._wpMediaViewsL10n );
