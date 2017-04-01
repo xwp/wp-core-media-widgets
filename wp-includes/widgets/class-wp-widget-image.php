@@ -148,48 +148,59 @@ class WP_Widget_Image extends WP_Widget_Media {
 		$instance = wp_parse_args( $instance, array(
 			'size' => 'thumbnail',
 		) );
+		if ( 0 === $instance['attachment_id'] && ( ! empty( $instance['url'] ) ) ) {
 
-		// @todo Support external images defined by 'url' only.
-		if ( empty( $instance['attachment_id'] ) ) {
-			return;
-		}
+			//@todo Add caption and other embedded data handling.
+			$url = $instance['url'];
+			$image = do_shortcode(
+				sprintf(
+					'[caption id="0" align="" width="300"]<img class="" src="%s" alt="%s" width="300" height="225" />%s[/caption]',
+					$url, // Image src
+					'', // Alt,
+					'' // Caption
+				)
+			 );
+		} else {
+			if ( empty( $instance['attachment_id'] ) ) {
+				return;
+			}
 
-		$attachment = get_post( $instance['attachment_id'] );
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return;
-		}
+			$attachment = get_post( $instance['attachment_id'] );
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				return;
+			}
 
-		$caption = $attachment->post_excerpt;
-		if ( $instance['caption'] ) {
-			$caption = $instance['caption'];
-		}
+			$caption = $attachment->post_excerpt;
+			if ( $instance['caption'] ) {
+				$caption = $instance['caption'];
+			}
 
-		$image_attributes = array(
-			'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
-			'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
-			'style' => 'max-width: 100%; height: auto;',
-		);
-		if ( ! $caption ) {
-			$image_attributes['class'] .= ' align' . $instance['align'];
-		}
-		if ( $instance['alt'] ) {
-			$image_attributes['alt'] = $instance['alt'];
-		}
+			$image_attributes = array(
+				'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
+				'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
+				'style' => 'max-width: 100%; height: auto;',
+			);
+			if ( ! $caption ) {
+				$image_attributes['class'] .= ' align' . $instance['align'];
+			}
+			if ( $instance['alt'] ) {
+				$image_attributes['alt'] = $instance['alt'];
+			}
 
-		$size = $instance['size'];
-		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ), true ) ) {
-			$size = array( $instance['width'], $instance['height'] );
-		}
+			$size = $instance['size'];
+			if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ), true ) ) {
+				$size = array( $instance['width'], $instance['height'] );
+			}
 
-		$image = wp_get_attachment_image( $attachment->ID, $size, false, $image_attributes );
-
-		$url = '';
-		if ( 'file' === $instance['link_type'] ) {
-			$url = wp_get_attachment_url( $attachment->ID );
-		} elseif ( 'post' === $instance['link_type'] ) {
-			$url = get_attachment_link( $attachment->ID );
-		} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
-			$url = $instance['link_url'];
+			$image = wp_get_attachment_image( $attachment->ID, $size, false, $image_attributes );
+			$url = '';
+			if ( 'file' === $instance['link_type'] ) {
+				$url = wp_get_attachment_url( $attachment->ID );
+			} elseif ( 'post' === $instance['link_type'] ) {
+				$url = get_attachment_link( $attachment->ID );
+			} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
+				$url = $instance['link_url'];
+			}
 		}
 
 		if ( $url ) {
