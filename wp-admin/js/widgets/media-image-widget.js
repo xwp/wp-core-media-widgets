@@ -142,11 +142,17 @@
 			 * customizer.
 			 */
 			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
-			mediaFrameContentView.model.dfd.done( function() {
-				_.defer( function() { // Next tick.
-					mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
+			if ( mediaFrameContentView.model.dfd ) {
+				mediaFrameContentView.model.dfd.done( function() {
+					_.defer( function() { // Next tick.
+						mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
+					} );
 				} );
-			} );
+			} else {
+				_.defer( function() {
+					jQuery('.media-frame-content [data-setting="caption"]:first').focus();
+				} );
+			}
 		}
 	} );
 
