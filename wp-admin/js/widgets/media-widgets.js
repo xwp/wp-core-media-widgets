@@ -384,7 +384,7 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'close', function() {
-				var attachment, url,
+				var attachment, props,
 					newSelection = mediaFrame.state().get( 'selection' ),
 					id = mediaFrame.state().get( 'id' );
 
@@ -393,16 +393,23 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 				_wpMediaViewsL10n.insertIntoPost = control.originalButtonLanguage;
 
 				if ( 'embed' === id ) {
-					url = mediaFrame.state().props.get( 'url' );
+					props = mediaFrame.state().props;
 					attachment = {
 						attachment_id: 0,
-						url: url,
-						link: url,
-						height: 250,
-						width: 250,
+						url:     props.get( 'url' ),
+						link:    props.get( 'link' ),
+						linkUrl: props.get( 'linkUrl' ),
+						width:   props.get( 'width' ),
+						height:  props.get( 'height' ),
+						caption: props.get( 'caption' ),
+						align:   props.get( 'align' ),
+						alt:     props.get( 'alt' ),
+						// Provide a full size for the remote attachment.
 						sizes: {
 							full: {
-								url: url
+								height: props.get( 'caption' ),
+								width:  props.get( 'height' ),
+								url:    props.get( 'url' )
 							}
 						}
 					};
