@@ -150,7 +150,7 @@
 				} );
 			} else {
 				_.defer( function() {
-					jQuery('.media-frame-content [data-setting="caption"]:first').focus();
+					jQuery( '.media-frame-content [data-setting="caption"]:first' ).focus();
 				} );
 			}
 		}

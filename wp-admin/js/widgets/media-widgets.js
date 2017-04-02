@@ -404,6 +404,7 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 						caption: props.get( 'caption' ),
 						align:   props.get( 'align' ),
 						alt:     props.get( 'alt' ),
+
 						// Provide a full size for the remote attachment.
 						sizes: {
 							full: {
@@ -416,6 +417,7 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 					control.selectedAttachment.set( attachment );
 					control.model.set( attachment );
 				} else {
+
 					// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 					attachment = newSelection.first().toJSON();
 					attachment.error = false;
