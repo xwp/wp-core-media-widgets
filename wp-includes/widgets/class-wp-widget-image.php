@@ -154,12 +154,19 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$url     = $instance['url'];
 			$caption = isset( $instance['caption'] ) ? $instance['caption'] : '';
 			$alt     = isset( $instance['alt'] ) ? $instance['alt'] : '';
+			$align   = isset( $instance['align'] ) ? $instance['align'] : '';
+			$width   = isset( $instance['width'] ) ? $instance['width'] : '';
+			$height  = isset( $instance['height'] ) ? $instance['height'] : '';
 			$image = do_shortcode(
 				sprintf(
-					'[caption id="0" align="" width="300"]<img class="" src="%s" alt="%s" width="300" height="225" />%s[/caption]',
-					$url, // Image src
-					$alt, // Alt,
-					$caption // Caption
+					'[caption id="0" align="%s" width="%d"]<img class="" src="%s" alt="%s" width="%d" height="%d" />%s[/caption]',
+					$align,
+					$width,
+					$url,
+					$alt,
+					$width,
+					$height,
+					$caption
 				)
 			 );
 		} else {
