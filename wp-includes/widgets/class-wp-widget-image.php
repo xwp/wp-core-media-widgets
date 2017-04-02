@@ -151,13 +151,15 @@ class WP_Widget_Image extends WP_Widget_Media {
 		if ( 0 === $instance['attachment_id'] && ( ! empty( $instance['url'] ) ) ) {
 
 			//@todo Add caption and other embedded data handling.
-			$url = $instance['url'];
+			$url     = $instance['url'];
+			$caption = isset( $instance['caption'] ) ? $instance['caption'] : '';
+			$alt     = isset( $instance['alt'] ) ? $instance['alt'] : '';
 			$image = do_shortcode(
 				sprintf(
 					'[caption id="0" align="" width="300"]<img class="" src="%s" alt="%s" width="300" height="225" />%s[/caption]',
 					$url, // Image src
-					'', // Alt,
-					'' // Caption
+					$alt, // Alt,
+					$caption // Caption
 				)
 			 );
 		} else {
