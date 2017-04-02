@@ -150,7 +150,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		) );
 		if ( 0 === $instance['attachment_id'] && ( ! empty( $instance['url'] ) ) ) {
 
-			//@todo Add caption and other embedded data handling.
+			// @todo Add caption and other embedded data handling.
 			$url     = $instance['url'];
 			$caption = isset( $instance['caption'] ) ? $instance['caption'] : '';
 			$alt     = isset( $instance['alt'] ) ? $instance['alt'] : '';
@@ -168,7 +168,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 					$height,
 					$caption
 				)
-			 );
+			);
 		} else {
 			if ( empty( $instance['attachment_id'] ) ) {
 				return;
@@ -210,7 +210,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 			} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
 				$url = $instance['link_url'];
 			}
-		}
+		} // End if( 0 === $instance['attachment_id'] && ( ! empty( $instance['url'] ) ).
 
 		if ( $url ) {
 			$image = sprintf(
