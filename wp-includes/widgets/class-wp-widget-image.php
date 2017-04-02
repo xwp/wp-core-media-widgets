@@ -210,7 +210,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 			} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
 				$url = $instance['link_url'];
 			}
-		} // End if( 0 === $instance['attachment_id'] && ( ! empty( $instance['url'] ) ).
+		} // End if().
 
 		if ( $url ) {
 			$image = sprintf(
