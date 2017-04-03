@@ -384,48 +384,19 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'close', function() {
-				var attachment, props,
-					newSelection = mediaFrame.state().get( 'selection' ),
-					id = mediaFrame.state().get( 'id' );
+				var attachment, state = mediaFrame.state();
 
 				// Restore the original wp.media.view.MediaFrame.Post object and language.
 				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
 				_wpMediaViewsL10n.insertIntoPost = control.originalButtonLanguage;
 
-				if ( 'embed' === id ) {
-					props = mediaFrame.state().props;
-					attachment = {
-						attachment_id: 0,
-						url:     props.get( 'url' ),
-						link:    props.get( 'link' ),
-						linkUrl: props.get( 'linkUrl' ),
-						width:   props.get( 'width' ),
-						height:  props.get( 'height' ),
-						caption: props.get( 'caption' ),
-						align:   props.get( 'align' ),
-						alt:     props.get( 'alt' ),
+				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
+				attachment = 'embed' === state.get( 'id' ) ? state.props.toJSON() : state.get( 'selection' ).first().toJSON();
+				attachment.error = false;
+				control.selectedAttachment.set( attachment );
 
-						// Provide a full size for the remote attachment.
-						sizes: {
-							full: {
-								height: props.get( 'caption' ),
-								width:  props.get( 'height' ),
-								url:    props.get( 'url' )
-							}
-						}
-					};
-					control.selectedAttachment.set( attachment );
-					control.model.set( attachment );
-				} else {
-
-					// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-					attachment = newSelection.first().toJSON();
-					attachment.error = false;
-					control.selectedAttachment.set( attachment );
-
-					// Update widget instance.
-					control.model.set( control.getSelectFrameProps( mediaFrame ) );
-				}
+				// Update widget instance.
+				control.model.set( control.getSelectFrameProps( mediaFrame ) );
 			} );
 
 			mediaFrame.open();
