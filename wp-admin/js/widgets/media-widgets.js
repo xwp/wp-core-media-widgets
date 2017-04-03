@@ -1,5 +1,5 @@
 /* eslint consistent-this: [ "error", "control" ] */
-wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
+wp.mediaWidgets = ( function( $ ) {
 	'use strict';
 
 	var component = {};
@@ -192,7 +192,7 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 			/**
 			 * Extend wp.media.view.MediaFrame.Post for our simplified media upload modal.
 			 */
-			control.originalButtonLanguage = _wpMediaViewsL10n.insertIntoPost;
+			control.originalButtonLanguage = wp.media.view.l10n.insertIntoPost;
 			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
 			control.customMediaFramePost = wp.media.view.MediaFrame.Post.extend( {
 				/**
@@ -372,7 +372,7 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
-			_wpMediaViewsL10n.insertIntoPost = control.l10n.add_to_widget;
+			wp.media.view.l10n.insertIntoPost = control.l10n.add_to_widget;
 
 			// Use our Post frame.
 			wp.media.view.MediaFrame.Post = control.customMediaFramePost;
@@ -388,7 +388,7 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 
 				// Restore the original wp.media.view.MediaFrame.Post object and language.
 				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
-				_wpMediaViewsL10n.insertIntoPost = control.originalButtonLanguage;
+				wp.media.view.l10n.insertIntoPost = control.originalButtonLanguage;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = 'embed' === state.get( 'id' ) ? state.props.toJSON() : state.get( 'selection' ).first().toJSON();
@@ -699,4 +699,4 @@ wp.mediaWidgets = ( function( $, _wpMediaViewsL10n ) {
 	};
 
 	return component;
-} )( jQuery, window._wpMediaViewsL10n );
+} )( jQuery );
