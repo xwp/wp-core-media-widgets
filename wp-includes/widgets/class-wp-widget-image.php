@@ -184,17 +184,23 @@ class WP_Widget_Image extends WP_Widget_Media {
 				return;
 			}
 
-			$image = sprintf( '<img class="image %1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
-				esc_attr( $instance['image_classes'] ),
+			$instance['size'] = 'custom';
+			$caption = $instance['caption'];
+			$width   = $instance['width'];
+
+			$classes = 'image ' . $instance['image_classes'];
+			if ( ! $caption ) {
+				$classes .= ' align' . $instance['align'];
+			}
+
+			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
+				esc_attr( $classes ),
 				esc_url( $instance['url'] ),
 				esc_attr( $instance['alt'] ),
 				esc_attr( $instance['width'] ),
 				esc_attr( $instance['height'] )
 			);
-			$instance['size'] = 'custom';
-			$caption = $instance['caption'];
-			$width   = $instance['width'];
-		}
+		} // End if().
 
 		$url = '';
 		if ( 'file' === $instance['link_type'] ) {
