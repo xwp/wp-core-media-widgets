@@ -194,7 +194,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 */
 			control.originalButtonLanguage = wp.media.view.l10n.insertIntoPost;
 			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
-			control.customMediaFramePost = wp.media.view.MediaFrame.Post.extend( {
+			control.CustomMediaFramePost = wp.media.view.MediaFrame.Post.extend( {
 				/**
 				 * Create the default states.
 				 *
@@ -375,7 +375,7 @@ wp.mediaWidgets = ( function( $ ) {
 			wp.media.view.l10n.insertIntoPost = control.l10n.add_to_widget;
 
 			// Use our Post frame.
-			wp.media.view.MediaFrame.Post = control.customMediaFramePost;
+			wp.media.view.MediaFrame.Post = control.CustomMediaFramePost;
 
 			mediaFrame = wp.media( {
 				frame: 'post',
