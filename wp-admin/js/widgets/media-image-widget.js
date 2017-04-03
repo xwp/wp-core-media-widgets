@@ -43,10 +43,8 @@
 		 * @returns {object} Props
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, state = mediaFrame.state(),
+			var attachment = mediaFrame.content.get( '.attachments-browser' ).model.get( 'selection' ).at( 0 ).toJSON(),
 				props = {};
-
-			attachment = 'embed' === state.get( 'id' ) ? state.props.toJSON() : state.get( 'selection' ).first().toJSON();
 
 			if ( ! _.isEmpty( attachment ) ) {
 				props = {
@@ -60,17 +58,13 @@
 					link_url: attachment.link,
 					link_target_blank: false,
 					link_type: attachment.link,
-					size: 'full',
-					url: attachment.sizes ? attachment.sizes.full.url : attachment.url,
+					size: 'thumbnail',
+					url: attachment.sizes.thumbnail.url,
 					width: 0, // Reset.
 					height: 0 // Reset.
 				};
-
-				if ( 'embed' === state.get( 'id' ) ) {
-					props = _.extend( props, _.pick( attachment, 'height', 'width' ) );
-				}
 			}
-console.log(props);
+
 			return props;
 		},
 

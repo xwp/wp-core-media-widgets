@@ -34,10 +34,11 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 	$scripts->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js', array( 'jquery', 'media-models', 'media-views' ) );
 	$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
 
-	$scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js', array( 'media-widgets', 'wp-mediaelement' ) );
 	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
 
 	/* TODO: $scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
+
+	/* TODO: $scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
 
 	$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
 }
@@ -89,11 +90,11 @@ function wp32417_twentyten_styles() {
  */
 function wp32417_widgets_init() {
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' );
+	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' ); */
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php' );
 	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php' ); */
 
-	register_widget( 'WP_Widget_Audio' );
+	/* TODO: register_widget( 'WP_Widget_Audio' ); */
 	register_widget( 'WP_Widget_Image' );
 	/* TODO: register_widget( 'WP_Widget_Video' ); */
 }
