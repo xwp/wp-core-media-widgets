@@ -12,7 +12,6 @@
  *
  * @since 4.8.0
  *
- * @todo Refactor this for latest WP_Widget_Media and remove codeCoverageIgnore
  * @codeCoverageIgnore
  * @see WP_Widget
  */
@@ -29,10 +28,6 @@ class WP_Widget_Audio extends WP_Widget_Media {
 			'description' => __( 'Displays an audio file.' ),
 			'mime_type'   => 'audio',
 		) );
-
-		if ( $this->is_preview() ) {
-			$this->enqueue_mediaelement_script();
-		}
 	}
 
 	/**
@@ -74,26 +69,42 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	public function render_control_template_scripts() {
 		parent::render_control_template_scripts();
 
-		?>
-		<script type="text/html" id="tmpl-wp-media-widget-audio-preview">
-			<?php wp_underscore_audio_template(); ?>
-		</script>
-		<?php
+		echo '<script type="text/html" id="tmpl-wp-media-widget-audio-preview">' . "\n";
+		wp_underscore_audio_template();
+		echo '</script>' . "\n";
 	}
 
-	/**
-	 * Enqueue media element script and style if in need.
-	 *
-	 * This ensures the first instance of the audio widget can properly handle audio elements.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 */
-	private function enqueue_mediaelement_script() {
-		/** This filter is documented in wp-includes/media.php */
-		if ( 'mediaelement' === apply_filters( 'wp_audio_shortcode_library', 'mediaelement' ) ) {
-			wp_enqueue_style( 'wp-mediaelement' );
-			wp_enqueue_script( 'wp-mediaelement' );
+	public function enqueue_admin_scripts() {
+		parent::enqueue_admin_scripts();
+
+		$handle = 'media-audio-widget';
+		wp_enqueue_script( $handle );
+
+		$exported_schema = array();
+		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
 		}
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				'wp.mediaWidgets.modelConstructors[ %s ].prototype.schema = %s;',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $exported_schema )
+			)
+		);
+
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				'
+						wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
+						_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+					',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $this->widget_options['mime_type'] ),
+				wp_json_encode( $this->l10n )
+			)
+		);
 	}
+
 }
