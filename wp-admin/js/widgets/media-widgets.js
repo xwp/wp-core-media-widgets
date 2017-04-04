@@ -114,7 +114,7 @@ wp.mediaWidgets = ( function( $ ) {
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
-			control.model.on( 'update', control.fetchSelectedAttachment );
+			control.model.on( 'change', control.fetchSelectedAttachment );
 			control.fetchSelectedAttachment();
 
 			/*
@@ -269,7 +269,8 @@ wp.mediaWidgets = ( function( $ ) {
 				mainEmbedToolbar: function( toolbar ) {
 					toolbar.view = new wp.media.view.Toolbar.Embed({
 						controller: this,
-						text: this.options.text
+						text: this.options.text,
+						event: 'insert'
 					});
 				}
 			} );
@@ -427,16 +428,19 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'insert', function() {
-				var attachment, state = mediaFrame.state();
+				var attachment = { error: false }, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = 'embed' === state.get( 'id' ) ? state.props.toJSON() : state.get( 'selection' ).first().toJSON();
-				attachment.error = false;
+				if ( 'embed' === state.get( 'id' ) ) {
+					_.extend( attachment, { id: 0 }, state.props.toJSON() );
+				} else {
+					_.extend( attachment, state.get( 'selection' ).first().toJSON() );
+				}
+
 				control.selectedAttachment.set( attachment );
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
-				control.model.trigger( 'update' );
 			} );
 
 			mediaFrame.open();
