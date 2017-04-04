@@ -43,8 +43,27 @@
 		 * @returns {object} Props
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment = mediaFrame.content.get( '.attachments-browser' ).model.get( 'selection' ).at( 0 ).toJSON(),
+			var control = this,
+				state = mediaFrame.state(),
 				props = {};
+
+			if ( 'embed' === state.get( 'id' ) ) {
+				props = control._getEmbedProps( state.props.toJSON() );
+			}  else {
+				props = control._getAttachmentProps( state.get( 'selection' ).first().toJSON() );
+			}
+
+			return props;
+		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getAttachmentProps: function _getAttachmentProps( attachment ) {
+			var props = {};
 
 			if ( ! _.isEmpty( attachment ) ) {
 				props = {
@@ -62,6 +81,38 @@
 					url: attachment.sizes.thumbnail.url,
 					width: 0, // Reset.
 					height: 0 // Reset.
+				};
+			}
+
+			return props;
+		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getEmbedProps: function _getAttachmentProps( attachment ) {
+			var props = {};
+
+			if ( ! _.isEmpty( attachment ) ) {
+				props = {
+					attachment_id: attachment.id,
+					align: attachment.align,
+					alt: attachment.alt,
+					caption: attachment.caption,
+					image_classes: '',
+					image_title: '',
+					link_classes: '',
+					link_rel: '',
+					link_url: attachment.linkUrl ? attachment.linkUrl : attachment.link,
+					link_target_blank: false,
+					link_type: attachment.link,
+					size: 'full',
+					url: attachment.url,
+					width: attachment.width,
+					height: attachment.height
 				};
 			}
 

@@ -372,6 +372,22 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$this->assertContains( 'width="100"', $output );
 		$this->assertContains( 'height="100"', $output );
 
+		// Embeded images.
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => null,
+			'align' => 'none',
+			'caption' => 'With caption',
+			'height' => 100,
+			'link_type' => 'file',
+			'url' => 'http://example.org/url/to/image.jpg',
+			'width' => 100,
+		) );
+		$output = ob_get_clean();
+
+		// Custom image class.
+		$this->assertContains( 'src="http://example.org/url/to/image.jpg"', $output );
+
 		// Link settings.
 		ob_start();
 		$widget->render_media( array(
