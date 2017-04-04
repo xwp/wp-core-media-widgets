@@ -106,7 +106,7 @@
 					image_title: '',
 					link_classes: '',
 					link_rel: '',
-					link_url: attachment.linkUrl ? attachment.linkUrl : attachment.link,
+					link_url: attachment.linkUrl,
 					link_target_blank: false,
 					link_type: attachment.link,
 					size: 'full',
