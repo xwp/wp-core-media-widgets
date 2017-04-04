@@ -98,7 +98,7 @@
 
 			if ( ! _.isEmpty( attachment ) ) {
 				props = {
-					attachment_id: attachment.id,
+					attachment_id: 0,
 					align: attachment.align,
 					alt: attachment.alt,
 					caption: attachment.caption,
