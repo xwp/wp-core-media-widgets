@@ -93,7 +93,7 @@
 		 * @param {object} attachment Attachment object.
 		 * @returns {object} Props
 		 */
-		_getEmbedProps: function _getAttachmentProps( attachment ) {
+		_getEmbedProps: function _getEmbedProps( attachment ) {
 			var props = {};
 
 			if ( ! _.isEmpty( attachment ) ) {
