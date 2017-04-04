@@ -49,7 +49,7 @@
 
 			if ( 'embed' === state.get( 'id' ) ) {
 				props = control._getEmbedProps( state.props.toJSON() );
-			}  else {
+			} else {
 				props = control._getAttachmentProps( state.get( 'selection' ).first().toJSON() );
 			}
 
