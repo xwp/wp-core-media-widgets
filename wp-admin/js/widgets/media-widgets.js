@@ -383,12 +383,8 @@ wp.mediaWidgets = ( function( $ ) {
 			} );
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'close', function() {
+			mediaFrame.on( 'insert', function() {
 				var attachment, state = mediaFrame.state();
-
-				// Restore the original wp.media.view.MediaFrame.Post object and language.
-				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
-				wp.media.view.l10n.insertIntoPost = control.originalButtonLanguage;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = 'embed' === state.get( 'id' ) ? state.props.toJSON() : state.get( 'selection' ).first().toJSON();
@@ -398,6 +394,12 @@ wp.mediaWidgets = ( function( $ ) {
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
 				control.model.trigger( 'update' );
+			} );
+
+			// Restore the original wp.media.view.MediaFrame.Post object and language.
+			mediaFrame.on( 'close', function() {
+				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
+				wp.media.view.l10n.insertIntoPost = control.originalButtonLanguage;
 			} );
 
 			mediaFrame.open();
