@@ -151,7 +151,7 @@
 			};
 
 			// Set up the media frame.
-			mediaFrame = wp.media({
+			mediaFrame = wp.media( {
 				frame: 'image',
 				state: 'image-details',
 				metadata: metadata
