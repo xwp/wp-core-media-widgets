@@ -187,23 +187,6 @@
 
 			mediaFrame.open();
 
-			/*
-			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the
-			 * customizer.
-			 */
-			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
-			if ( mediaFrameContentView.model.dfd ) {
-				mediaFrameContentView.model.dfd.done( function() {
-					_.defer( function() { // Next tick.
-						mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
-					} );
-				} );
-			} else {
-				_.defer( function() {
-					jQuery( '.media-frame-content [data-setting="caption"]:first' ).focus();
-				} );
-			}
 		}
 	} );
 
