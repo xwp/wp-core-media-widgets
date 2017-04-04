@@ -125,7 +125,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
+			var control = this, mediaFrame, metadata, updateCallback;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
