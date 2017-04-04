@@ -190,11 +190,11 @@ wp.mediaWidgets = ( function( $ ) {
 			} );
 
 			/**
-			 * Extend wp.media.view.MediaFrame.Post for our simplified media upload modal.
+			 * @class CustomMediaFrameSelect
+			 * @constructor
 			 */
-			control.originalButtonLanguage = wp.media.view.l10n.insertIntoPost;
-			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
-			control.CustomMediaFramePost = wp.media.view.MediaFrame.Post.extend( {
+			control.CustomMediaFrameSelect = wp.media.view.MediaFrame.Post.extend( {
+
 				/**
 				 * Create the default states.
 				 *
@@ -222,9 +222,56 @@ wp.mediaWidgets = ( function( $ ) {
 						// Embed states.
 						new wp.media.controller.Embed( { metadata: this.options.metadata } )
 					] );
+				},
 
+				/**
+				 * Main insert toolbar.
+				 *
+				 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
+				 *
+				 * @param {wp.Backbone.View} view Toolbar view.
+				 * @this {wp.media.controller.Library}
+				 * @returns {void}
+				 */
+				mainInsertToolbar: function( view ) {
+					var controller = this; // eslint-disable-line consistent-this
+					view.set( 'insert', {
+						style:    'primary',
+						priority: 80,
+						text:     controller.options.text, // The whole reason for the fork.
+						requires: { selection: true },
+
+						/**
+						 * Handle click.
+						 *
+						 * @fires wp.media.controller.State#insert()
+						 * @returns {void}
+						 */
+						click: function() {
+							var state = controller.state(),
+								selection = state.get( 'selection' );
+
+							controller.close();
+							state.trigger( 'insert', selection ).reset();
+						}
+					});
+				},
+
+				/**
+				 * Main embed toolbar.
+				 *
+				 * Forked override of {wp.media.view.MediaFrame.Post#mainEmbedToolbar()} to override text.
+				 *
+				 * @param {wp.Backbone.View} toolbar Toolbar view.
+				 * @this {wp.media.controller.Library}
+				 * @returns {void}
+				 */
+				mainEmbedToolbar: function( toolbar ) {
+					toolbar.view = new wp.media.view.Toolbar.Embed({
+						controller: this,
+						text: this.options.text
+					});
 				}
-
 			} );
 		},
 
@@ -372,15 +419,11 @@ wp.mediaWidgets = ( function( $ ) {
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
-			wp.media.view.l10n.insertIntoPost = control.l10n.add_to_widget;
-
-			// Use our Post frame.
-			wp.media.view.MediaFrame.Post = control.CustomMediaFramePost;
-
-			mediaFrame = wp.media( {
+			mediaFrame = new control.CustomMediaFrameSelect( {
 				frame: 'post',
 				text: control.l10n.add_to_widget
 			} );
+			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'insert', function() {
@@ -394,12 +437,6 @@ wp.mediaWidgets = ( function( $ ) {
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
 				control.model.trigger( 'update' );
-			} );
-
-			// Restore the original wp.media.view.MediaFrame.Post object and language.
-			mediaFrame.on( 'close', function() {
-				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
-				wp.media.view.l10n.insertIntoPost = control.originalButtonLanguage;
 			} );
 
 			mediaFrame.open();
