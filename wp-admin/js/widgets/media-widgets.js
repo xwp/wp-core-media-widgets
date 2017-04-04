@@ -114,7 +114,7 @@ wp.mediaWidgets = ( function( $ ) {
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
-			control.model.on( 'change:attachment_id', control.fetchSelectedAttachment );
+			control.model.on( 'update', control.fetchSelectedAttachment );
 			control.fetchSelectedAttachment();
 
 			/*
@@ -397,6 +397,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
+				control.model.trigger( 'update' );
 			} );
 
 			mediaFrame.open();
