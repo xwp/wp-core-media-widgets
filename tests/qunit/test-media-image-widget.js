@@ -44,8 +44,8 @@
 			$( '.media-toolbar-primary .button-primary' ).trigger( 'click' );
 		} );
 		asyncTest( 'Media Modal Edits', function() {
-			expect( 8 );
-			setTimeout( function() {
+			expect( 8 ); // eslint-disable-line no-magic-numbers
+			setTimeout( function() { // eslint-disable-line max-nested-callbacks
 				equal( imageWidgetControlInstance.model.get( 'caption' ), 'amazing caption', 'caption edit should update the model' );
 				equal( imageWidgetControlInstance.model.get( 'alt' ), 'alt text all the things', 'alt text edit should update the model' );
 				equal( imageWidgetControlInstance.model.get( 'align' ), 'left', 'align edit should update the model' );
