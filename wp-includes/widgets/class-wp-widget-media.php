@@ -160,6 +160,17 @@ abstract class WP_Widget_Media extends WP_Widget {
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
 
+		/**
+		 * Filters the media widget instance prior to rendering the media.
+		 *
+		 * @since 4.8.0
+		 *
+		 * @param array           $instance Instance data.
+		 * @param array           $args     Widget args.
+		 * @param WP_Widget_Media $this     Widget object.
+		 */
+		$instance = apply_filters( "widget_{$this->id_base}_instance", $instance, $args, $this );
+
 		$this->render_media( $instance );
 
 		echo $args['after_widget'];

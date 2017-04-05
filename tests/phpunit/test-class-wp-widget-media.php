@@ -269,10 +269,17 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			'attachment_id' => 0,
 		);
 
+		add_filter( 'widget_mocked_instance', array( $this, 'filter_widget_mocked_instance' ), 10, 3 );
+
 		ob_start();
 		$widget = $this->get_mocked_class_instance();
 		$widget->expects( $this->atLeastOnce() )->method( 'render_media' )->with( $instance );
+		$this->widget_instance_filter_args = array();
 		$widget->widget( $args, $instance );
+		$this->assertCount( 3, $this->widget_instance_filter_args );
+		$this->assertEquals( $instance, $this->widget_instance_filter_args[0] );
+		$this->assertEquals( $args, $this->widget_instance_filter_args[1] );
+		$this->assertEquals( $widget, $this->widget_instance_filter_args[2] );
 		$output = ob_get_clean();
 
 		$this->assertContains( '<h2>Foo</h2>', $output );
@@ -287,6 +294,26 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$widget->widget( $args, array() );
 		$output = ob_get_clean();
 		$this->assertNotContains( '<h2>Foo</h2>', $output );
+	}
+
+	/**
+	 * Args passed to the widget_{$id_base}_instance filter.
+	 *
+	 * @var array
+	 */
+	protected $widget_instance_filter_args = array();
+
+	/**
+	 * Filters the media widget instance prior to rendering the media.
+	 *
+	 * @param array           $instance Instance data.
+	 * @param array           $args     Widget args.
+	 * @param WP_Widget_Media $object   Widget object.
+	 * @return array Instance.
+	 */
+	function filter_widget_mocked_instance( $instance, $args, $object ) {
+		$this->widget_instance_filter_args = func_get_args();
+		return $instance;
 	}
 
 	/**
