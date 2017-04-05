@@ -7,10 +7,13 @@
 	</head>
 	<body>
 		<div id="qunit"></div>
-		<div id="qunit-fixture"></div>
+		<div id="qunit-fixture">
+			<script src="fixtures/media-widgets.js"></script>
+		</div>
 
 		<!-- Don't forget to run `npm install` and `composer install` first! -->
 		<script src="../../node_modules/qunitjs/qunit/qunit.js"></script>
+		<script src="../../node_modules/sinon/pkg/sinon.js"></script>
 
 		<!-- Begin dependencies -->
 		{{dependencies}}

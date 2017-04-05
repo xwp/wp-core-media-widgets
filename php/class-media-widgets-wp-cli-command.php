@@ -98,6 +98,7 @@ class Media_Widgets_WP_CLI_Command extends WP_CLI_Command {
 		foreach ( $wp_widget_factory->widgets as $widget ) {
 			if ( $widget instanceof WP_Widget_Media ) {
 				$widget->enqueue_admin_scripts();
+				$widget->render_control_template_scripts();
 			}
 		}
 		$enqueued_scripts = array_diff( wp_scripts()->queue, $original_enqueued_scripts );
