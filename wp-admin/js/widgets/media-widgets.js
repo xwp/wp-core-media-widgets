@@ -211,6 +211,7 @@ wp.mediaWidgets = ( function( $ ) {
 						new CustomizedDisplaySettingsLibrary( {
 							id:         'insert',
 							title:      control.l10n.select_media,
+							selection:  this.options.selection,
 							priority:   20,
 							toolbar:    'main-insert',
 							filterable: 'dates',
@@ -427,7 +428,8 @@ wp.mediaWidgets = ( function( $ ) {
 
 			mediaFrame = new control.CustomMediaFrameSelect( {
 				frame: 'post',
-				text: control.l10n.add_to_widget
+				text: control.l10n.add_to_widget,
+				selection: selection
 			} );
 			wp.media.frame = mediaFrame; // See wp.media().
 
