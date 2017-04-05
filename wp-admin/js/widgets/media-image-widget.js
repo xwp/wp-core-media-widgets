@@ -43,32 +43,83 @@
 		 * @returns {object} Props
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, displaySettings, props;
+			var control = this,
+				state = mediaFrame.state(),
+				props = {};
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			if ( _.isEmpty( attachment ) ) {
-				return {};
+			if ( 'embed' === state.get( 'id' ) ) {
+				props = control._getEmbedProps( mediaFrame, state.props.toJSON() );
+			} else {
+				props = control._getAttachmentProps( mediaFrame, state.get( 'selection' ).first().toJSON() );
 			}
+
+			return props;
+		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
+			var props = {}, displaySettings;
 
 			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
 
-			props = {
-				attachment_id: attachment.id,
-				align: displaySettings.align,
-				alt: attachment.alt,
-				caption: attachment.caption,
-				image_classes: '',
-				image_title: '',
-				link_classes: '',
-				link_rel: '',
-				link_url: displaySettings.linkUrl,
-				link_target_blank: false,
-				link_type: displaySettings.link,
-				size: displaySettings.size,
-				url: attachment.sizes[ displaySettings.size ].url,
-				width: 0, // Reset.
-				height: 0 // Reset.
-			};
+			if ( ! _.isEmpty( attachment ) ) {
+				_.extend( props, {
+					attachment_id: attachment.id,
+					align: displaySettings.align,
+					alt: attachment.alt,
+					caption: attachment.caption,
+					image_classes: '',
+					image_title: '',
+					link_classes: '',
+					link_rel: '',
+					link_url: displaySettings.linkUrl,
+					link_target_blank: false,
+					link_type: displaySettings.link,
+					size: displaySettings.size,
+					url: attachment.sizes[ displaySettings.size ].url,
+					width: 0, // Reset.
+					height: 0 // Reset.
+				} );
+			}
+
+			return props;
+		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
+			var props = {};
+
+			if ( ! _.isEmpty( attachment ) ) {
+				_.extend( props, {
+					attachment_id: 0,
+					align: attachment.align,
+					alt: attachment.alt,
+					caption: attachment.caption,
+					image_classes: '',
+					image_title: '',
+					link_classes: '',
+					link_rel: '',
+					link_url: attachment.linkUrl,
+					link_target_blank: false,
+					link_type: attachment.link,
+					size: 'full',
+					url: attachment.url,
+					width: attachment.width,
+					height: attachment.height
+				} );
+			}
 
 			return props;
 		},
@@ -79,7 +130,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
+			var control = this, mediaFrame, metadata, updateCallback;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
@@ -141,17 +192,6 @@
 
 			mediaFrame.open();
 
-			/*
-			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the
-			 * customizer.
-			 */
-			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
-			mediaFrameContentView.model.dfd.done( function() {
-				_.defer( function() { // Next tick.
-					mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
-				} );
-			} );
 		}
 	} );
 
