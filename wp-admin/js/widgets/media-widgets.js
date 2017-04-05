@@ -294,10 +294,7 @@ wp.mediaWidgets = ( function( $ ) {
 				// Construct an attachment model with the data we have.
 				attachment = new wp.media.model.Attachment( control.model.attributes );
 
-				// Once the widget renders, inject the preview.
-				_.defer( function() {
-					control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
-				} );
+				control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
 
 				// Skip the rest.
 				return;
@@ -370,6 +367,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			if ( ! control.templateRendered ) {
 				control.$el.html( control.template()( control.model.attributes ) );
+				control.renderPreview(); // Hereafter it will re-render when control.selectedAttachment changes.
 				control.templateRendered = true;
 			}
 
