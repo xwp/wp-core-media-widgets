@@ -218,7 +218,10 @@ wp.mediaWidgets = ( function( $ ) {
 								type: control.mime_type
 							} ),
 							multiple:   false,
-							editable:   true
+							editable:   true,
+
+							displaySettings: true,
+							displayUserSettings: false // We use the display settings from the current/default widget instance props.
 						} ),
 
 						new wp.media.controller.EditImage( { model: this.options.editImage } ),

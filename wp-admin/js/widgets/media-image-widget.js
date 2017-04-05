@@ -48,9 +48,9 @@
 				props = {};
 
 			if ( 'embed' === state.get( 'id' ) ) {
-				props = control._getEmbedProps( state.props.toJSON() );
+				props = control._getEmbedProps( mediaFrame, state.props.toJSON() );
 			} else {
-				props = control._getAttachmentProps( state.get( 'selection' ).first().toJSON() );
+				props = control._getAttachmentProps( mediaFrame, state.get( 'selection' ).first().toJSON() );
 			}
 
 			return props;
@@ -59,29 +59,33 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
 		 * @param {object} attachment Attachment object.
 		 * @returns {object} Props
 		 */
-		_getAttachmentProps: function _getAttachmentProps( attachment ) {
-			var props = {};
+		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
+			var props = {}, displaySettings;
+
+			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
 
 			if ( ! _.isEmpty( attachment ) ) {
-				props = {
+				_.extend( props, {
 					attachment_id: attachment.id,
+					align: displaySettings.align,
 					alt: attachment.alt,
 					caption: attachment.caption,
 					image_classes: '',
 					image_title: '',
 					link_classes: '',
 					link_rel: '',
-					link_url: attachment.link,
+					link_url: displaySettings.linkUrl,
 					link_target_blank: false,
-					link_type: attachment.link,
-					size: 'thumbnail',
-					url: attachment.sizes.thumbnail.url,
+					link_type: displaySettings.link,
+					size: displaySettings.size,
+					url: attachment.sizes[ displaySettings.size ].url,
 					width: 0, // Reset.
 					height: 0 // Reset.
-				};
+				} );
 			}
 
 			return props;
@@ -90,14 +94,15 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
 		 * @param {object} attachment Attachment object.
 		 * @returns {object} Props
 		 */
-		_getEmbedProps: function _getEmbedProps( attachment ) {
+		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
 			var props = {};
 
 			if ( ! _.isEmpty( attachment ) ) {
-				props = {
+				_.extend( props, {
 					attachment_id: 0,
 					align: attachment.align,
 					alt: attachment.alt,
@@ -113,7 +118,7 @@
 					url: attachment.url,
 					width: attachment.width,
 					height: attachment.height
-				};
+				} );
 			}
 
 			return props;
