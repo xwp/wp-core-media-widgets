@@ -114,7 +114,7 @@ wp.mediaWidgets = ( function( $ ) {
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
-			control.model.on( 'update', control.fetchSelectedAttachment );
+			control.model.on( 'change', control.fetchSelectedAttachment );
 			control.fetchSelectedAttachment();
 
 			/*
@@ -150,6 +150,7 @@ wp.mediaWidgets = ( function( $ ) {
 			/**
 			 * Library which persists the customized display settings across selections.
 			 *
+			 * @todo Move this out of MediaWidgetControl instances to be directly on wp.mediaWidgets, only extending the class once for all instances.
 			 * @class
 			 */
 			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
@@ -190,23 +191,27 @@ wp.mediaWidgets = ( function( $ ) {
 			} );
 
 			/**
-			 * Extend wp.media.view.MediaFrame.Post for our simplified media upload modal.
+			 * Custom media frame for selecting uploaded media or providing media by URL.
+			 *
+			 * @todo Move this out of MediaWidgetControl instances to be directly on wp.mediaWidgets, only extending the class once for all instances.
+			 * @class CustomMediaFrameSelect
+			 * @constructor
 			 */
-			control.originalButtonLanguage = wp.media.view.l10n.insertIntoPost;
-			control.originalMediaFramePost = wp.media.view.MediaFrame.Post;
-			control.CustomMediaFramePost = wp.media.view.MediaFrame.Post.extend( {
+			control.CustomMediaFrameSelect = wp.media.view.MediaFrame.Post.extend( {
+
 				/**
 				 * Create the default states.
 				 *
 				 * @return {void}
 				 */
-				createStates: function() {
+				createStates: function createStates() {
 					this.states.add( [
 
 						// Main states.
 						new CustomizedDisplaySettingsLibrary( {
 							id:         'insert',
 							title:      control.l10n.select_media,
+							selection:  this.options.selection,
 							priority:   20,
 							toolbar:    'main-insert',
 							filterable: 'dates',
@@ -214,7 +219,10 @@ wp.mediaWidgets = ( function( $ ) {
 								type: control.mime_type
 							} ),
 							multiple:   false,
-							editable:   true
+							editable:   true,
+
+							displaySettings: true,
+							displayUserSettings: false // We use the display settings from the current/default widget instance props.
 						} ),
 
 						new wp.media.controller.EditImage( { model: this.options.editImage } ),
@@ -222,9 +230,57 @@ wp.mediaWidgets = ( function( $ ) {
 						// Embed states.
 						new wp.media.controller.Embed( { metadata: this.options.metadata } )
 					] );
+				},
 
+				/**
+				 * Main insert toolbar.
+				 *
+				 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
+				 *
+				 * @param {wp.Backbone.View} view Toolbar view.
+				 * @this {wp.media.controller.Library}
+				 * @returns {void}
+				 */
+				mainInsertToolbar: function mainInsertToolbar( view ) {
+					var controller = this; // eslint-disable-line consistent-this
+					view.set( 'insert', {
+						style:    'primary',
+						priority: 80,
+						text:     controller.options.text, // The whole reason for the fork.
+						requires: { selection: true },
+
+						/**
+						 * Handle click.
+						 *
+						 * @fires wp.media.controller.State#insert()
+						 * @returns {void}
+						 */
+						click: function() {
+							var state = controller.state(),
+								selection = state.get( 'selection' );
+
+							controller.close();
+							state.trigger( 'insert', selection ).reset();
+						}
+					});
+				},
+
+				/**
+				 * Main embed toolbar.
+				 *
+				 * Forked override of {wp.media.view.MediaFrame.Post#mainEmbedToolbar()} to override text.
+				 *
+				 * @param {wp.Backbone.View} toolbar Toolbar view.
+				 * @this {wp.media.controller.Library}
+				 * @returns {void}
+				 */
+				mainEmbedToolbar: function mainEmbedToolbar( toolbar ) {
+					toolbar.view = new wp.media.view.Toolbar.Embed({
+						controller: this,
+						text: this.options.text,
+						event: 'insert'
+					});
 				}
-
 			} );
 		},
 
@@ -242,10 +298,7 @@ wp.mediaWidgets = ( function( $ ) {
 				// Construct an attachment model with the data we have.
 				attachment = new wp.media.model.Attachment( control.model.attributes );
 
-				// Once the widget renders, inject the preview.
-				_.defer( function() {
-					control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
-				} );
+				control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
 
 				// Skip the rest.
 				return;
@@ -318,6 +371,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			if ( ! control.templateRendered ) {
 				control.$el.html( control.template()( control.model.attributes ) );
+				control.renderPreview(); // Hereafter it will re-render when control.selectedAttachment changes.
 				control.templateRendered = true;
 			}
 
@@ -372,32 +426,28 @@ wp.mediaWidgets = ( function( $ ) {
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
-			wp.media.view.l10n.insertIntoPost = control.l10n.add_to_widget;
-
-			// Use our Post frame.
-			wp.media.view.MediaFrame.Post = control.CustomMediaFramePost;
-
-			mediaFrame = wp.media( {
+			mediaFrame = new control.CustomMediaFrameSelect( {
 				frame: 'post',
-				text: control.l10n.add_to_widget
+				text: control.l10n.add_to_widget,
+				selection: selection
 			} );
+			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'close', function() {
-				var attachment, state = mediaFrame.state();
-
-				// Restore the original wp.media.view.MediaFrame.Post object and language.
-				wp.media.view.MediaFrame.Post = control.originalMediaFramePost;
-				wp.media.view.l10n.insertIntoPost = control.originalButtonLanguage;
+			mediaFrame.on( 'insert', function() {
+				var attachment = { error: false }, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = 'embed' === state.get( 'id' ) ? state.props.toJSON() : state.get( 'selection' ).first().toJSON();
-				attachment.error = false;
+				if ( 'embed' === state.get( 'id' ) ) {
+					_.extend( attachment, { id: 0 }, state.props.toJSON() );
+				} else {
+					_.extend( attachment, state.get( 'selection' ).first().toJSON() );
+				}
+
 				control.selectedAttachment.set( attachment );
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
-				control.model.trigger( 'update' );
 			} );
 
 			mediaFrame.open();

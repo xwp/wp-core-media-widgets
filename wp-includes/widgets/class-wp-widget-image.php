@@ -205,7 +205,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		$url = '';
 		if ( 'file' === $instance['link_type'] ) {
 			$url = $attachment ? wp_get_attachment_url( $attachment->ID ) : $instance['url'];
-		} elseif ( 'post' === $instance['link_type'] ) {
+		} elseif ( $attachment && 'post' === $instance['link_type'] ) {
 			$url = get_attachment_link( $attachment->ID );
 		} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
 			$url = $instance['link_url'];
