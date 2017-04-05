@@ -67,7 +67,7 @@
 
 		imageWidgetModelInstance = new ImageWidgetModel();
 		_.each( imageWidgetModelInstance.attributes, function( value, key ) {
-			equal( value, ImageWidgetModel.prototype.schema[ key ].default, 'Should properly set defaultValue for ' + key );
+			equal( value, ImageWidgetModel.prototype.schema[ key ][ 'default' ], 'Should properly set default for ' + key );
 		} );
 	} );
 
