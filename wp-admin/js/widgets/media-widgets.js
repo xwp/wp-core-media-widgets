@@ -150,6 +150,7 @@ wp.mediaWidgets = ( function( $ ) {
 			/**
 			 * Library which persists the customized display settings across selections.
 			 *
+			 * @todo Move this out of MediaWidgetControl instances to be directly on wp.mediaWidgets, only extending the class once for all instances.
 			 * @class
 			 */
 			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
@@ -190,6 +191,9 @@ wp.mediaWidgets = ( function( $ ) {
 			} );
 
 			/**
+			 * Custom media frame for selecting uploaded media or providing media by URL.
+			 *
+			 * @todo Move this out of MediaWidgetControl instances to be directly on wp.mediaWidgets, only extending the class once for all instances.
 			 * @class CustomMediaFrameSelect
 			 * @constructor
 			 */
@@ -200,7 +204,7 @@ wp.mediaWidgets = ( function( $ ) {
 				 *
 				 * @return {void}
 				 */
-				createStates: function() {
+				createStates: function createStates() {
 					this.states.add( [
 
 						// Main states.
@@ -233,7 +237,7 @@ wp.mediaWidgets = ( function( $ ) {
 				 * @this {wp.media.controller.Library}
 				 * @returns {void}
 				 */
-				mainInsertToolbar: function( view ) {
+				mainInsertToolbar: function mainInsertToolbar( view ) {
 					var controller = this; // eslint-disable-line consistent-this
 					view.set( 'insert', {
 						style:    'primary',
@@ -266,7 +270,7 @@ wp.mediaWidgets = ( function( $ ) {
 				 * @this {wp.media.controller.Library}
 				 * @returns {void}
 				 */
-				mainEmbedToolbar: function( toolbar ) {
+				mainEmbedToolbar: function mainEmbedToolbar( toolbar ) {
 					toolbar.view = new wp.media.view.Toolbar.Embed({
 						controller: this,
 						text: this.options.text,
