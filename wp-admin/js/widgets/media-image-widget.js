@@ -31,7 +31,7 @@
 		 */
 		renderPreview: function renderPreview() {
 			var control = this, previewContainer, previewTemplate;
-			previewContainer = control.$el.find( '.media-widget-preview .rendered' );
+			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
 			previewContainer.html( previewTemplate( _.extend(
 				control.model.toJSON(),

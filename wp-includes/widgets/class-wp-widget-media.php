@@ -337,10 +337,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
 			</p>
 			<div class="media-widget-preview">
-				<div class="selected rendered">
-					<!-- Media rendering goes here. -->
-				</div>
-				<div class="attachment-media-view not-selected">
+				<div class="attachment-media-view">
 					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
 				</div>
 			</div>

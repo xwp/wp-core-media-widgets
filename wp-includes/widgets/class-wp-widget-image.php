@@ -307,6 +307,10 @@ class WP_Widget_Image extends WP_Widget_Media {
 						echo sprintf( __( 'Current image: %s' ), '{{ alt }}' );
 					?></p>
 				<# } #>
+			<# } else { #>
+				<div class="attachment-media-view">
+					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
+				</div>
 			<# } #>
 		</script>
 		<?php
