@@ -26,7 +26,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		'add_to_widget' => '',
 		'change_media' => '',
 		'edit_media' => '',
-		'media_library_state' => '',
+		'media_library_state_multi' => '',
+		'media_library_state_single' => '',
 		'missing_attachment' => '',
 		'no_media_selected' => '',
 		'select_media' => '',
@@ -66,7 +67,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 				esc_url( admin_url( 'upload.php' ) )
 			),
 			/* translators: %d is widget count */
-			'media_library_state' => _n_noop( 'Media Widget (%d instance)', 'Media Widget (%d instances)' ),
+			'media_library_state_multi' => _n_noop( 'Media Widget (%d)', 'Media Widget (%d)' ),
+			'media_library_state_single' => __( 'Media Widget' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
@@ -303,8 +305,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 			}
 		}
 
-		if ( $use_count > 0 ) {
-			$states[] = sprintf( translate_nooped_plural( $this->l10n['media_library_state'], $use_count ), number_format_i18n( $use_count ) );
+		if ( 1 === $use_count ) {
+			$states[] = $this->l10n['media_library_state_single'];
+		} elseif ( $use_count > 0 ) {
+			$states[] = sprintf( translate_nooped_plural( $this->l10n['media_library_state_multi'], $use_count ), number_format_i18n( $use_count ) );
 		}
 
 		return $states;

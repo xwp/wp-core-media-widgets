@@ -49,7 +49,8 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			'add_to_widget',
 			'change_media',
 			'edit_media',
-			'media_library_state',
+			'media_library_state_multi',
+			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
 			'select_media',
@@ -355,7 +356,18 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			),
 		) );
 		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
-		$this->assertEqualSets( array( sprintf( $widget->l10n['media_library_state']['singular'], 1 ) ), $result );
+		$this->assertEqualSets( array( $widget->l10n['media_library_state_single'] ), $result );
+
+		$widget->save_settings( array(
+			array(
+				'attachment_id' => $attachment_id,
+			),
+			array(
+				'attachment_id' => $attachment_id,
+			),
+		) );
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertEqualSets( array( sprintf( $widget->l10n['media_library_state_multi']['singular'], 2 ) ), $result );
 	}
 
 	/**
