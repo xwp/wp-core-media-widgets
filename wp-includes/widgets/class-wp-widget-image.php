@@ -291,10 +291,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.attachment.url ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment.url }}" draggable="false" alt="{{ data.alt }}" />
-			<# } else if ( data.url ) { #>
-				<img class="attachment-thumb" src="{{ data.url }}" draggable="false" alt="{{ data.alt }}" />
+			<# } else if ( data.attachment.url || data.url ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment.url || data.url }}" draggable="false" <# if ( data.alt ) { #>alt="{{ data.alt }}"<# } #> />
 			<# } #>
 		</script>
 		<?php
