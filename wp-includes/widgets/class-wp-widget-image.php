@@ -283,6 +283,9 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-image-preview">
+			<#
+			var describedById = 'describedBy-' + String( Math.random() );
+			#>
 			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
@@ -292,7 +295,18 @@ class WP_Widget_Image extends WP_Widget_Media {
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
 			<# } else if ( data.attachment.url || data.url ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment.url || data.url }}" draggable="false" <# if ( data.alt ) { #>alt="{{ data.alt }}"<# } #> />
+				<img class="attachment-thumb" src="{{ data.attachment.url || data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
+				<# if ( ! data.alt ) { #>
+					<#
+					var alt = ( data.attachment.url || data.url );
+					alt = alt.replace( /\?.*$/, '' );
+					alt = alt.replace( /^.+\//, '' );
+					#>
+					<p class="hidden" id="{{ describedById }}"><?php
+						/* translators: placeholder is image filename */
+						echo sprintf( __( 'Current image: %s' ), '{{ alt }}' );
+					?></p>
+				<# } #>
 			<# } #>
 		</script>
 		<?php
