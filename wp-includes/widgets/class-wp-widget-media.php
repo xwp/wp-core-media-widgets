@@ -153,6 +153,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 	public function widget( $args, $instance ) {
 		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
+		// Short-circuit if no media is selected.
+		if ( ( ! $instance['attachment_id'] || 'attachment' !== get_post_type( $instance['attachment_id'] ) ) && ! $instance['url'] ) {
+			return;
+		}
+
 		echo $args['before_widget'];
 
 		if ( $instance['title'] ) {
