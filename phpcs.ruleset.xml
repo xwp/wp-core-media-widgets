@@ -23,20 +23,6 @@
 		<severity>0</severity>
 	</rule>
 
-	<!--
-	The following rule exclusions are due to a desire to do:
-	'media_library_state' => _n_noop( 'Media Widget', 'Media Widget (%d)' ),
-	Where PHPCS currently complains about the singular string missing a placeholder.
-	For more, see https://github.com/xwp/wp-core-media-widgets/pull/27#discussion_r107043295
-	-->
-	<rule ref="WordPress.WP.I18n.MissingSingularPlaceholder">
-		<exclude-pattern>wp-includes/widgets/class-wp-widget-*.php</exclude-pattern>
-	</rule>
-	<rule ref="WordPress.WP.I18n.MismatchedPlaceholders">
-		<exclude-pattern>wp-includes/widgets/class-wp-widget-*.php</exclude-pattern>
-	</rule>
-
-
 	<exclude-pattern>*/dev-lib/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
