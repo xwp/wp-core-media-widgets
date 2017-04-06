@@ -43,153 +43,85 @@
 		 * @returns {object} Props
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, displaySettings, props;
+			var control = this,
+				state = mediaFrame.state(),
+				props = {};
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			if ( _.isEmpty( attachment ) ) {
-				return {};
+			if ( 'embed' === state.get( 'id' ) ) {
+				props = control._getEmbedProps( mediaFrame, state.props.toJSON() );
+			} else {
+				props = control._getAttachmentProps( mediaFrame, state.get( 'selection' ).first().toJSON() );
 			}
-
-			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
-
-			props = {
-				attachment_id: attachment.id,
-				align: displaySettings.align,
-				alt: attachment.alt,
-				caption: attachment.caption,
-				image_classes: '',
-				image_title: '',
-				link_classes: '',
-				link_rel: '',
-				link_url: displaySettings.linkUrl,
-				link_target_blank: false,
-				link_type: displaySettings.link,
-				size: displaySettings.size,
-				url: attachment.sizes[ displaySettings.size ].url,
-				width: 0, // Reset.
-				height: 0 // Reset.
-			};
 
 			return props;
 		},
 
 		/**
-		 * Open the media select frame to chose an item.
+		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {jQuery.Event} event - Event.
-		 * @returns {void}
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
 		 */
-		selectMedia: function selectMedia( event ) {
-			var control = this, selection, mediaFrame, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
+		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
+			var props = {}, displaySettings;
 
-			event.preventDefault();
+			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
 
-			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+			if ( ! _.isEmpty( attachment ) ) {
+				_.extend( props, {
+					attachment_id: attachment.id,
+					align: displaySettings.align,
+					alt: attachment.alt,
+					caption: attachment.caption,
+					image_classes: '',
+					image_title: '',
+					link_classes: '',
+					link_rel: '',
+					link_url: displaySettings.linkUrl,
+					link_target_blank: false,
+					link_type: displaySettings.link,
+					size: displaySettings.size,
+					url: attachment.sizes[ displaySettings.size ].url,
+					width: 0, // Reset.
+					height: 0 // Reset.
+				} );
+			}
 
-			/*
-			 * Copy current display settings from the widget model to serve as basis
-			 * of customized display settings for the current media frame session.
-			 * Changes to display settings will be synced into this model, and
-			 * when a new selection is made, the settings from this will be synced
-			 * into that AttachmentDisplay's model to persist the setting changes.
-			 */
-			customizedDisplaySettings = new Backbone.Model( {
-				align: control.model.get( 'align' ),
-				size: control.model.get( 'size' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' )
-			} );
+			return props;
+		},
 
-			/**
-			 * Library which persists the customized display settings across selections.
-			 *
-			 * @class
-			 */
-			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
+			var props = {};
 
-				/**
-				 * Sync changes to the current display settings back into the current customized
-				 *
-				 * @param {Backbone.Model} displaySettings Modified display settings.
-				 * @returns {void}
-				 */
-				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
-					customizedDisplaySettings.set( displaySettings.attributes );
-				},
+			if ( ! _.isEmpty( attachment ) ) {
+				_.extend( props, {
+					attachment_id: 0,
+					align: attachment.align,
+					alt: attachment.alt,
+					caption: attachment.caption,
+					image_classes: '',
+					image_title: '',
+					link_classes: '',
+					link_rel: '',
+					link_url: attachment.linkUrl,
+					link_target_blank: false,
+					link_type: attachment.link,
+					size: 'full',
+					url: attachment.url,
+					width: attachment.width,
+					height: attachment.height
+				} );
+			}
 
-				/**
-				 * Get the display settings model.
-				 *
-				 * Model returned is updated with the current customized display settings,
-				 * and an event listener is added so that changes made to the settings
-				 * will sync back into the model storing the session's customized display
-				 * settings.
-				 *
-				 * @param {Backbone.Model} model Display settings model.
-				 * @returns {Backbone.Model} Display settings model.
-				 */
-				display: function getDisplaySettingsModel( model ) {
-					var display;
-					display = wp.media.controller.Library.prototype.display.call( this, model );
-
-					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
-					display.set( customizedDisplaySettings.attributes );
-					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
-						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
-					}
-					display.on( 'change', this.handleDisplaySettingChange );
-					return display;
-				}
-			} );
-
-			mediaFrame = wp.media( {
-				frame: 'select',
-				button: {
-					text: control.l10n.add_to_widget
-				},
-				states: new CustomizedDisplaySettingsLibrary( {
-					library: wp.media.query( {
-						type: control.mime_type
-					} ),
-					title: control.l10n.select_media,
-					selection: selection,
-					multiple: false,
-					priority: 20,
-					display: true, // Attachment display setting.
-					filterable: false
-				} )
-			} );
-
-			// Handle selection of a media item.
-			mediaFrame.on( 'select', function() {
-				var attachment;
-
-				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-				attachment.error = false;
-				control.selectedAttachment.set( attachment );
-
-				// Update widget instance.
-				control.model.set( control.getSelectFrameProps( mediaFrame ) );
-			} );
-
-			mediaFrame.open();
-
-			// Clear the selected attachment when it is deleted in the media select frame.
-			selection.on( 'destroy', function( attachment ) {
-				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
-					control.model.set( {
-						attachment_id: 0,
-						url: ''
-					} );
-				}
-			} );
-
-			/*
-			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the customizer.
-			 */
-			mediaFrame.$el.find( ':focusable:first' ).focus();
+			return props;
 		},
 
 		/**
@@ -198,7 +130,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
+			var control = this, mediaFrame, metadata, updateCallback;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
@@ -260,17 +192,6 @@
 
 			mediaFrame.open();
 
-			/*
-			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the
-			 * customizer.
-			 */
-			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
-			mediaFrameContentView.model.dfd.done( function() {
-				_.defer( function() { // Next tick.
-					mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
-				} );
-			} );
 		}
 	} );
 

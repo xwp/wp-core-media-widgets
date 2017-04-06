@@ -48,7 +48,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function __construct( $id_base, $name, $widget_options = array(), $control_options = array() ) {
 		$widget_opts = wp_parse_args( $widget_options, array(
-			'description' => __( 'An image, video, or audio file.' ),
+			'description' => __( 'A media item.' ),
 			'customize_selective_refresh' => true,
 			'mime_type' => '',
 		) );
@@ -79,9 +79,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$control_opts
 		);
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_enqueue_admin_scripts' ) );
-		add_action( 'admin_footer-widgets.php', array( $this, 'maybe_print_control_templates' ) );
-		add_action( 'customize_controls_print_footer_scripts', array( $this, 'maybe_print_control_templates' ) );
+		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+
+		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
+		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
 
 		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 	}
@@ -118,6 +120,26 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
+	 * Sanitize a token list string, such as used in HTML rel and class attributes.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @link http://w3c.github.io/html/infrastructure.html#space-separated-tokens
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
+	 * @param string|array $tokens List of tokens separated by spaces, or an array of tokens.
+	 * @return string Sanitized token string list.
+	 */
+	function sanitize_token_list( $tokens ) {
+		if ( is_string( $tokens ) ) {
+			$tokens = preg_split( '/\s+/', trim( $tokens ) );
+		}
+		$tokens = array_map( 'sanitize_html_class', $tokens );
+		$tokens = array_filter( $tokens );
+		return join( ' ', $tokens );
+	}
+
+	/**
 	 * Displays the widget on the front-end.
 	 *
 	 * @since 4.8.0
@@ -139,6 +161,17 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
+
+		/**
+		 * Filters the media widget instance prior to rendering the media.
+		 *
+		 * @since 4.8.0
+		 *
+		 * @param array           $instance Instance data.
+		 * @param array           $args     Widget args.
+		 * @param WP_Widget_Media $this     Widget object.
+		 */
+		$instance = apply_filters( "widget_{$this->id_base}_instance", $instance, $args, $this );
 
 		$this->render_media( $instance );
 
@@ -170,10 +203,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 			if ( true !== rest_validate_value_from_schema( $value, $field_schema, $field ) ) {
 				continue;
 			}
+
 			$value = rest_sanitize_value_from_schema( $value, $field_schema );
+
+			// @codeCoverageIgnoreStart
 			if ( is_wp_error( $value ) ) {
-				continue;
+				continue; // Handle case when rest_sanitize_value_from_schema() ever returns WP_Error as its phpdoc @return tag indicates.
 			}
+
+			// @codeCoverageIgnoreEnd
 			if ( isset( $field_schema['sanitize_callback'] ) ) {
 				$value = call_user_func( $field_schema['sanitize_callback'], $value );
 			}
@@ -277,18 +315,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Check if is admin and if so call method to register scripts.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 */
-	final public function maybe_enqueue_admin_scripts() {
-		if ( 'widgets.php' === $GLOBALS['pagenow'] || 'customize.php' === $GLOBALS['pagenow'] ) {
-			$this->enqueue_admin_scripts();
-		}
-	}
-
-	/**
 	 * Loads the required media files for the media manager and scripts for .
 	 *
 	 * @since 4.8.0
@@ -298,18 +324,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 		wp_enqueue_media();
 		wp_enqueue_style( 'media-widgets' );
 		wp_enqueue_script( 'media-widgets' );
-	}
-
-	/**
-	 * Check if is admin and if so call method to register scripts.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 */
-	final public function maybe_print_control_templates() {
-		if ( 'widgets.php' === $GLOBALS['pagenow'] || 'customize.php' === $GLOBALS['pagenow'] ) {
-			$this->render_control_template_scripts();
-		}
 	}
 
 	/**
