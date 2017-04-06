@@ -39,7 +39,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				esc_url( admin_url( 'upload.php' ) )
 			),
 			/* translators: %d is widget count */
-			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
+			'media_library_state_multi' => _n_noop( 'Image Widget (%d)', 'Image Widget (%d)' ),
+			'media_library_state_single' => __( 'Image Widget' ),
 		) );
 	}
 
