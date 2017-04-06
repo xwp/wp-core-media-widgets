@@ -111,7 +111,9 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
+			control.renderPreview = _.debounce( control.renderPreview );
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
+			control.listenTo( control.model, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change', control.fetchSelectedAttachment );
