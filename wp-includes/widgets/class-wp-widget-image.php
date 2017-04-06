@@ -150,7 +150,10 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'size' => 'thumbnail',
 		) );
 
-		$attachment = get_post( $instance['attachment_id'] );
+		$attachment = null;
+		if ( $instance['attachment_id'] ) {
+			$attachment = get_post( $instance['attachment_id'] );
+		}
 		if ( $attachment && 'attachment' === $attachment->post_type ) {
 			$caption = $attachment->post_excerpt;
 			if ( $instance['caption'] ) {

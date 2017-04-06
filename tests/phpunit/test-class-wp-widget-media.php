@@ -266,7 +266,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		);
 		$instance = array(
 			'title' => 'Foo',
-			'url' => '',
+			'url' => 'http://example.com/image.jpg',
 			'attachment_id' => 0,
 		);
 
@@ -292,9 +292,18 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$widget = $this->get_mocked_class_instance();
 		$instance['title'] = '';
 		$widget->expects( $this->atLeastOnce() )->method( 'render_media' )->with( $instance );
-		$widget->widget( $args, array() );
+		$widget->widget( $args, $instance );
 		$output = ob_get_clean();
 		$this->assertNotContains( '<h2>Foo</h2>', $output );
+
+		// No attachment_id nor url.
+		$instance['url'] = '';
+		$instance['attachment_id'] = 0;
+		ob_start();
+		$widget = $this->get_mocked_class_instance();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertEmpty( $output );
 	}
 
 	/**
