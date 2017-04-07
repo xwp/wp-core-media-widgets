@@ -238,7 +238,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
-	 * Loads the required media files for the media manager and scripts for .
+	 * Loads the required media files for the media manager and scripts for media widgets.
 	 *
 	 * @since 4.8.0
 	 * @access public
