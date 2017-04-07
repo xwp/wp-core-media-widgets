@@ -59,7 +59,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'size' => array(
 					'type' => 'string',
 					'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
-					'default' => 'full',
+					'default' => 'medium',
 				),
 				'width' => array( // Via 'customWidth', only when size=custom; otherwise via 'width'.
 					'type' => 'integer',
