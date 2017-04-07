@@ -30,9 +30,54 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			'mime_type'   => 'video',
 		) );
 
-		if ( $this->is_preview() ) {
-			$this->enqueue_mediaelement_script();
-		}
+		$this->l10n = array_merge( $this->l10n, array(
+			'no_media_selected' => __( 'No video selected' ),
+			'select_media' => _x( 'Select Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
+			'missing_attachment' => sprintf(
+				/* translators: placeholder is URL to media library */
+				__( 'We can&#8217;t find that video. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
+			/* translators: %d is widget count */
+			'media_library_state_multi' => _n_noop( 'Video Widget (%d)', 'Video Widget (%d)' ),
+			'media_library_state_single' => __( 'Video Widget' ),
+		) );
+	}
+
+	/**
+	 * Get instance schema.
+	 *
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
+	 */
+	protected function get_instance_schema() {
+		return array_merge(
+			parent::get_instance_schema(),
+			array(
+				'autoplay' => array(
+					'type' => 'boolean',
+					'default' => false,
+				),
+				'caption' => array(
+					'type' => 'string',
+					'default' => '',
+					'sanitize_callback' => 'wp_kses_post',
+				),
+				'preload' => array(
+					'type' => 'string',
+					'enum' => array( 'none', 'auto', 'metadata' ),
+					'default' => 'none',
+				),
+				'loop' => array(
+					'type' => 'boolean',
+					'default' => false,
+				),
+			)
+		);
 	}
 
 	/**
@@ -57,13 +102,52 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			return;
 		}
 
-		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
-			echo $this->create_link_for( $attachment, $instance['link'] );
-		} else {
-			echo wp_video_shortcode( array(
-				'src' => wp_get_attachment_url( $attachment->ID ),
-			) );
+		// TODO: height and width
+		echo wp_video_shortcode( array(
+			'src' => wp_get_attachment_url( $attachment->ID ),
+			'loop' => $instance['loop'],
+			'autoplay' => $instance['autoplay'],
+			'preload' => $instance['preload'],
+		) );
+	}
+
+	/**
+	 * Loads the required media files for the media manager and scripts for .
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function enqueue_admin_scripts() {
+		parent::enqueue_admin_scripts();
+
+		$handle = 'media-video-widget';
+		wp_enqueue_script( $handle );
+
+		$exported_schema = array();
+		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
 		}
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				'wp.mediaWidgets.modelConstructors[ %s ].prototype.schema = %s;',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $exported_schema )
+			)
+		);
+
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				'
+					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
+					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+				',
+				wp_json_encode( $this->id_base ),
+				wp_json_encode( $this->widget_options['mime_type'] ),
+				wp_json_encode( $this->l10n )
+			)
+		);
 	}
 
 	/**
@@ -73,28 +157,21 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 * @access public
 	 */
 	public function render_control_template_scripts() {
-		parent::render_control_template_scripts();
-
+		parent::render_control_template_scripts()
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-video-preview">
-			<?php wp_underscore_video_template() ?>
+			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
+				<div class="notice notice-error notice-alt notice-missing-attachment">
+					<p><?php echo $this->l10n['missing_attachment']; ?></p>
+				</div>
+			<# } else if ( data.attachment.error ) { #>
+				<div class="notice notice-error notice-alt">
+					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
+				</div>
+			<# } else if ( data.attachment.id ) { #>
+				
+			<# } #>
 		</script>
 		<?php
-	}
-
-	/**
-	 * Enqueue media element script and style if in need.
-	 *
-	 * This ensures the first instance of the video widget can properly handle video elements.
-	 *
-	 * @since 4.8.0
-	 * @access private
-	 */
-	private function enqueue_mediaelement_script() {
-		/** This filter is documented in wp-includes/media.php */
-		if ( 'mediaelement' === apply_filters( 'wp_video_shortcode_library', 'mediaelement' ) ) {
-			wp_enqueue_style( 'wp-mediaelement' );
-			wp_enqueue_script( 'wp-mediaelement' );
-		}
 	}
 }
