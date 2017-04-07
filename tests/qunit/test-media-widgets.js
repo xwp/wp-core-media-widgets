@@ -26,7 +26,7 @@
 		equal( typeof wp.mediaWidgets.MediaWidgetModel, 'function', 'wp.mediaWidgets.MediaWidgetModel is a function' );
 		ok( wp.mediaWidgets.MediaWidgetModel.prototype instanceof Backbone.Model, 'wp.mediaWidgets.MediaWidgetModel subclasses Backbone.Model' );
 
-		widgetModelInstance = new wp.mediaWidgets.MediaWidgetModel;
+		widgetModelInstance = new wp.mediaWidgets.MediaWidgetModel();
 		equal( widgetModelInstance.get( 'title' ), '', 'wp.mediaWidgets.MediaWidgetModel defaults title to empty string' );
 		equal( widgetModelInstance.get( 'attachment_id' ), 0, 'wp.mediaWidgets.MediaWidgetModel defaults attachment_id to 0' );
 		equal( widgetModelInstance.get( 'url' ), 0, 'wp.mediaWidgets.MediaWidgetModel defaults url to empty string' );
