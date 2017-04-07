@@ -67,7 +67,7 @@
 				loop: displaySettings.loop,
 				size: displaySettings.size,
 				src: attachment.url,
-				type: attachment.filename.split('.').pop()
+				type: attachment.filename.split( '.' ).pop()
 			};
 
 			return props;
