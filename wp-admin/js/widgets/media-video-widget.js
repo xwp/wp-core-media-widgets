@@ -30,10 +30,35 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate;
+			var control = this, previewContainer, previewTemplate, shortcode, previewFrame;
 			previewContainer = control.$el.find( '.media-widget-preview .rendered' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
 			previewContainer.html( previewTemplate( { attachment: control.selectedAttachment.attributes } ) );
+
+			// This is the same approach taken with within the editor for video embeds
+			// Not sure if this is the best approach to use here or not
+			// TODO: test this out with external services
+			shortcode = new wp.shortcode( {
+				tag: 'video',
+				attrs: {
+					src: control.model.get( 'url' ),
+					width: '250',
+					height: '150' //TODO better job of setting these size attributes
+				}
+			} );
+
+			wp.ajax.post( 'parse-media-shortcode', {
+				shortcode: shortcode.string()
+			} )
+			.done( function( response ) {
+				previewFrame = control.$el.find( '.media-widget-video-preview' ).contents();
+				previewFrame.find( 'head' ).html( response.head );
+				previewFrame.find( 'body' ).html( response.body );
+			} )
+			.fail( function() {
+				//TODO handle the embed fail
+			} );
+
 		},
 
 		/**
@@ -72,7 +97,8 @@
 					attachment_id: attachment.id,
 					caption: attachment.caption,
 					description: attachment.description,
-					link_type: displaySettings.link
+					link_type: displaySettings.link,
+					url: attachment.url
 				} );
 			}
 
@@ -94,7 +120,8 @@
 					attachment_id: 0,
 					caption: attachment.caption,
 					description: attachment.description,
-					link_type: attachment.link
+					link_type: attachment.link,
+					url: attachment.url
 				} );
 			}
 
@@ -138,6 +165,7 @@
 					description: mediaData.description,
 					link_type: mediaData.link,
 					loop: mediaData.loop,
+					url: mediaData.url
 				} );
 			};
 

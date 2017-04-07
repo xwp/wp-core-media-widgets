@@ -168,8 +168,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.attachment.id ) { #>
-				
+			<# } else { #>
+				<iframe class="media-widget-video-preview"></iframe>
 			<# } #>
 		</script>
 		<?php

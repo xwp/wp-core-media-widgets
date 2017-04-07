@@ -58,3 +58,7 @@
 .media-frame.media-widget .attachment-display-settings .setting.align {
 	display: none;
 }
+
+.media-widget-video-preview {
+	width: 100%;
+}
