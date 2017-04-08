@@ -117,7 +117,9 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
+			control.renderPreview = _.debounce( control.renderPreview );
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
+			control.listenTo( control.model, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change', control.fetchSelectedAttachment );
@@ -376,7 +378,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, titleInput;
 
 			if ( ! control.templateRendered ) {
-				control.$el.html( control.template()( control.model.attributes ) );
+				control.$el.html( control.template()( control.model.toJSON() ) );
 				control.renderPreview(); // Hereafter it will re-render when control.selectedAttachment changes.
 				control.templateRendered = true;
 			}
