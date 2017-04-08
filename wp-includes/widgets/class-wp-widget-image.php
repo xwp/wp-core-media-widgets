@@ -39,7 +39,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				esc_url( admin_url( 'upload.php' ) )
 			),
 			/* translators: %d is widget count */
-			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
+			'media_library_state_multi' => _n_noop( 'Image Widget (%d)', 'Image Widget (%d)' ),
+			'media_library_state_single' => __( 'Image Widget' ),
 		) );
 	}
 
@@ -58,7 +59,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'size' => array(
 					'type' => 'string',
 					'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
-					'default' => 'full',
+					'default' => 'medium',
 				),
 				'width' => array( // Via 'customWidth', only when size=custom; otherwise via 'width'.
 					'type' => 'integer',
@@ -149,7 +150,10 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'size' => 'thumbnail',
 		) );
 
-		$attachment = get_post( $instance['attachment_id'] );
+		$attachment = null;
+		if ( $instance['attachment_id'] ) {
+			$attachment = get_post( $instance['attachment_id'] );
+		}
 		if ( $attachment && 'attachment' === $attachment->post_type ) {
 			$caption = $attachment->post_excerpt;
 			if ( $instance['caption'] ) {
