@@ -4,7 +4,31 @@
 ( function( $ ) {
 	'use strict';
 
+	var imageAttachmentAttributes;
+
 	module( 'Image Media Widget' );
+
+	imageAttachmentAttributes = {
+		alt: '',
+		author: '1',
+		authorName: 'admin',
+		caption: '',
+		height: 1080,
+		id: 777,
+		link: 'http://src.wordpress-develop.dev/?attachment_id=777',
+		mime: 'image/jpeg',
+		name: 'Chicken and Ribs',
+		orientation: 'landscape',
+		sizes: {
+			medium: {
+				url: 'http://src.wordpress-develop.dev/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg'
+			}
+		},
+		title: 'Chicken and Ribs',
+		type: 'image',
+		url: 'http://src.wordpress-develop.dev/wp-content/uploads/2017/04/chicken-and-ribs.jpg',
+		width: 1080
+	};
 
 	test( 'image widget control', function() {
 		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
@@ -24,7 +48,7 @@
 		equal( imageWidgetModelInstance.get( 'title' ), 'Chicken and Ribs', 'Changing title should update model title attribute' );
 
 		// Test Preview
-		imageWidgetControlInstance.selectedAttachment.set( window._wpMediaImageWidget.attachment );
+		imageWidgetControlInstance.selectedAttachment.set( imageAttachmentAttributes );
 		imageWidgetControlInstance.renderPreview();
 		equal( imageWidgetControlInstance.$el.find( 'img' ).attr( 'src' ), 'http://src.wordpress-develop.dev/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg', 'renderPreview should set proper img src' );
 
