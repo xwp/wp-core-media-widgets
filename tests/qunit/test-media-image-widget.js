@@ -1,7 +1,7 @@
 /* jshint qunit: true */
 /* eslint-env qunit */
 
-( function( $ ) {
+( function() {
 	'use strict';
 
 	var imageAttachmentAttributes;
@@ -15,18 +15,18 @@
 		caption: '',
 		height: 1080,
 		id: 777,
-		link: 'http://src.wordpress-develop.dev/?attachment_id=777',
+		link: 'http://example.com/?attachment_id=777',
 		mime: 'image/jpeg',
 		name: 'Chicken and Ribs',
 		orientation: 'landscape',
 		sizes: {
 			medium: {
-				url: 'http://src.wordpress-develop.dev/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg'
+				url: 'http://example.com/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg'
 			}
 		},
 		title: 'Chicken and Ribs',
 		type: 'image',
-		url: 'http://src.wordpress-develop.dev/wp-content/uploads/2017/04/chicken-and-ribs.jpg',
+		url: 'http://example.com/wp-content/uploads/2017/04/chicken-and-ribs.jpg',
 		width: 1080
 	};
 
@@ -50,36 +50,7 @@
 		// Test Preview
 		imageWidgetControlInstance.selectedAttachment.set( imageAttachmentAttributes );
 		imageWidgetControlInstance.renderPreview();
-		equal( imageWidgetControlInstance.$el.find( 'img' ).attr( 'src' ), 'http://src.wordpress-develop.dev/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg', 'renderPreview should set proper img src' );
-
-		// Test editMedia
-		imageWidgetControlInstance.editMedia();
-		$( '.image-details textarea' ).val( 'amazing caption' ).trigger( 'change' );
-		$( '.setting.alt-text input' ).val( 'alt text all the things' ).trigger( 'change' );
-		$( '.setting.align button' ).first().trigger( 'click' );
-		$( '.setting.link-to select' ).val( 'none' );
-		$( '.setting.title-text input' ).val( 'title text' ).trigger( 'change' );
-		$( '.setting.extra-classes input' ).val( 'super-awesome-class' ).trigger( 'change' );
-		$( '.setting.link-target input' ).trigger( 'click' );
-		$( '.setting.link-rel input' ).val( 'rel text' ).trigger( 'change' );
-		$( '.setting.link-class-name input' ).val( 'classy-link' ).trigger( 'change' );
-
-		setTimeout( function() {
-			$( '.media-toolbar-primary .button-primary' ).trigger( 'click' );
-		} );
-		asyncTest( 'Media Modal Edits', function() {
-			setTimeout( function() { // eslint-disable-line max-nested-callbacks
-				equal( imageWidgetControlInstance.model.get( 'caption' ), 'amazing caption', 'caption edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'alt' ), 'alt text all the things', 'alt text edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'align' ), 'left', 'align edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'link_type' ), 'none', 'link-to edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'image_title' ), 'title text', 'title text edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'image_classes' ), 'super-awesome-class', 'image classes edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'link_rel' ), 'rel text', 'rel text edit should update the model' );
-				equal( imageWidgetControlInstance.model.get( 'link_classes' ), 'classy-link', 'link classes edit should update the model' );
-				start();
-			} );
-		} );
+		equal( imageWidgetControlInstance.$el.find( 'img' ).attr( 'src' ), 'http://example.com/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg', 'renderPreview should set proper img src' );
 	} );
 
 	test( 'image media model', function() {
@@ -94,4 +65,4 @@
 		} );
 	} );
 
-} )( jQuery );
+} )();
