@@ -86,7 +86,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @param {jQuery}         options.el - Control container element.
 		 * @returns {void}
 		 */
-		initialize: function initialize( options ) { // eslint-disable-line complexity
+		initialize: function initialize( options ) {
 			var control = this,
 				customizedDisplaySettings, CustomizedDisplaySettingsLibrary;
 
@@ -579,7 +579,7 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			castedAttrs = {};
-			_.each( attrs, function( value, name ) { // eslint-disable-line complexity
+			_.each( attrs, function( value, name ) {
 				var type;
 				if ( ! model.schema[ name ] ) {
 					castedAttrs[ name ] = value;
