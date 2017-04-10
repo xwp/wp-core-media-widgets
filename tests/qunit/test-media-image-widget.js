@@ -1,14 +1,15 @@
 /* jshint qunit: true */
 /* eslint-env qunit */
+/* eslint-disable no-magic-numbers */
 
 ( function() {
 	'use strict';
 
-	var imageAttachmentAttributes;
+	var data = {};
 
 	module( 'Image Media Widget' );
 
-	imageAttachmentAttributes = {
+	data.imageAttachment = {
 		alt: '',
 		author: '1',
 		authorName: 'admin',
@@ -30,8 +31,11 @@
 		width: 1080
 	};
 
-	test( 'image widget control', function() {
+	asyncTest( 'image widget control', function() {
 		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
+
+		expect( 6 );
+
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
 		ok( ImageWidgetControl.prototype instanceof wp.mediaWidgets.MediaWidgetControl, 'wp.mediaWidgets.controlConstructors.media_image subclasses wp.mediaWidgets.MediaWidgetControl' );
@@ -48,9 +52,15 @@
 		equal( imageWidgetModelInstance.get( 'title' ), 'Chicken and Ribs', 'Changing title should update model title attribute' );
 
 		// Test Preview
-		imageWidgetControlInstance.selectedAttachment.set( imageAttachmentAttributes );
-		imageWidgetControlInstance.renderPreview();
-		equal( imageWidgetControlInstance.$el.find( 'img' ).attr( 'src' ), 'http://example.com/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg', 'renderPreview should set proper img src' );
+		equal( imageWidgetControlInstance.$el.find( 'img' ).length, 0, 'No images should be rendered' );
+		imageWidgetModelInstance.set( 'url', 'http://example.com/image.jpg' );
+
+		// Due to renderPreview being deferred.
+		setTimeout( function() {
+			equal( imageWidgetControlInstance.$el.find( 'img[src="http://example.com/image.jpg"]' ).length, 1, 'One image should be rendered' );
+		}, 50 );
+
+		setTimeout( start, 100 );
 	} );
 
 	test( 'image media model', function() {
