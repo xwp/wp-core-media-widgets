@@ -123,7 +123,6 @@
 			return props;
 		},
 
-
 		/**
 		 * Open the media audio-edit frame to modify the selected item.
 		 *
