@@ -449,7 +449,7 @@ wp.mediaWidgets = ( function( $ ) {
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'insert', function() {
+			mediaFrame.on( 'insert', function onInsert() {
 				var attachment = { error: false }, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
@@ -463,13 +463,16 @@ wp.mediaWidgets = ( function( $ ) {
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
-				wp.media.model.Attachment.prototype.sync = defaultSync;
 			} );
 
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;
 			wp.media.model.Attachment.prototype.sync = function() {
 				return $.Deferred().rejectWith( this ).promise();
 			};
+			mediaFrame.on( 'close', function onClose() {
+				wp.media.model.Attachment.prototype.sync = defaultSync;
+			} );
 
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();

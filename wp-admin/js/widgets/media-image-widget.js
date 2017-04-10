@@ -186,15 +186,17 @@
 
 			mediaFrame.state( 'image-details' ).on( 'update', updateCallback );
 			mediaFrame.state( 'replace-image' ).on( 'replace', updateCallback );
+
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
 			mediaFrame.on( 'close', function() {
 				mediaFrame.detach();
 				wp.media.model.Attachment.prototype.sync = defaultSync;
 			});
 
-			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function() {
-				return $.Deferred().rejectWith( this ).promise();
-			};
 			mediaFrame.open();
 
 		}
