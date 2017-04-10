@@ -434,7 +434,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame;
+			var control = this, selection, mediaFrame, defaultSync;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
@@ -463,8 +463,11 @@ wp.mediaWidgets = ( function( $ ) {
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
+				wp.media.model.Attachment.prototype.sync = defaultSync;
 			} );
 
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() { return $.Deferred().rejectWith( this ).promise(); };
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.

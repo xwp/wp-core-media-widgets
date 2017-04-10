@@ -161,7 +161,7 @@
 			} );
 
 			updateCallback = function( imageData ) {
-				var attachment;
+				var attachment, defaultSync;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				attachment = mediaFrame.state().attributes.image.toJSON();
@@ -191,8 +191,11 @@
 			mediaFrame.state( 'replace-image' ).on( 'replace', updateCallback );
 			mediaFrame.on( 'close', function() {
 				mediaFrame.detach();
+				wp.media.model.Attachment.prototype.sync = defaultSync;
 			});
 
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() { return $.Deferred().rejectWith( this ).promise(); };
 			mediaFrame.open();
 
 		}
