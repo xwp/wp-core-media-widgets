@@ -106,7 +106,7 @@ function wp32417_add_classname_to_display_settings() {
 			if ( ! templateEl ) {
 				return;
 			}
-			templateEl.text = templateEl.text.replace( /(<label class="setting)(?=">\s*<span>Alignment<\/span>\s*<select class="alignment")/, '$1 align' );
+			templateEl.text = templateEl.text.replace( /(<label class="setting)(?=">\s*<span>[^<]+?<\/span>\s*<select class="alignment")/, '$1 align' );
 		}( document.getElementById( 'tmpl-attachment-display-settings' ) ));
 	</script>
 	<?php
