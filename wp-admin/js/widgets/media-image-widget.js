@@ -1,5 +1,5 @@
 /* eslint consistent-this: [ "error", "control" ] */
-(function( component ) {
+(function( component, $ ) {
 	'use strict';
 
 	var ImageWidgetModel, ImageWidgetControl;
@@ -131,7 +131,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback;
+			var control = this, mediaFrame, metadata, updateCallback, defaultSync;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
@@ -191,8 +191,10 @@
 				wp.media.model.Attachment.prototype.sync = defaultSync;
 			});
 
-			var defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function() { return $.Deferred().rejectWith( this ).promise(); };
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
 			mediaFrame.open();
 
 		}
@@ -202,4 +204,4 @@
 	component.controlConstructors.media_image = ImageWidgetControl;
 	component.modelConstructors.media_image = ImageWidgetModel;
 
-})( wp.mediaWidgets );
+})( wp.mediaWidgets, jQuery );

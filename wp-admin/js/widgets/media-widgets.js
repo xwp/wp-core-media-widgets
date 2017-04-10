@@ -467,7 +467,9 @@ wp.mediaWidgets = ( function( $ ) {
 			} );
 
 			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function() { return $.Deferred().rejectWith( this ).promise(); };
+			wp.media.model.Attachment.prototype.sync = function() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
 
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
