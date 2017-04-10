@@ -39,7 +39,8 @@ class WP_Widget_Image extends WP_Widget_Media {
 				esc_url( admin_url( 'upload.php' ) )
 			),
 			/* translators: %d is widget count */
-			'media_library_state' => _n_noop( 'Image Widget (%d instance)', 'Image Widget (%d instances)' ),
+			'media_library_state_multi' => _n_noop( 'Image Widget (%d)', 'Image Widget (%d)' ),
+			'media_library_state_single' => __( 'Image Widget' ),
 		) );
 	}
 
@@ -58,7 +59,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'size' => array(
 					'type' => 'string',
 					'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
-					'default' => 'full',
+					'default' => 'medium',
 				),
 				'width' => array( // Via 'customWidth', only when size=custom; otherwise via 'width'.
 					'type' => 'integer',
@@ -149,44 +150,66 @@ class WP_Widget_Image extends WP_Widget_Media {
 			'size' => 'thumbnail',
 		) );
 
-		// @todo Support external images defined by 'url' only.
-		if ( empty( $instance['attachment_id'] ) ) {
-			return;
+		$attachment = null;
+		if ( $instance['attachment_id'] ) {
+			$attachment = get_post( $instance['attachment_id'] );
 		}
+		if ( $attachment && 'attachment' === $attachment->post_type ) {
+			$caption = $attachment->post_excerpt;
+			if ( $instance['caption'] ) {
+				$caption = $instance['caption'];
+			}
 
-		$attachment = get_post( $instance['attachment_id'] );
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return;
-		}
+			$image_attributes = array(
+				'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
+				'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
+				'style' => 'max-width: 100%; height: auto;',
+			);
 
-		$caption = $attachment->post_excerpt;
-		if ( $instance['caption'] ) {
+			if ( ! $caption ) {
+				$image_attributes['class'] .= ' align' . $instance['align'];
+			}
+			if ( $instance['alt'] ) {
+				$image_attributes['alt'] = $instance['alt'];
+			}
+
+			$size = $instance['size'];
+			if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ), true ) ) {
+				$size = array( $instance['width'], $instance['height'] );
+			}
+
+			$image = wp_get_attachment_image( $attachment->ID, $size, false, $image_attributes );
+
+			$caption_size = _wp_get_image_size_from_meta( $instance['size'], wp_get_attachment_metadata( $attachment->ID ) );
+			$width = empty( $caption_size[0] ) ? 0 : $caption_size[0];
+
+		} else {
+			if ( empty( $instance['url'] ) ) {
+				return;
+			}
+
+			$instance['size'] = 'custom';
 			$caption = $instance['caption'];
-		}
+			$width   = $instance['width'];
 
-		$image_attributes = array(
-			'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
-			'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
-			'style' => 'max-width: 100%; height: auto;',
-		);
-		if ( ! $caption ) {
-			$image_attributes['class'] .= ' align' . $instance['align'];
-		}
-		if ( $instance['alt'] ) {
-			$image_attributes['alt'] = $instance['alt'];
-		}
+			$classes = 'image ' . $instance['image_classes'];
+			if ( ! $caption ) {
+				$classes .= ' align' . $instance['align'];
+			}
 
-		$size = $instance['size'];
-		if ( 'custom' === $size || ! in_array( $size, array_merge( get_intermediate_image_sizes(), array( 'full' ) ), true ) ) {
-			$size = array( $instance['width'], $instance['height'] );
-		}
-
-		$image = wp_get_attachment_image( $attachment->ID, $size, false, $image_attributes );
+			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
+				esc_attr( $classes ),
+				esc_url( $instance['url'] ),
+				esc_attr( $instance['alt'] ),
+				esc_attr( $instance['width'] ),
+				esc_attr( $instance['height'] )
+			);
+		} // End if().
 
 		$url = '';
 		if ( 'file' === $instance['link_type'] ) {
-			$url = wp_get_attachment_url( $attachment->ID );
-		} elseif ( 'post' === $instance['link_type'] ) {
+			$url = $attachment ? wp_get_attachment_url( $attachment->ID ) : $instance['url'];
+		} elseif ( $attachment && 'post' === $instance['link_type'] ) {
 			$url = get_attachment_link( $attachment->ID );
 		} elseif ( 'custom' === $instance['link_type'] && ! empty( $instance['link_url'] ) ) {
 			$url = $instance['link_url'];
@@ -204,11 +227,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 		}
 
 		if ( $caption ) {
-			$width = 0;
-			$size = _wp_get_image_size_from_meta( $instance['size'], wp_get_attachment_metadata( $attachment->ID ) );
-			if ( false !== $size ) {
-				$width = $size[0];
-			}
 			$image = img_caption_shortcode( array(
 				'width' => $width,
 				'align' => 'align' . $instance['align'],
@@ -269,6 +287,9 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-image-preview">
+			<#
+			var describedById = 'describedBy-' + String( Math.random() );
+			#>
 			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
@@ -277,10 +298,23 @@ class WP_Widget_Image extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.medium ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment.sizes.medium.url }}" draggable="false" alt="" />
-			<# } else if ( 'image' === data.attachment.type && data.attachment.sizes && data.attachment.sizes.full ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment.sizes.full.url }}" draggable="false" alt="" />
+			<# } else if ( data.attachment.url || data.url ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment.url || data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
+				<# if ( ! data.alt ) { #>
+					<#
+					var alt = ( data.attachment.url || data.url );
+					alt = alt.replace( /\?.*$/, '' );
+					alt = alt.replace( /^.+\//, '' );
+					#>
+					<p class="hidden" id="{{ describedById }}"><?php
+						/* translators: placeholder is image filename */
+						echo sprintf( __( 'Current image: %s' ), '{{ alt }}' );
+					?></p>
+				<# } #>
+			<# } else { #>
+				<div class="attachment-media-view">
+					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
+				</div>
 			<# } #>
 		</script>
 		<?php

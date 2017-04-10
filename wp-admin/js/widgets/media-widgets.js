@@ -23,6 +23,153 @@ wp.mediaWidgets = ( function( $ ) {
 	component.modelConstructors = {};
 
 	/**
+	 * Library which persists the customized display settings across selections.
+	 *
+	 * @class PersistentDisplaySettingsLibrary
+	 * @constructor
+	 */
+	component.PersistentDisplaySettingsLibrary = wp.media.controller.Library.extend( {
+
+		/**
+		 * Initialize.
+		 *
+		 * @param {object} options Options.
+		 * @returns {void}
+		 */
+		initialize: function( options ) {
+			_.bindAll( this, 'handleDisplaySettingChange' );
+			wp.media.controller.Library.prototype.initialize.call( this, options );
+		},
+
+		/**
+		 * Sync changes to the current display settings back into the current customized
+		 *
+		 * @param {Backbone.Model} displaySettings Modified display settings.
+		 * @returns {void}
+		 */
+		handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
+			this.get( 'selectedDisplaySettings' ).set( displaySettings.attributes );
+		},
+
+		/**
+		 * Get the display settings model.
+		 *
+		 * Model returned is updated with the current customized display settings,
+		 * and an event listener is added so that changes made to the settings
+		 * will sync back into the model storing the session's customized display
+		 * settings.
+		 *
+		 * @param {Backbone.Model} model Display settings model.
+		 * @returns {Backbone.Model} Display settings model.
+		 */
+		display: function getDisplaySettingsModel( model ) {
+			var display, selectedDisplaySettings = this.get( 'selectedDisplaySettings' );
+			display = wp.media.controller.Library.prototype.display.call( this, model );
+
+			display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
+			display.set( selectedDisplaySettings.attributes );
+			if ( 'custom' === selectedDisplaySettings.get( 'link_type' ) ) {
+				display.linkUrl = selectedDisplaySettings.get( 'link_url' );
+			}
+			display.on( 'change', this.handleDisplaySettingChange );
+			return display;
+		}
+	} );
+
+	/**
+	 * Custom media frame for selecting uploaded media or providing media by URL.
+	 *
+	 * @class MediaFrameSelect
+	 * @constructor
+	 */
+	component.MediaFrameSelect = wp.media.view.MediaFrame.Post.extend( {
+
+		/**
+		 * Create the default states.
+		 *
+		 * @return {void}
+		 */
+		createStates: function createStates() {
+			this.states.add( [
+
+				// Main states.
+				new component.PersistentDisplaySettingsLibrary( {
+					id:         'insert',
+					title:      this.options.title,
+					selection:  this.options.selection,
+					priority:   20,
+					toolbar:    'main-insert',
+					filterable: 'dates',
+					library:    wp.media.query( {
+						type: this.options.mimeType
+					} ),
+					multiple:   false,
+					editable:   true,
+
+					selectedDisplaySettings: this.options.selectedDisplaySettings,
+					displaySettings: true,
+					displayUserSettings: false // We use the display settings from the current/default widget instance props.
+				} ),
+
+				new wp.media.controller.EditImage( { model: this.options.editImage } ),
+
+				// Embed states.
+				new wp.media.controller.Embed( { metadata: this.options.metadata } )
+			] );
+		},
+
+		/**
+		 * Main insert toolbar.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
+		 *
+		 * @param {wp.Backbone.View} view Toolbar view.
+		 * @this {wp.media.controller.Library}
+		 * @returns {void}
+		 */
+		mainInsertToolbar: function mainInsertToolbar( view ) {
+			var controller = this; // eslint-disable-line consistent-this
+			view.set( 'insert', {
+				style:    'primary',
+				priority: 80,
+				text:     controller.options.text, // The whole reason for the fork.
+				requires: { selection: true },
+
+				/**
+				 * Handle click.
+				 *
+				 * @fires wp.media.controller.State#insert()
+				 * @returns {void}
+				 */
+				click: function() {
+					var state = controller.state(),
+						selection = state.get( 'selection' );
+
+					controller.close();
+					state.trigger( 'insert', selection ).reset();
+				}
+			});
+		},
+
+		/**
+		 * Main embed toolbar.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#mainEmbedToolbar()} to override text.
+		 *
+		 * @param {wp.Backbone.View} toolbar Toolbar view.
+		 * @this {wp.media.controller.Library}
+		 * @returns {void}
+		 */
+		mainEmbedToolbar: function mainEmbedToolbar( toolbar ) {
+			toolbar.view = new wp.media.view.Toolbar.Embed({
+				controller: this,
+				text: this.options.text,
+				event: 'insert'
+			});
+		}
+	} );
+
+	/**
 	 * Media widget control.
 	 *
 	 * @class MediaWidgetControl
@@ -110,10 +257,12 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
+			control.renderPreview = _.debounce( control.renderPreview );
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
+			control.listenTo( control.model, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
-			control.model.on( 'change:attachment_id', control.fetchSelectedAttachment );
+			control.model.on( 'change', control.fetchSelectedAttachment );
 			control.fetchSelectedAttachment();
 
 			/*
@@ -131,6 +280,20 @@ wp.mediaWidgets = ( function( $ ) {
 					title: $.trim( $( this ).val() )
 				} );
 			} );
+
+			/*
+			 * Copy current display settings from the widget model to serve as basis
+			 * of customized display settings for the current media frame session.
+			 * Changes to display settings will be synced into this model, and
+			 * when a new selection is made, the settings from this will be synced
+			 * into that AttachmentDisplay's model to persist the setting changes.
+			 */
+			control.displaySettings = new Backbone.Model( {
+				align: control.model.get( 'align' ),
+				size: control.model.get( 'size' ),
+				link: control.model.get( 'link_type' ),
+				linkUrl: control.model.get( 'link_url' )
+			} );
 		},
 
 		/**
@@ -140,6 +303,18 @@ wp.mediaWidgets = ( function( $ ) {
 		 */
 		fetchSelectedAttachment: function fetchSelectedAttachment() {
 			var control = this, attachment;
+
+			// This is an embed (by URL) image if the url is set and the attachment_id is 0.
+			if ( 0 === control.model.get( 'attachment_id' ) && control.model.get( 'url' ) ) {
+
+				// Construct an attachment model with the data we have.
+				attachment = new wp.media.model.Attachment( control.model.attributes );
+
+				control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
+
+				// Skip the rest.
+				return;
+			}
 
 			// Skip if selectedAttachment is already updated.
 			if ( control.model.get( 'attachment_id' ) === control.selectedAttachment.get( 'id' ) ) {
@@ -207,7 +382,8 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, titleInput;
 
 			if ( ! control.templateRendered ) {
-				control.$el.html( control.template()( control.model.attributes ) );
+				control.$el.html( control.template()( control.model.toJSON() ) );
+				control.renderPreview(); // Hereafter it will re-render when control.selectedAttachment changes.
 				control.templateRendered = true;
 			}
 
@@ -258,91 +434,31 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, CustomizedDisplaySettingsLibrary, customizedDisplaySettings;
+			var control = this, selection, mediaFrame;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
-			/*
-			 * Copy current display settings from the widget model to serve as basis
-			 * of customized display settings for the current media frame session.
-			 * Changes to display settings will be synced into this model, and
-			 * when a new selection is made, the settings from this will be synced
-			 * into that AttachmentDisplay's model to persist the setting changes.
-			 */
-			customizedDisplaySettings = new Backbone.Model( {
-				align: control.model.get( 'align' ),
-				size: control.model.get( 'size' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' )
+			mediaFrame = new component.MediaFrameSelect( {
+				title: control.l10n.select_media,
+				frame: 'post',
+				text: control.l10n.add_to_widget,
+				selection: selection,
+				mimeType: control.mime_type,
+				selectedDisplaySettings: control.displaySettings
 			} );
-
-			/**
-			 * Library which persists the customized display settings across selections.
-			 *
-			 * @class
-			 */
-			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
-
-				/**
-				 * Sync changes to the current display settings back into the current customized
-				 *
-				 * @param {Backbone.Model} displaySettings Modified display settings.
-				 * @returns {void}
-				 */
-				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
-					customizedDisplaySettings.set( displaySettings.attributes );
-				},
-
-				/**
-				 * Get the display settings model.
-				 *
-				 * Model returned is updated with the current customized display settings,
-				 * and an event listener is added so that changes made to the settings
-				 * will sync back into the model storing the session's customized display
-				 * settings.
-				 *
-				 * @param {Backbone.Model} model Display settings model.
-				 * @returns {Backbone.Model} Display settings model.
-				 */
-				display: function getDisplaySettingsModel( model ) {
-					var display;
-					display = wp.media.controller.Library.prototype.display.call( this, model );
-
-					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
-					display.set( customizedDisplaySettings.attributes );
-					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
-						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
-					}
-					display.on( 'change', this.handleDisplaySettingChange );
-					return display;
-				}
-			} );
-
-			mediaFrame = wp.media( {
-				frame: 'select',
-				button: {
-					text: control.l10n.add_to_widget
-				},
-				states: new CustomizedDisplaySettingsLibrary( {
-					library: wp.media.query( {
-						type: control.mime_type
-					} ),
-					title: control.l10n.select_media,
-					selection: selection,
-					multiple: false,
-					priority: 20,
-					display: true, // Attachment display setting.
-					filterable: false
-				} )
-			} );
+			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'select', function() {
-				var attachment;
+			mediaFrame.on( 'insert', function() {
+				var attachment = { error: false }, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-				attachment.error = false;
+				if ( 'embed' === state.get( 'id' ) ) {
+					_.extend( attachment, { id: 0 }, state.props.toJSON() );
+				} else {
+					_.extend( attachment, state.get( 'selection' ).first().toJSON() );
+				}
+
 				control.selectedAttachment.set( attachment );
 
 				// Update widget instance.

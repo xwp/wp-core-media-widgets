@@ -67,7 +67,8 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 			'add_to_widget',
 			'change_media',
 			'edit_media',
-			'media_library_state',
+			'media_library_state_multi',
+			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
 			'select_media',
@@ -371,6 +372,22 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$this->assertContains( 'alt="A flower"', $output );
 		$this->assertContains( 'width="100"', $output );
 		$this->assertContains( 'height="100"', $output );
+
+		// Embeded images.
+		ob_start();
+		$widget->render_media( array(
+			'attachment_id' => null,
+			'align' => 'none',
+			'caption' => 'With caption',
+			'height' => 100,
+			'link_type' => 'file',
+			'url' => 'http://example.org/url/to/image.jpg',
+			'width' => 100,
+		) );
+		$output = ob_get_clean();
+
+		// Custom image class.
+		$this->assertContains( 'src="http://example.org/url/to/image.jpg"', $output );
 
 		// Link settings.
 		ob_start();

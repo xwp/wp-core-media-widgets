@@ -49,7 +49,8 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			'add_to_widget',
 			'change_media',
 			'edit_media',
-			'media_library_state',
+			'media_library_state_multi',
+			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
 			'select_media',
@@ -265,14 +266,21 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		);
 		$instance = array(
 			'title' => 'Foo',
-			'url' => '',
+			'url' => 'http://example.com/image.jpg',
 			'attachment_id' => 0,
 		);
+
+		add_filter( 'widget_mocked_instance', array( $this, 'filter_widget_mocked_instance' ), 10, 3 );
 
 		ob_start();
 		$widget = $this->get_mocked_class_instance();
 		$widget->expects( $this->atLeastOnce() )->method( 'render_media' )->with( $instance );
+		$this->widget_instance_filter_args = array();
 		$widget->widget( $args, $instance );
+		$this->assertCount( 3, $this->widget_instance_filter_args );
+		$this->assertEquals( $instance, $this->widget_instance_filter_args[0] );
+		$this->assertEquals( $args, $this->widget_instance_filter_args[1] );
+		$this->assertEquals( $widget, $this->widget_instance_filter_args[2] );
 		$output = ob_get_clean();
 
 		$this->assertContains( '<h2>Foo</h2>', $output );
@@ -284,9 +292,38 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$widget = $this->get_mocked_class_instance();
 		$instance['title'] = '';
 		$widget->expects( $this->atLeastOnce() )->method( 'render_media' )->with( $instance );
-		$widget->widget( $args, array() );
+		$widget->widget( $args, $instance );
 		$output = ob_get_clean();
 		$this->assertNotContains( '<h2>Foo</h2>', $output );
+
+		// No attachment_id nor url.
+		$instance['url'] = '';
+		$instance['attachment_id'] = 0;
+		ob_start();
+		$widget = $this->get_mocked_class_instance();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertEmpty( $output );
+	}
+
+	/**
+	 * Args passed to the widget_{$id_base}_instance filter.
+	 *
+	 * @var array
+	 */
+	protected $widget_instance_filter_args = array();
+
+	/**
+	 * Filters the media widget instance prior to rendering the media.
+	 *
+	 * @param array           $instance Instance data.
+	 * @param array           $args     Widget args.
+	 * @param WP_Widget_Media $object   Widget object.
+	 * @return array Instance.
+	 */
+	function filter_widget_mocked_instance( $instance, $args, $object ) {
+		$this->widget_instance_filter_args = func_get_args();
+		return $instance;
 	}
 
 	/**
@@ -328,7 +365,18 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			),
 		) );
 		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
-		$this->assertEqualSets( array( sprintf( $widget->l10n['media_library_state']['singular'], 1 ) ), $result );
+		$this->assertEqualSets( array( $widget->l10n['media_library_state_single'] ), $result );
+
+		$widget->save_settings( array(
+			array(
+				'attachment_id' => $attachment_id,
+			),
+			array(
+				'attachment_id' => $attachment_id,
+			),
+		) );
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertEqualSets( array( sprintf( $widget->l10n['media_library_state_multi']['singular'], 2 ) ), $result );
 	}
 
 	/**
