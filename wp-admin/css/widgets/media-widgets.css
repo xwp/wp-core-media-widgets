@@ -5,7 +5,7 @@
 }
 
 .media-widget-control.selected .selected {
-	display: block;
+	display: inline-block;
 }
 
 .media-widget-buttons {
