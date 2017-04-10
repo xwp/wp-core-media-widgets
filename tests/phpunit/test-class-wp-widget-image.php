@@ -31,7 +31,6 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		$schema = $get_instance_schema->invoke( new WP_Widget_Image() );
 
 		$this->assertEqualSets( array(
-			'align',
 			'alt',
 			'attachment_id',
 			'caption',
@@ -160,19 +159,6 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		// Should filter invalid image height.
 		$result = $widget->update( array(
 			'height' => 'high',
-		), $instance );
-		$this->assertSame( $result, $instance );
-
-		// Should return valid image alignment.
-		$expected = array(
-			'align' => 'right',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid image alignment.
-		$result = $widget->update( array(
-			'align' => 'next to caption',
 		), $instance );
 		$this->assertSame( $result, $instance );
 
@@ -377,7 +363,6 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 		ob_start();
 		$widget->render_media( array(
 			'attachment_id' => null,
-			'align' => 'none',
 			'caption' => 'With caption',
 			'height' => 100,
 			'link_type' => 'file',

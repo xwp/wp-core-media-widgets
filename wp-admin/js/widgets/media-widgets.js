@@ -465,6 +465,7 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
 			} );
 
+			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.
