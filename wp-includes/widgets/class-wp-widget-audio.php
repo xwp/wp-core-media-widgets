@@ -28,6 +28,66 @@ class WP_Widget_Audio extends WP_Widget_Media {
 			'description' => __( 'Displays an audio file.' ),
 			'mime_type'   => 'audio',
 		) );
+
+		$this->l10n = array_merge( $this->l10n, array(
+			'no_media_selected' => __( 'No audio file selected' ),
+			'select_media' => _x( 'Select File', 'label for button in the audio widget; should not be longer than ~13 characters long' ),
+			'change_media' => _x( 'Change Audio', 'label for button in the audio widget; should not be longer than ~13 characters long' ),
+			'edit_media' => _x( 'Edit Audio', 'label for button in the audio widget; should not be longer than ~13 characters long' ),
+			'missing_attachment' => sprintf(
+				/* translators: placeholder is URL to media library */
+				__( 'We can&#8217;t find that audio file. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
+				esc_url( admin_url( 'upload.php' ) )
+			),
+			/* translators: %d is widget count */
+			'media_library_state_multi' => _n_noop( 'Audio Widget (%d)', 'Audio Widget (%d)' ),
+			'media_library_state_single' => __( 'Audio Widget' ),
+		) );
+	}
+
+	/**
+	 * Get instance schema.
+	 *
+	 * This is protected because it may become part of WP_Widget eventually.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/35574
+	 * @return array
+	 */
+	protected function get_instance_schema() {
+		return array_merge(
+			parent::get_instance_schema(),
+			array(
+				'caption' => array(
+					'type' => 'string',
+					'default' => '',
+					'sanitize_callback' => 'wp_kses_post',
+				),
+				'link_type' => array(  // Via 'link' property.
+					'type' => 'string',
+					'enum' => array( 'none', 'file', 'post', 'custom' ),
+					'default' => 'none',
+				),
+				'link_url' => array( // Via 'linkUrl' property.
+					'type' => 'string',
+					 'default' => '',
+					'format' => 'uri',
+				),
+				'link_classes' => array( // Via 'linkClassName' property.
+					'type' => 'string',
+					'default' => '',
+					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+				),
+				'link_rel' => array( // Via 'linkRel' property.
+					'type' => 'string',
+					'default' => '',
+					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+				),
+				'link_target_blank' => array( // Via 'linkTargetBlank' property.
+					'type' => 'boolean',
+					'default' => false,
+				),
+			)
+		);
 	}
 
 	/**
@@ -40,24 +100,30 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
-
-		// @todo Support external audio defined by 'url' only.
-		if ( empty( $instance['attachment_id'] ) ) {
-			return;
+		$attachment = null;
+		if ( $instance['attachment_id'] ) {
+			$attachment = get_post( $instance['attachment_id'] );
 		}
+		if ( $attachment && 'attachment' === $attachment->post_type ) {
 
-		$attachment = get_post( $instance['attachment_id'] );
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return;
-		}
-
-		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
-			echo $this->create_link_for( $attachment, $instance['link'] );
+			if ( in_array( $instance['link_type'], array( 'file', 'post' ), true ) ) {
+				echo $this->create_link_for( $attachment, $instance['link'] );
+				return;
+			} else {
+				$src = wp_get_attachment_url( $attachment->ID );
+			}
 		} else {
-			echo wp_audio_shortcode( array(
-				'src' => wp_get_attachment_url( $attachment->ID ),
-			) );
+
+			if ( empty( $instance['url'] ) ) {
+				return;
+			}
+
+			$src = $instance['url'];
 		}
+
+		echo wp_audio_shortcode( array(
+			'src' => $src,
+		) );
 	}
 
 	/**

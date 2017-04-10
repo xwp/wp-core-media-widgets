@@ -31,7 +31,7 @@
 		 */
 		renderPreview: function renderPreview() {
 			var control = this, model = control.selectedAttachment.attributes, previewContainer, previewTemplate;
-			model = _.extend( {}, model, {
+			model = _.extend( model, {
 				src: model.url,
 				type: model.url.split( '.' ).pop()
 			} );
@@ -47,31 +47,82 @@
 		 * @returns {object} Props
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, displaySettings, props;
+			var control = this,
+				state = mediaFrame.state(),
+				props = {};
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			if ( _.isEmpty( attachment ) ) {
-				return {};
+			if ( 'embed' === state.get( 'id' ) ) {
+				props = control._getEmbedProps( mediaFrame, state.props.toJSON() );
+			} else {
+				props = control._getAttachmentProps( mediaFrame, state.get( 'selection' ).first().toJSON() );
 			}
-
-			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
-
-			props = {
-				attachment_id: attachment.id,
-				autiplay: displaySettings.autoplay,
-				canEmbed: displaySettings.canEmbed,
-				caption: attachment.caption,
-				description: attachment.description,
-				link: displaySettings.link,
-				linkUrl: displaySettings.linkUrl,
-				loop: displaySettings.loop,
-				size: displaySettings.size,
-				src: attachment.url,
-				type: attachment.filename.split( '.' ).pop()
-			};
 
 			return props;
 		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
+			var props = {}, displaySettings;
+
+			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
+
+			if ( ! _.isEmpty( attachment ) ) {
+				_.extend( props, {
+					attachment_id: attachment.id,
+					autoplay: displaySettings.autoplay,
+					canEmbed: displaySettings.canEmbed,
+					caption: attachment.caption,
+					description: attachment.description,
+					link: displaySettings.link,
+					linkUrl: displaySettings.linkUrl,
+					loop: displaySettings.loop,
+					src: attachment.url,
+					type: attachment.subtype
+				} );
+			}
+
+			return props;
+		},
+
+		/**
+		 * Get the instance props from the media selection frame.
+		 *
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {object} attachment Attachment object.
+		 * @returns {object} Props
+		 */
+		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
+			var props = {};
+
+			if ( ! _.isEmpty( attachment ) ) {
+				_.extend( props, {
+					attachment_id: 0,
+					align: attachment.align,
+					alt: attachment.alt,
+					caption: attachment.caption,
+					image_classes: '',
+					image_title: '',
+					link_classes: '',
+					link_rel: '',
+					link_url: attachment.linkUrl,
+					link_target_blank: false,
+					link_type: attachment.link,
+					size: 'full',
+					url: attachment.url,
+					width: attachment.width,
+					height: attachment.height
+				} );
+			}
+
+			return props;
+		},
+
 
 		/**
 		 * Open the media audio-edit frame to modify the selected item.
