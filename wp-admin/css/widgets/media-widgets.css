@@ -1,6 +1,11 @@
+.media-widget-control.selected .placeholder,
 .media-widget-control.selected .not-selected,
-.media-widget-control:not(.selected) .selected {
+.media-widget-control .selected {
 	display: none;
+}
+
+.media-widget-control.selected .selected {
+	display: inline-block;
 }
 
 .media-widget-buttons {
