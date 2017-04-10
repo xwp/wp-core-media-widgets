@@ -468,6 +468,8 @@ wp.mediaWidgets = ( function( $ ) {
 
 			defaultSync = wp.media.model.Attachment.prototype.sync;
 			wp.media.model.Attachment.prototype.sync = function() { return $.Deferred().rejectWith( this ).promise(); };
+
+			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.

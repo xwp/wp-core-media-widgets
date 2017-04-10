@@ -74,7 +74,6 @@
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: attachment.id,
-					align: displaySettings.align,
 					alt: attachment.alt,
 					caption: attachment.caption,
 					image_classes: '',
@@ -107,7 +106,6 @@
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: 0,
-					align: attachment.align,
 					alt: attachment.alt,
 					caption: attachment.caption,
 					image_classes: '',
@@ -138,7 +136,6 @@
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
 				alt: control.model.get( 'alt' ),
-				align: control.model.get( 'align' ),
 				caption: control.model.get( 'caption' ),
 				customWidth: control.model.get( 'width' ),
 				customHeight: control.model.get( 'height' ),
@@ -159,6 +156,7 @@
 				state: 'image-details',
 				metadata: metadata
 			} );
+			mediaFrame.$el.addClass( 'media-widget' );
 
 			updateCallback = function( imageData ) {
 				var attachment;
@@ -171,7 +169,6 @@
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
 					alt: imageData.alt,
-					align: imageData.align,
 					caption: imageData.caption,
 					image_classes: imageData.extraClasses,
 					image_title: imageData.title,
