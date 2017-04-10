@@ -24,6 +24,8 @@
  * @package WordPress
  */
 
+define( 'WP_CORE_MEDIA_WIDGETS_MERGED', file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+
 /**
  * Register widget scripts.
  *
@@ -31,16 +33,30 @@
  * @param WP_Scripts $scripts Scripts.
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
-	$scripts->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js', array( 'jquery', 'media-models', 'media-views' ) );
-	$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
+	$handle = 'media-widgets';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js';
+	if ( $scripts->query( $handle, 'registered' ) ) {
+		$scripts->registered[ $handle ] = $src;
+	} else {
+		$scripts->add( $handle, $src, array( 'jquery', 'media-models', 'media-views' ) );
+		$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
+	}
 
-	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
+	$handle = 'media-image-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js';
+	if ( $scripts->query( $handle, 'registered' ) ) {
+		$scripts->registered[ $handle ] = $src;
+	} else {
+		$scripts->add( $handle, $src, array( 'media-widgets' ) );
+	}
 
 	/* TODO: $scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
 
 	/* TODO: $scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
 
-	$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
+	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+		$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
+	}
 }
 add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
 
@@ -51,7 +67,13 @@ add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
  * @param WP_Styles $styles Styles.
  */
 function wp32417_default_styles( WP_Styles $styles ) {
-	$styles->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css', array( 'media-views' ) );
+	$handle = 'media-widgets';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
+	if ( $styles->query( $handle, 'registered' ) ) {
+		$styles->registered[ $handle ] = $src;
+	} else {
+		$styles->add( $handle, $src, array( 'media-views' ) );
+	}
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
 
