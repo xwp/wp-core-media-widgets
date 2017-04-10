@@ -31,6 +31,17 @@ wp.mediaWidgets = ( function( $ ) {
 	component.PersistentDisplaySettingsLibrary = wp.media.controller.Library.extend( {
 
 		/**
+		 * Initialize.
+		 *
+		 * @param {object} options Options.
+		 * @returns {void}
+		 */
+		initialize: function( options ) {
+			_.bindAll( this, 'handleDisplaySettingChange' );
+			wp.media.controller.Library.prototype.initialize.call( this, options );
+		},
+
+		/**
 		 * Sync changes to the current display settings back into the current customized
 		 *
 		 * @param {Backbone.Model} displaySettings Modified display settings.
