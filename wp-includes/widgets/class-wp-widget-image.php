@@ -47,12 +47,14 @@ class WP_Widget_Image extends WP_Widget_Media {
 	/**
 	 * Get instance schema.
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
 	 * @link https://core.trac.wordpress.org/ticket/35574
 	 * @return array
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
