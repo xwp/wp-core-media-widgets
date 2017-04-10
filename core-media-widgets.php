@@ -99,3 +99,23 @@ function wp32417_widgets_init() {
 	/* TODO: register_widget( 'WP_Widget_Video' ); */
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );
+
+/**
+ * Add align classname to the alignment container in .attachment-display-settings.
+ *
+ * @see wp_print_media_templates()
+ * @todo For Core merge, this should be patched in \wp_print_media_templates().
+ */
+function wp32417_add_classname_to_display_settings() {
+	?>
+	<script>
+		(function( templateEl ) {
+			if ( ! templateEl ) {
+				return;
+			}
+			templateEl.text = templateEl.text.replace( /(<label class="setting)(?=">\s*<span>Alignment<\/span>\s*<select class="alignment")/, '$1 align' );
+		}( document.getElementById( 'tmpl-attachment-display-settings' ) ));
+	</script>
+	<?php
+}
+add_action( 'print_media_templates', 'wp32417_add_classname_to_display_settings' );

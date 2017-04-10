@@ -72,11 +72,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 					'default' => 0,
 				),
 
-				'align' => array(
-					'type' => 'string',
-					'enum' => array( 'none', 'left', 'right', 'center' ),
-					'default' => 'none',
-				),
 				'caption' => array(
 					'type' => 'string',
 					'default' => '',
@@ -166,9 +161,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 				'style' => 'max-width: 100%; height: auto;',
 			);
 
-			if ( ! $caption ) {
-				$image_attributes['class'] .= ' align' . $instance['align'];
-			}
 			if ( $instance['alt'] ) {
 				$image_attributes['alt'] = $instance['alt'];
 			}
@@ -191,11 +183,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$instance['size'] = 'custom';
 			$caption = $instance['caption'];
 			$width   = $instance['width'];
-
 			$classes = 'image ' . $instance['image_classes'];
-			if ( ! $caption ) {
-				$classes .= ' align' . $instance['align'];
-			}
 
 			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
 				esc_attr( $classes ),
@@ -229,7 +217,6 @@ class WP_Widget_Image extends WP_Widget_Media {
 		if ( $caption ) {
 			$image = img_caption_shortcode( array(
 				'width' => $width,
-				'align' => 'align' . $instance['align'],
 				'caption' => $caption,
 			), $image );
 		}
