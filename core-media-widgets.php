@@ -61,13 +61,6 @@ add_action( 'wp_default_styles', 'wp32417_default_styles' );
  * @codeCoverageIgnore
  */
 function wp32417_custom_theme_styles() {
-	if ( wp_style_is( 'twentysixteen-style' ) ) {
-		wp_add_inline_style( 'twentysixteen-style', '
-			.widget:before,.widget:after { content: ""; display: table; }
-			.widget:after { clear: both; }
-		' );
-	}
-
 	if ( 'twentyten' === get_template() ) {
 		add_action( 'wp_head', 'wp32417_twentyten_styles' );
 	}
