@@ -94,7 +94,9 @@ function wp32417_custom_theme_styles() {
 		add_action( 'wp_head', 'wp32417_twentyten_styles' );
 	}
 }
-add_action( 'wp_enqueue_scripts', 'wp32417_custom_theme_styles', 11 );
+if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+	add_action( 'wp_enqueue_scripts', 'wp32417_custom_theme_styles', 11 );
+}
 
 /**
  * Style fixes for Twenty Ten.
