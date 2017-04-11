@@ -22,19 +22,19 @@
 		orientation: 'landscape',
 		sizes: {
 			medium: {
-				url: 'http://example.com/wp-content/uploads/2017/04/chicken-and-ribs-300x300.jpg'
+				url: 'http://s.w.org/style/images/wp-header-logo200x200.png'
 			}
 		},
 		title: 'Chicken and Ribs',
 		type: 'image',
-		url: 'http://example.com/wp-content/uploads/2017/04/chicken-and-ribs.jpg',
+		url: 'http://s.w.org/style/images/wp-header-logo.png',
 		width: 1080
 	};
 
 	asyncTest( 'image widget control', function() {
-		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
+		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, propsData;
 
-		expect( 6 );
+		expect( 10 );
 
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
@@ -53,13 +53,30 @@
 
 		// Test Preview
 		equal( imageWidgetControlInstance.$el.find( 'img' ).length, 0, 'No images should be rendered' );
-		imageWidgetModelInstance.set( 'url', 'http://example.com/image.jpg' );
+		imageWidgetModelInstance.set( 'url', 'http://s.w.org/style/images/wp-header-logo.png' );
 
 		// Due to renderPreview being deferred.
 		setTimeout( function() {
-			equal( imageWidgetControlInstance.$el.find( 'img[src="http://example.com/image.jpg"]' ).length, 1, 'One image should be rendered' );
+			equal( imageWidgetControlInstance.$el.find( 'img[src="http://s.w.org/style/images/wp-header-logo.png"]' ).length, 1, 'One image should be rendered' );
 		}, 50 );
 
+		// Test getSelectedFrameProps() and _getAttachmentProps() with selection
+		imageWidgetControlInstance.selectMedia();
+		setTimeout( function() {
+			wp.media.frame.state().get( 'selection' ).first().set( _.extend( data.imageAttachment, {
+				caption: 'a witty caption',
+				alt: 'some alt text too'
+			} ) );
+			propsData = imageWidgetControlInstance.getSelectFrameProps( wp.media.frame );
+			equal( propsData.alt, 'some alt text too', 'getSelectedFrameProps should set alt properly' );
+			equal( propsData.attachment_id, data.imageAttachment.id, 'getSelectedFrameProps should set attachment_id properly' );
+			equal( propsData.caption, 'a witty caption', 'getSelectedFrameProps should set caption properly' );
+			equal( propsData.url, data.imageAttachment.sizes.medium.url, 'getSelectedFrameProps should set url properly' );
+		} );
+		setTimeout( function() {
+			// close frame from selection tests
+			wp.media.frame.close();
+		} );
 		setTimeout( start, 100 );
 	} );
 
