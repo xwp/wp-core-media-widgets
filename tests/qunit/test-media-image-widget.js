@@ -32,9 +32,9 @@
 	};
 
 	asyncTest( 'image widget control', function() {
-		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, propsData;
+		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
 
-		expect( 10 );
+		expect( 6 );
 
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
@@ -59,23 +59,6 @@
 		setTimeout( function() {
 			equal( imageWidgetControlInstance.$el.find( 'img[src="http://s.w.org/style/images/wp-header-logo.png"]' ).length, 1, 'One image should be rendered' );
 		}, 50 );
-
-		// Test getSelectedFrameProps() and _getAttachmentProps() with selection
-		imageWidgetControlInstance.selectMedia();
-		setTimeout( function() {
-			wp.media.frame.state().get( 'selection' ).first().set( _.extend( data.imageAttachment, {
-				caption: 'a witty caption',
-				alt: 'some alt text too'
-			} ) );
-			propsData = imageWidgetControlInstance.getSelectFrameProps( wp.media.frame );
-			equal( propsData.alt, 'some alt text too', 'getSelectedFrameProps should set alt properly' );
-			equal( propsData.attachment_id, data.imageAttachment.id, 'getSelectedFrameProps should set attachment_id properly' );
-			equal( propsData.caption, 'a witty caption', 'getSelectedFrameProps should set caption properly' );
-			equal( propsData.url, data.imageAttachment.sizes.medium.url, 'getSelectedFrameProps should set url properly' );
-		}, 50 );
-		setTimeout( function() {
-			wp.media.frame.close();
-		}, 100 );
 		setTimeout( start, 1000 );
 	} );
 
