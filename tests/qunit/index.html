@@ -121,7 +121,7 @@ wp.mediaWidgets.init();
 </script>
 <script type='text/javascript' src='../../wp-admin/js/widgets/media-image-widget.js?ver=4.8-alpha-39357-src'></script>
 <script type='text/javascript'>
-wp.mediaWidgets.modelConstructors[ "media_image" ].prototype.schema = {"attachment_id":{"type":"integer","default":0,"minimum":0},"url":{"type":"string","default":"","format":"uri"},"title":{"type":"string","default":""},"size":{"type":"string","default":"medium","enum":["thumbnail","medium","medium_large","large","post-thumbnail","full","custom"]},"width":{"type":"integer","default":0,"minimum":0},"height":{"type":"integer","default":0,"minimum":0},"align":{"type":"string","default":"none","enum":["none","left","right","center"]},"caption":{"type":"string","default":""},"alt":{"type":"string","default":""},"link_type":{"type":"string","default":"none","enum":["none","file","post","custom"]},"link_url":{"type":"string","default":"","format":"uri"},"image_classes":{"type":"string","default":""},"link_classes":{"type":"string","default":""},"link_rel":{"type":"string","default":""},"link_target_blank":{"type":"boolean","default":false},"image_title":{"type":"string","default":""}};
+wp.mediaWidgets.modelConstructors[ "media_image" ].prototype.schema = {"attachment_id":{"type":"integer","default":0,"minimum":0},"url":{"type":"string","default":"","format":"uri"},"title":{"type":"string","default":""},"size":{"type":"string","default":"medium","enum":["thumbnail","medium","medium_large","large","post-thumbnail","full","custom"]},"width":{"type":"integer","default":0,"minimum":0},"height":{"type":"integer","default":0,"minimum":0},"caption":{"type":"string","default":""},"alt":{"type":"string","default":""},"link_type":{"type":"string","default":"none","enum":["none","file","post","custom"]},"link_url":{"type":"string","default":"","format":"uri"},"image_classes":{"type":"string","default":""},"link_classes":{"type":"string","default":""},"link_rel":{"type":"string","default":""},"link_target_blank":{"type":"boolean","default":false},"image_title":{"type":"string","default":""}};
 
 					wp.mediaWidgets.controlConstructors[ "media_image" ].prototype.mime_type = "image";
 					_.extend( wp.mediaWidgets.controlConstructors[ "media_image" ].prototype.l10n, {"no_media_selected":"No image selected","select_media":"Select Image","change_media":"Change Image","edit_media":"Edit Image","add_to_widget":"Add to Widget","missing_attachment":"We can&#8217;t find that image. Check your <a href=\"http:\/\/src.wordpress-develop.dev\/wp-admin\/upload.php\">media library<\/a> and make sure it wasn&#8217;t deleted.","media_library_state_multi":{"0":"Image Widget (%d)","1":"Image Widget (%d)","singular":"Image Widget (%d)","plural":"Image Widget (%d)","context":null,"domain":null},"media_library_state_single":"Image Widget"} );
@@ -1378,7 +1378,7 @@ wp.mediaWidgets.modelConstructors[ "media_image" ].prototype.schema = {"attachme
 			<div class="favicon">
 				<img id="preview-favicon" src="{{ data.url }}" alt="Preview as a browser icon"/>
 			</div>
-			<span class="browser-title" aria-hidden="true">WordPress Develops22s</span>
+			<span class="browser-title" aria-hidden="true">WordPress Develop</span>
 		</div>
 
 		<strong aria-hidden="true">As an app icon</strong>
@@ -1387,6 +1387,14 @@ wp.mediaWidgets.modelConstructors[ "media_image" ].prototype.schema = {"attachme
 		</div>
 	</script>
 
+		<script>
+		(function( templateEl ) {
+			if ( ! templateEl ) {
+				return;
+			}
+			templateEl.text = templateEl.text.replace( /(<label class="setting)(?=">\s*<span>[^<]+?<\/span>\s*<select class="alignment")/, '$1 align' );
+		}( document.getElementById( 'tmpl-attachment-display-settings' ) ));
+	</script>
 	</div>
 
 		<!-- End dependencies -->
