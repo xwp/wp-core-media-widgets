@@ -7,7 +7,7 @@
 	/**
 	 * Image widget model.
 	 *
-	 * See WP_Widget_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 * See WP_Widget_Media_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
 	 *
 	 * @class ImageWidgetModel
 	 * @constructor
@@ -17,7 +17,7 @@
 	/**
 	 * Image widget control.
 	 *
-	 * See WP_Widget_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 * See WP_Widget_Media_Image::enqueue_admin_scripts() for amending prototype from PHP exports.
 	 *
 	 * @class ImageWidgetModel
 	 * @constructor
