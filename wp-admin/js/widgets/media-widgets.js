@@ -230,7 +230,6 @@ wp.mediaWidgets = ( function( $ ) {
 		 *
 		 * @param {Object}         options - Options.
 		 * @param {Backbone.Model} options.model - Model.
-		 * @param {function}       options.template - Control template.
 		 * @param {jQuery}         options.el - Control container element.
 		 * @returns {void}
 		 */
@@ -238,6 +237,13 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this;
 
 			Backbone.View.prototype.initialize.call( control, options );
+
+			if ( ! control.el ) {
+				throw new Error( 'Missing options.el' );
+			}
+			if ( ! ( control.model instanceof component.MediaWidgetModel ) ) {
+				throw new Error( 'Missing options.model' );
+			}
 
 			// Allow methods to be passed in with control context preserved.
 			_.bindAll( control, 'syncModelToInputs', 'render', 'fetchSelectedAttachment', 'renderPreview' );
@@ -598,7 +604,7 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			castedAttrs = {};
-			_.each( attrs, function( value, name ) { // eslint-disable-line complexity
+			_.each( attrs, function( value, name ) {
 				var type;
 				if ( ! model.schema[ name ] ) {
 					castedAttrs[ name ] = value;
