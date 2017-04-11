@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests covering WP_Widget_Image functionality.
+ * Unit tests covering WP_Widget_Media_Image functionality.
  *
  * @package    WordPress
  * @subpackage widgets
@@ -11,7 +11,7 @@
  *
  * @group widgets
  */
-class Test_WP_Widget_Image extends WP_UnitTestCase {
+class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 
 	/**
 	 * Test get_instance_schema method.

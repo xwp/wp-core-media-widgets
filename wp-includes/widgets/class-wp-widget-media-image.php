@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget API: WP_Widget_Image class
+ * Widget API: WP_Widget_Media_Image class
  *
  * @package WordPress
  * @subpackage Widgets

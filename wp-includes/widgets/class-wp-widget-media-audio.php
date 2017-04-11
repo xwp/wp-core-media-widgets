@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget API: WP_Widget_Audio class
+ * Widget API: WP_Widget_Media_Audio class
  *
  * @package WordPress
  * @subpackage Widgets
