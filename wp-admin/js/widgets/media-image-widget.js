@@ -131,7 +131,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView, defaultSync;
+			var control = this, mediaFrame, metadata, updateCallback, defaultSync;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
@@ -198,20 +198,6 @@
 			});
 
 			mediaFrame.open();
-
-			/*
-			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the
-			 * customizer.
-			 */
-			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
-			if ( mediaFrameContentView.model && mediaFrameContentView.model.dfd ) {
-				mediaFrameContentView.model.dfd.done( function() {
-					_.defer( function() { // Next tick.
-						mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
-					} );
-				} );
-			}
 		}
 	} );
 
