@@ -98,13 +98,13 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test get_instance_schema method.
+	 * Test get_properties_schema method.
 	 *
-	 * @covers WP_Widget_Media::get_instance_schema
+	 * @covers WP_Widget_Media::get_properties_schema
 	 */
 	function test_get_instance_schema() {
 		$widget = $this->get_mocked_class_instance();
-		$schema = $widget->get_instance_schema();
+		$schema = $widget->get_properties_schema();
 
 		$this->assertEqualSets( array(
 			'attachment_id',

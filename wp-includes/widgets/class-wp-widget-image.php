@@ -45,18 +45,18 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
 	 * @since  4.8.0
 	 * @access public
 	 *
 	 * @see WP_REST_Controller::get_item_schema()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	public function get_instance_schema() {
+	public function get_properties_schema() {
 		return array_merge(
-			parent::get_instance_schema(),
+			parent::get_properties_schema(),
 			array(
 				'size' => array(
 					'type' => 'string',
@@ -147,7 +147,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
-		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
+		$instance = array_merge( wp_list_pluck( $this->get_properties_schema(), 'default' ), $instance );
 		$instance = wp_parse_args( $instance, array(
 			'size' => 'thumbnail',
 		) );
@@ -252,7 +252,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 		wp_enqueue_script( $handle );
 
 		$exported_schema = array();
-		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
+		foreach ( $this->get_properties_schema() as $field => $field_schema ) {
 			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
 		}
 		wp_add_inline_script(

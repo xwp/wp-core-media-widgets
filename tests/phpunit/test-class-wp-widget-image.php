@@ -14,13 +14,13 @@
 class Test_WP_Widget_Image extends WP_UnitTestCase {
 
 	/**
-	 * Test get_instance_schema method.
+	 * Test get_properties_schema method.
 	 *
-	 * @covers WP_Widget_Image::get_instance_schema
+	 * @covers WP_Widget_Image::get_properties_schema
 	 */
 	function test_get_instance_schema() {
 		$widget = new WP_Widget_Image();
-		$schema = $widget->get_instance_schema();
+		$schema = $widget->get_properties_schema();
 
 		$this->assertEqualSets( array(
 			'align',
@@ -68,7 +68,7 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test get_instance_schema method.
+	 * Test get_properties_schema method.
 	 *
 	 * @covers WP_Widget_Image::update
 	 */
