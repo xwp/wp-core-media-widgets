@@ -1,5 +1,5 @@
 /* eslint consistent-this: [ "error", "control" ] */
-(function( component ) {
+(function( component, $ ) {
 	'use strict';
 
 	var ImageWidgetModel, ImageWidgetControl;
@@ -74,7 +74,6 @@
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: attachment.id,
-					align: displaySettings.align,
 					alt: attachment.alt,
 					caption: attachment.caption,
 					image_classes: '',
@@ -107,7 +106,6 @@
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: 0,
-					align: attachment.align,
 					alt: attachment.alt,
 					caption: attachment.caption,
 					image_classes: '',
@@ -133,12 +131,11 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
+			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView, defaultSync;
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
 				alt: control.model.get( 'alt' ),
-				align: control.model.get( 'align' ),
 				caption: control.model.get( 'caption' ),
 				customWidth: control.model.get( 'width' ),
 				customHeight: control.model.get( 'height' ),
@@ -159,6 +156,7 @@
 				state: 'image-details',
 				metadata: metadata
 			} );
+			mediaFrame.$el.addClass( 'media-widget' );
 
 			updateCallback = function( imageData ) {
 				var attachment;
@@ -171,7 +169,6 @@
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
 					alt: imageData.alt,
-					align: imageData.align,
 					caption: imageData.caption,
 					image_classes: imageData.extraClasses,
 					image_title: imageData.title,
@@ -189,8 +186,15 @@
 
 			mediaFrame.state( 'image-details' ).on( 'update', updateCallback );
 			mediaFrame.state( 'replace-image' ).on( 'replace', updateCallback );
+
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
 			mediaFrame.on( 'close', function() {
 				mediaFrame.detach();
+				wp.media.model.Attachment.prototype.sync = defaultSync;
 			});
 
 			mediaFrame.open();
@@ -215,4 +219,4 @@
 	component.controlConstructors.media_image = ImageWidgetControl;
 	component.modelConstructors.media_image = ImageWidgetModel;
 
-})( wp.mediaWidgets );
+})( wp.mediaWidgets, jQuery );
