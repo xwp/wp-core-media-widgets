@@ -76,7 +76,7 @@
 		setTimeout( function() {
 			wp.media.frame.close();
 		} );
-		setTimeout( start, 100 );
+		setTimeout( start, 1000 );
 	} );
 
 	test( 'image media model', function() {
