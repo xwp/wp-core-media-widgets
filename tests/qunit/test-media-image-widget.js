@@ -74,7 +74,6 @@
 			equal( propsData.url, data.imageAttachment.sizes.medium.url, 'getSelectedFrameProps should set url properly' );
 		} );
 		setTimeout( function() {
-			// close frame from selection tests
 			wp.media.frame.close();
 		} );
 		setTimeout( start, 100 );
