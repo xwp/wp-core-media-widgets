@@ -5,31 +5,7 @@
 ( function() {
 	'use strict';
 
-	var data = {};
-
 	module( 'Image Media Widget' );
-
-	data.imageAttachment = {
-		alt: '',
-		author: '1',
-		authorName: 'admin',
-		caption: '',
-		height: 1080,
-		id: 777,
-		link: 'http://example.com/?attachment_id=777',
-		mime: 'image/jpeg',
-		name: 'Chicken and Ribs',
-		orientation: 'landscape',
-		sizes: {
-			medium: {
-				url: 'http://s.w.org/style/images/wp-header-logo200x200.png'
-			}
-		},
-		title: 'Chicken and Ribs',
-		type: 'image',
-		url: 'http://s.w.org/style/images/wp-header-logo.png',
-		width: 1080
-	};
 
 	asyncTest( 'image widget control', function() {
 		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
