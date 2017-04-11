@@ -99,7 +99,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @link https://core.trac.wordpress.org/ticket/35574
 	 * @return array Schema for properties.
 	 */
-	public function get_properties_schema() {
+	public function get_instance_schema() {
 		return array(
 			'attachment_id' => array(
 				'type' => 'integer',
@@ -154,7 +154,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param array $instance Saved setting from the database.
 	 */
 	public function widget( $args, $instance ) {
-		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_properties_schema(), 'default' ) );
+		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
 		// Short-circuit if no media is selected.
 		if ( ( ! $instance['attachment_id'] || 'attachment' !== get_post_type( $instance['attachment_id'] ) ) && ! $instance['url'] ) {
@@ -202,7 +202,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function update( $new_instance, $instance ) {
 
-		$schema = $this->get_properties_schema();
+		$schema = $this->get_instance_schema();
 		foreach ( $schema as $field => $field_schema ) {
 			if ( ! array_key_exists( $field, $new_instance ) ) {
 				continue;
@@ -274,7 +274,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @return void
 	 */
 	final public function form( $instance ) {
-		$instance_schema = $this->get_properties_schema();
+		$instance_schema = $this->get_instance_schema();
 		$instance = wp_array_slice_assoc(
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
 			array_keys( $instance_schema )

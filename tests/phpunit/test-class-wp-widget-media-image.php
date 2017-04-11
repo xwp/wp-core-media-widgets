@@ -14,13 +14,13 @@
 class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 
 	/**
-	 * Test get_properties_schema method.
+	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Image::get_properties_schema
+	 * @covers WP_Widget_Image::get_instance_schema
 	 */
 	function test_get_instance_schema() {
 		$widget = new WP_Widget_Media_Image();
-		$schema = $widget->get_properties_schema();
+		$schema = $widget->get_instance_schema();
 
 		$this->assertEqualSets( array(
 			'alt',
@@ -67,7 +67,7 @@ class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test get_properties_schema method.
+	 * Test get_instance_schema method.
 	 *
 	 * @covers WP_Widget_Media_Image::update
 	 */
