@@ -16,7 +16,7 @@ class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Image::get_instance_schema
+	 * @covers WP_Widget_Media_Image::get_instance_schema
 	 */
 	function test_get_instance_schema() {
 		$widget = new WP_Widget_Media_Image();
