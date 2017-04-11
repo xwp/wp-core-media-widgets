@@ -182,7 +182,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Translation strings.
 		 *
 		 * The mapping of translation strings is handled by media widget subclasses,
-		 * exported from PHP to JS such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 * exported from PHP to JS such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
 		 * @type {Object}
 		 */
@@ -195,7 +195,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Widget ID base.
 		 *
 		 * This may be defined by the subclass. It may be exported from PHP to JS
-		 * such as is done in WP_Widget_Image::enqueue_admin_scripts(). If not,
+		 * such as is done in WP_Widget_Media_Image::enqueue_admin_scripts(). If not,
 		 * it will attempt to be discovered by looking to see if this control
 		 * instance extends each member of component.controlConstructors, and if
 		 * it does extend one, will use the key as the id_base.
@@ -208,7 +208,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Mime type.
 		 *
 		 * This must be defined by the subclass. It may be exported from PHP to JS
-		 * such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 * such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
 		 * @type {string}
 		 */
@@ -434,7 +434,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame;
+			var control = this, selection, mediaFrame, defaultSync;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
@@ -449,7 +449,7 @@ wp.mediaWidgets = ( function( $ ) {
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'insert', function() {
+			mediaFrame.on( 'insert', function onInsert() {
 				var attachment = { error: false }, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
@@ -463,6 +463,15 @@ wp.mediaWidgets = ( function( $ ) {
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
+			} );
+
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
+			mediaFrame.on( 'close', function onClose() {
+				wp.media.model.Attachment.prototype.sync = defaultSync;
 			} );
 
 			mediaFrame.$el.addClass( 'media-widget' );
@@ -530,7 +539,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Instance schema.
 		 *
 		 * This adheres to JSON Schema and subclasses should have their schema
-		 * exported from PHP to JS such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 * exported from PHP to JS such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
 		 * @param {Object.<string, Object>}
 		 */
