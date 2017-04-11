@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests covering WP_Widget_Image functionality.
+ * Unit tests covering WP_Widget_Media_Image functionality.
  *
  * @package    WordPress
  * @subpackage widgets
@@ -11,24 +11,16 @@
  *
  * @group widgets
  */
-class Test_WP_Widget_Image extends WP_UnitTestCase {
+class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Image::get_instance_schema
+	 * @covers WP_Widget_Media_Image::get_instance_schema
 	 */
 	function test_get_instance_schema() {
-		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
-			return;
-		}
-
-		$wp_widget_image = new ReflectionClass( 'WP_Widget_Image' );
-		$get_instance_schema = $wp_widget_image->getMethod( 'get_instance_schema' );
-		$get_instance_schema->setAccessible( true );
-
-		$schema = $get_instance_schema->invoke( new WP_Widget_Image() );
+		$widget = new WP_Widget_Media_Image();
+		$schema = $widget->get_instance_schema();
 
 		$this->assertEqualSets( array(
 			'alt',
@@ -52,10 +44,10 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	/**
 	 * Test constructor.
 	 *
-	 * @covers WP_Widget_Image::__construct()
+	 * @covers WP_Widget_Media_Image::__construct()
 	 */
 	function test_constructor() {
-		$widget = new WP_Widget_Image();
+		$widget = new WP_Widget_Media_Image();
 
 		$this->assertArrayHasKey( 'mime_type', $widget->widget_options );
 		$this->assertArrayHasKey( 'customize_selective_refresh', $widget->widget_options );
@@ -77,10 +69,10 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Image::update
+	 * @covers WP_Widget_Media_Image::update
 	 */
 	function test_update() {
-		$widget = new WP_Widget_Image();
+		$widget = new WP_Widget_Media_Image();
 		$instance = array();
 
 		// Should return valid attachment ID.
@@ -300,10 +292,10 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	/**
 	 * Test render_media method.
 	 *
-	 * @covers WP_Widget_Image::render_media
+	 * @covers WP_Widget_Media_Image::render_media
 	 */
 	function test_render_media() {
-		$widget = new WP_Widget_Image();
+		$widget = new WP_Widget_Media_Image();
 		$attachment_id = self::factory()->attachment->create_object( array(
 			'file' => DIR_TESTDATA . '/images/canola.jpg',
 			'post_parent' => 0,
@@ -447,10 +439,10 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	/**
 	 * Test enqueue_admin_scripts method.
 	 *
-	 * @covers WP_Widget_Image::enqueue_admin_scripts
+	 * @covers WP_Widget_Media_Image::enqueue_admin_scripts
 	 */
 	function test_enqueue_admin_scripts() {
-		$widget = new WP_Widget_Image();
+		$widget = new WP_Widget_Media_Image();
 		$widget->enqueue_admin_scripts();
 
 		$this->assertTrue( wp_script_is( 'media-image-widget' ) );
@@ -459,10 +451,10 @@ class Test_WP_Widget_Image extends WP_UnitTestCase {
 	/**
 	 * Test render_control_template_scripts method.
 	 *
-	 * @covers WP_Widget_Image::render_control_template_scripts
+	 * @covers WP_Widget_Media_Image::render_control_template_scripts
 	 */
 	function test_render_control_template_scripts() {
-		$widget = new WP_Widget_Image();
+		$widget = new WP_Widget_Media_Image();
 
 		ob_start();
 		$widget->render_control_template_scripts();

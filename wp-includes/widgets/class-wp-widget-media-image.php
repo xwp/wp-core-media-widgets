@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget API: WP_Widget_Image class
+ * Widget API: WP_Widget_Media_Image class
  *
  * @package WordPress
  * @subpackage Widgets
@@ -14,7 +14,7 @@
  *
  * @see WP_Widget
  */
-class WP_Widget_Image extends WP_Widget_Media {
+class WP_Widget_Media_Image extends WP_Widget_Media {
 
 	/**
 	 * Constructor.
@@ -45,14 +45,17 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
+	 * @see WP_REST_Controller::get_additional_fields()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(

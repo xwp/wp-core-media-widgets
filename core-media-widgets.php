@@ -89,13 +89,13 @@ function wp32417_twentyten_styles() {
  */
 function wp32417_widgets_init() {
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
-	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' ); */
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php' );
-	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php' ); */
+	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php' ); */
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php' );
+	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php' ); */
 
-	/* TODO: register_widget( 'WP_Widget_Audio' ); */
-	register_widget( 'WP_Widget_Image' );
-	/* TODO: register_widget( 'WP_Widget_Video' ); */
+	/* TODO: register_widget( 'WP_Widget_Media_Audio' ); */
+	register_widget( 'WP_Widget_Media_Image' );
+	/* TODO: register_widget( 'WP_Widget_Media_Video' ); */
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );
 

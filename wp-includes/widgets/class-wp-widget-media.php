@@ -89,14 +89,17 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
+	 * @see WP_REST_Controller::get_additional_fields()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array(
 			'attachment_id' => array(
 				'type' => 'integer',
