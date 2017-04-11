@@ -72,10 +72,10 @@
 			equal( propsData.attachment_id, data.imageAttachment.id, 'getSelectedFrameProps should set attachment_id properly' );
 			equal( propsData.caption, 'a witty caption', 'getSelectedFrameProps should set caption properly' );
 			equal( propsData.url, data.imageAttachment.sizes.medium.url, 'getSelectedFrameProps should set url properly' );
-		} );
+		}, 50 );
 		setTimeout( function() {
 			wp.media.frame.close();
-		} );
+		}, 100 );
 		setTimeout( start, 1000 );
 	} );
 
