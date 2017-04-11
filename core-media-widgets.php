@@ -106,16 +106,45 @@ function wp32417_twentyten_styles() {
  * @codeCoverageIgnore
  */
 function wp32417_widgets_init() {
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
-	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php' ); */
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php' );
-	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php' ); */
+
+	register_widget( 'WP_Widget_Image' );
 
 	/* TODO: register_widget( 'WP_Widget_Audio' ); */
-	register_widget( 'WP_Widget_Image' );
+
 	/* TODO: register_widget( 'WP_Widget_Video' ); */
 }
-add_action( 'widgets_init', 'wp32417_widgets_init' );
+add_action( 'widgets_init', 'wp32417_widgets_init', 0 );
+
+/**
+ * Determines if Widgets library should be loaded.
+ *
+ * This is a forked override of the core function `wp_maybe_load_widgets()` to
+ * load our copy of default-widgets.php
+ *
+ * @see wp_maybe_load_widgets()
+ */
+function wp32417_maybe_load_widgets() {
+
+	/** This filter is documented in wp-includes/functions.php */
+	if ( ! apply_filters( 'load_default_widgets', true ) ) {
+		return;
+	}
+
+	// Require version of file forked from from 4.7.3 that does not include media widgets.
+	require_once dirname( __FILE__ ) . '/wp-includes/default-widgets.php';
+
+	// Require media widgets from plugin instead of core.
+	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php';
+	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php';
+
+	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php'; */
+
+	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php'; */
+
+	add_action( '_admin_menu', 'wp_widgets_add_menu' );
+}
+remove_action( 'plugins_loaded', 'wp_maybe_load_widgets', 0 );
+add_action( 'plugins_loaded', 'wp32417_maybe_load_widgets', 0 );
 
 /**
  * Add align classname to the alignment container in .attachment-display-settings.
