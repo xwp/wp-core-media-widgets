@@ -31,6 +31,17 @@ wp.mediaWidgets = ( function( $ ) {
 	component.PersistentDisplaySettingsLibrary = wp.media.controller.Library.extend( {
 
 		/**
+		 * Initialize.
+		 *
+		 * @param {object} options Options.
+		 * @returns {void}
+		 */
+		initialize: function( options ) {
+			_.bindAll( this, 'handleDisplaySettingChange' );
+			wp.media.controller.Library.prototype.initialize.call( this, options );
+		},
+
+		/**
 		 * Sync changes to the current display settings back into the current customized
 		 *
 		 * @param {Backbone.Model} displaySettings Modified display settings.
@@ -429,7 +440,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame;
+			var control = this, selection, mediaFrame, defaultSync;
 
 			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 
@@ -444,7 +455,7 @@ wp.mediaWidgets = ( function( $ ) {
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'insert', function() {
+			mediaFrame.on( 'insert', function onInsert() {
 				var attachment = { error: false }, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
@@ -460,6 +471,16 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
 			} );
 
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
+			mediaFrame.on( 'close', function onClose() {
+				wp.media.model.Attachment.prototype.sync = defaultSync;
+			} );
+
+			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.

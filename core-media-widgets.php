@@ -67,13 +67,6 @@ add_action( 'wp_default_styles', 'wp32417_default_styles' );
  * @codeCoverageIgnore
  */
 function wp32417_custom_theme_styles() {
-	if ( wp_style_is( 'twentysixteen-style' ) ) {
-		wp_add_inline_style( 'twentysixteen-style', '
-			.widget:before,.widget:after { content: ""; display: table; }
-			.widget:after { clear: both; }
-		' );
-	}
-
 	if ( 'twentyten' === get_template() ) {
 		add_action( 'wp_head', 'wp32417_twentyten_styles' );
 	}
@@ -105,3 +98,23 @@ function wp32417_widgets_init() {
 	/* TODO: register_widget( 'WP_Widget_Video' ); */
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );
+
+/**
+ * Add align classname to the alignment container in .attachment-display-settings.
+ *
+ * @see wp_print_media_templates()
+ * @todo For Core merge, this should be patched in \wp_print_media_templates().
+ */
+function wp32417_add_classname_to_display_settings() {
+	?>
+	<script>
+		(function( templateEl ) {
+			if ( ! templateEl ) {
+				return;
+			}
+			templateEl.text = templateEl.text.replace( /(<label class="setting)(?=">\s*<span>[^<]+?<\/span>\s*<select class="alignment")/, '$1 align' );
+		}( document.getElementById( 'tmpl-attachment-display-settings' ) ));
+	</script>
+	<?php
+}
+add_action( 'print_media_templates', 'wp32417_add_classname_to_display_settings' );
