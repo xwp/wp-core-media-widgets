@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget API: WP_Widget_Audio class
+ * Widget API: WP_Widget_Video class
  *
  * @package WordPress
  * @subpackage Widgets
@@ -8,7 +8,7 @@
  */
 
 /**
- * Core class that implements an audio widget.
+ * Core class that implements a video widget.
  *
  * @since 4.8.0
  *
@@ -16,7 +16,7 @@
  * @codeCoverageIgnore
  * @see WP_Widget
  */
-class WP_Widget_Audio extends WP_Widget_Media {
+class WP_Widget_Media_Video extends WP_Widget_Media {
 
 	/**
 	 * Constructor.
@@ -25,9 +25,9 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	 * @access public
 	 */
 	public function __construct() {
-		parent::__construct( 'media_audio', __( 'Audio' ), array(
-			'description' => __( 'Displays an audio file.' ),
-			'mime_type'   => 'audio',
+		parent::__construct( 'media_video', __( 'Video' ), array(
+			'description' => __( 'Displays a video file.' ),
+			'mime_type'   => 'video',
 		) );
 
 		if ( $this->is_preview() ) {
@@ -42,11 +42,12 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	 * @access public
 	 *
 	 * @param array $instance Widget instance props.
+	 *
 	 * @return void
 	 */
 	public function render_media( $instance ) {
 
-		// @todo Support external audio defined by 'url' only.
+		// @todo Support external video defined by 'url' only.
 		if ( empty( $instance['attachment_id'] ) ) {
 			return;
 		}
@@ -59,7 +60,7 @@ class WP_Widget_Audio extends WP_Widget_Media {
 		if ( in_array( $instance['link'], array( 'file', 'post' ), true ) ) {
 			echo $this->create_link_for( $attachment, $instance['link'] );
 		} else {
-			echo wp_audio_shortcode( array(
+			echo wp_video_shortcode( array(
 				'src' => wp_get_attachment_url( $attachment->ID ),
 			) );
 		}
@@ -75,8 +76,8 @@ class WP_Widget_Audio extends WP_Widget_Media {
 		parent::render_control_template_scripts();
 
 		?>
-		<script type="text/html" id="tmpl-wp-media-widget-audio-preview">
-			<?php wp_underscore_audio_template(); ?>
+		<script type="text/html" id="tmpl-wp-media-widget-video-preview">
+			<?php wp_underscore_video_template() ?>
 		</script>
 		<?php
 	}
@@ -84,14 +85,14 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	/**
 	 * Enqueue media element script and style if in need.
 	 *
-	 * This ensures the first instance of the audio widget can properly handle audio elements.
+	 * This ensures the first instance of the video widget can properly handle video elements.
 	 *
 	 * @since 4.8.0
 	 * @access private
 	 */
 	private function enqueue_mediaelement_script() {
 		/** This filter is documented in wp-includes/media.php */
-		if ( 'mediaelement' === apply_filters( 'wp_audio_shortcode_library', 'mediaelement' ) ) {
+		if ( 'mediaelement' === apply_filters( 'wp_video_shortcode_library', 'mediaelement' ) ) {
 			wp_enqueue_style( 'wp-mediaelement' );
 			wp_enqueue_script( 'wp-mediaelement' );
 		}
