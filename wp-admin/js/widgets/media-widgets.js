@@ -431,7 +431,11 @@ wp.mediaWidgets = ( function( $ ) {
 		selectMedia: function selectMedia() {
 			var control = this, selection, mediaFrame, defaultSync;
 
-			selection = control.isSelected() ? new wp.media.model.Selection( [ control.selectedAttachment ] ) : null;
+			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
+				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+			} else {
+				selection = null;
+			}
 
 			mediaFrame = new component.MediaFrameSelect( {
 				title: control.l10n.select_media,
