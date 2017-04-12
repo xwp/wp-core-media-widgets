@@ -30,7 +30,7 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, shortcode, previewFrame, attachmentId, attachmentUrl, shortcodeOptions, ajaxAction;
+			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl;
 			attachmentId = control.model.get( 'attachment_id' );
 			attachmentUrl = control.model.get( 'url' );
 
@@ -39,41 +39,14 @@
 			}
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
-			previewContainer.html( previewTemplate( _.extend(
-				control.model.toJSON(),
-				{ attachment: control.selectedAttachment.toJSON() }
-			) ) );
-
-			if ( attachmentId ) {
-				ajaxAction = 'parse-media-shortcode';
-				shortcodeOptions = {
-					tag: 'video',
-					attrs: {
-						src: attachmentUrl,
-						width: '250',
-						height: '150' //TODO better job of setting these size attributes
-					}
-				}
-			} else {
-				// Unfortunately this route fails due to lack of post_ID
-				shortcodeOptions = {
-					tag: 'embed',
-					content: attachmentUrl
-				}
-			}
-			shortcode = new wp.shortcode( shortcodeOptions );
-
-			wp.ajax.post( ajaxAction, {
-				shortcode: shortcode.string()
-			} )
-			.done( function( response ) {
-				previewFrame = control.$el.find( '.media-widget-video-preview' ).contents();
-				previewFrame.find( 'head' ).html( response.head );
-				previewFrame.find( 'body' ).html( response.body );
-			} )
-			.fail( function() {
-				//TODO handle the embed fail
-			} );
+			previewContainer.html( previewTemplate( {
+				model: {
+					src: attachmentUrl,
+					width: control.model.get( 'width' ),
+					height: control.model.get( 'width' )
+				},
+				error: control.model.get( 'error' )
+			} ) );
 
 		},
 

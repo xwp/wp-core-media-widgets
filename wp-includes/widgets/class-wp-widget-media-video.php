@@ -164,16 +164,16 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		parent::render_control_template_scripts()
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-video-preview">
-			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
+			<# if ( data.error && 'missing_attachment' === data.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
-			<# } else if ( data.attachment.error ) { #>
+			<# } else if ( data.error ) { #>
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
 			<# } else { #>
-				<iframe class="media-widget-video-preview"></iframe>
+				<?php wp_underscore_video_template() ?>
 			<# } #>
 		</script>
 		<?php
