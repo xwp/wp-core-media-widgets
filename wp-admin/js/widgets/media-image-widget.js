@@ -162,9 +162,9 @@
 				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = mediaFrame.state().attributes.image.toJSON();
-				attachment.error = false;
-				control.selectedAttachment.set( attachment );
+				attachment = mediaFrame.state().attributes.image;
+				control.selectedAttachment.set( attachment.toJSON() );
+				control.model.set( 'error', false );
 
 				control.model.set( {
 					attachment_id: imageData.attachment_id,

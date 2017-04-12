@@ -280,16 +280,16 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 			<#
 			var describedById = 'describedBy-' + String( Math.random() );
 			#>
-			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
+			<# if ( data.error && 'missing_attachment' === data.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
-			<# } else if ( data.attachment.error ) { #>
+			<# } else if ( data.error ) { #>
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.attachment.url || data.url ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment.url || data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
+			<# } else if ( data.attachment_id || data.url ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment_id && data.attachment.url ? data.attachment.url : data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
 				<# if ( ! data.alt ) { #>
 					<#
 					var alt = ( data.attachment.url || data.url );
