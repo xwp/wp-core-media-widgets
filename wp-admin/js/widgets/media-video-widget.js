@@ -31,18 +31,18 @@
 		 */
 		renderPreview: function renderPreview() {
 			var control = this, previewContainer, previewTemplate, shortcode, previewFrame, attachmentId, attachmentUrl, shortcodeOptions, ajaxAction;
+			attachmentId = control.model.get( 'attachment_id' );
+			attachmentUrl = control.model.get( 'url' );
+
+			if ( ! attachmentId && ! attachmentUrl ) {
+				return;
+			}
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
 			previewContainer.html( previewTemplate( _.extend(
 				control.model.toJSON(),
 				{ attachment: control.selectedAttachment.toJSON() }
 			) ) );
-
-			// This is the same approach taken with within the editor for video embeds
-			// Not sure if this is the best approach to use here or not
-			// TODO: test this out with external services
-			attachmentId = control.model.get( 'attachment_id' );
-			attachmentUrl = control.model.get( 'url' );
 
 			if ( attachmentId ) {
 				ajaxAction = 'parse-media-shortcode';
