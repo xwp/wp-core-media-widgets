@@ -431,7 +431,11 @@ wp.mediaWidgets = ( function( $ ) {
 		selectMedia: function selectMedia() {
 			var control = this, selection, mediaFrame, defaultSync;
 
-			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
+				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+			} else {
+				selection = null;
+			}
 
 			mediaFrame = new component.MediaFrameSelect( {
 				title: control.l10n.select_media,
@@ -474,14 +478,16 @@ wp.mediaWidgets = ( function( $ ) {
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.
-			selection.on( 'destroy', function onDestroy( attachment ) {
-				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
-					control.model.set( {
-						attachment_id: 0,
-						url: ''
-					} );
-				}
-			} );
+			if ( selection ) {
+				selection.on( 'destroy', function onDestroy( attachment ) {
+					if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
+						control.model.set( {
+							attachment_id: 0,
+							url: ''
+						} );
+					}
+				} );
+			}
 
 			/*
 			 * Make sure focus is set inside of modal so that hitting Esc will close
