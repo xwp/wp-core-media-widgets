@@ -36,7 +36,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @param {object} options Options.
 		 * @returns {void}
 		 */
-		initialize: function( options ) {
+		initialize: function initialize( options ) {
 			_.bindAll( this, 'handleDisplaySettingChange' );
 			wp.media.controller.Library.prototype.initialize.call( this, options );
 		},
@@ -141,7 +141,7 @@ wp.mediaWidgets = ( function( $ ) {
 				 * @fires wp.media.controller.State#insert()
 				 * @returns {void}
 				 */
-				click: function() {
+				click: function onClick() {
 					var state = controller.state(),
 						selection = state.get( 'selection' );
 
@@ -281,7 +281,7 @@ wp.mediaWidgets = ( function( $ ) {
 			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
-			control.$el.on( 'input', '.title', function() {
+			control.$el.on( 'input', '.title', function updateTitle() {
 				control.model.set( {
 					title: $.trim( $( this ).val() )
 				} );
@@ -473,7 +473,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function() {
+			wp.media.model.Attachment.prototype.sync = function rejectedSync() {
 				return $.Deferred().rejectWith( this ).promise();
 			};
 			mediaFrame.on( 'close', function onClose() {
@@ -484,7 +484,7 @@ wp.mediaWidgets = ( function( $ ) {
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.
-			selection.on( 'destroy', function( attachment ) {
+			selection.on( 'destroy', function onDestroy( attachment ) {
 				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
 					control.model.set( {
 						attachment_id: 0,
