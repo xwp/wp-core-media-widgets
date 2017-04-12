@@ -735,7 +735,6 @@ wp.mediaWidgets = ( function( $ ) {
 			var property = $( this ).data( 'property' );
 			attributes[ property ] = $( this ).val();
 		} );
-		delete attributes.id; // Read only.
 
 		// Suspend syncing model back to inputs when syncing from inputs to model, preventing infinite loop.
 		widgetControl.stopListening( widgetControl.model, 'change', widgetControl.syncModelToInputs );
