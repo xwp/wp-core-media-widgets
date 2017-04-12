@@ -162,9 +162,9 @@
 				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = mediaFrame.state().attributes.image.toJSON();
-				attachment.error = false;
-				control.selectedAttachment.set( attachment );
+				attachment = mediaFrame.state().attributes.image;
+				control.selectedAttachment.set( attachment.toJSON() );
+				control.model.set( 'error', false );
 
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
@@ -189,10 +189,10 @@
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function() {
+			wp.media.model.Attachment.prototype.sync = function rejectedSync() {
 				return $.Deferred().rejectWith( this ).promise();
 			};
-			mediaFrame.on( 'close', function() {
+			mediaFrame.on( 'close', function onClose() {
 				mediaFrame.detach();
 				wp.media.model.Attachment.prototype.sync = defaultSync;
 			});

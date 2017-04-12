@@ -36,7 +36,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @param {object} options Options.
 		 * @returns {void}
 		 */
-		initialize: function( options ) {
+		initialize: function initialize( options ) {
 			_.bindAll( this, 'handleDisplaySettingChange' );
 			wp.media.controller.Library.prototype.initialize.call( this, options );
 		},
@@ -141,7 +141,7 @@ wp.mediaWidgets = ( function( $ ) {
 				 * @fires wp.media.controller.State#insert()
 				 * @returns {void}
 				 */
-				click: function() {
+				click: function onClick() {
 					var state = controller.state(),
 						selection = state.get( 'selection' );
 
@@ -246,7 +246,7 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			// Allow methods to be passed in with control context preserved.
-			_.bindAll( control, 'syncModelToInputs', 'render', 'fetchSelectedAttachment', 'renderPreview' );
+			_.bindAll( control, 'syncModelToInputs', 'render', 'updateSelectedAttachment', 'renderPreview' );
 
 			if ( ! control.id_base ) {
 				_.find( component.controlConstructors, function( Constructor, idBase ) {
@@ -262,14 +262,15 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			// Re-render the preview when the attachment changes.
-			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
+			control.selectedAttachment = new wp.media.model.Attachment();
 			control.renderPreview = _.debounce( control.renderPreview );
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
 			control.listenTo( control.model, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
-			control.model.on( 'change', control.fetchSelectedAttachment );
-			control.fetchSelectedAttachment();
+			control.model.on( 'change:attachment_id', control.updateSelectedAttachment );
+			control.model.on( 'change:url', control.updateSelectedAttachment );
+			control.updateSelectedAttachment();
 
 			/*
 			 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
@@ -281,7 +282,7 @@ wp.mediaWidgets = ( function( $ ) {
 			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
-			control.$el.on( 'input', '.title', function() {
+			control.$el.on( 'input', '.title', function updateTitle() {
 				control.model.set( {
 					title: $.trim( $( this ).val() )
 				} );
@@ -303,43 +304,27 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
-		 * Fetch the selected attachment if necessary.
+		 * Update the selected attachment if necessary.
 		 *
 		 * @return {void}
 		 */
-		fetchSelectedAttachment: function fetchSelectedAttachment() {
+		updateSelectedAttachment: function updateSelectedAttachment() {
 			var control = this, attachment;
 
-			// This is an embed (by URL) image if the url is set and the attachment_id is 0.
-			if ( 0 === control.model.get( 'attachment_id' ) && control.model.get( 'url' ) ) {
-
-				// Construct an attachment model with the data we have.
-				attachment = new wp.media.model.Attachment( control.model.attributes );
-
-				control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
-
-				// Skip the rest.
-				return;
-			}
-
-			// Skip if selectedAttachment is already updated.
-			if ( control.model.get( 'attachment_id' ) === control.selectedAttachment.get( 'id' ) ) {
-				return;
-			}
-
-			control.selectedAttachment.clear( { silent: true } );
-			if ( ! control.model.get( 'attachment_id' ) ) {
-				control.selectedAttachment.set( { id: 0 } );
-			} else {
+			if ( 0 === control.model.get( 'attachment_id' ) ) {
+				control.selectedAttachment.clear();
+				control.model.set( 'error', false );
+			} else if ( control.model.get( 'attachment_id' ) !== control.selectedAttachment.get( 'id' ) ) {
 				attachment = new wp.media.model.Attachment( {
 					id: control.model.get( 'attachment_id' )
 				} );
 				attachment.fetch()
-					.done( function() {
-						control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
+					.done( function done() {
+						control.model.set( 'error', false );
+						control.selectedAttachment.set( attachment.toJSON() );
 					} )
-					.fail( function() {
-						control.selectedAttachment.set( { error: 'missing_attachment' } );
+					.fail( function fail() {
+						control.model.set( 'error', 'missing_attachment' );
 					} );
 			}
 		},
@@ -414,10 +399,14 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Whether a media item is selected.
 		 *
-		 * @return {boolean} Whether selected.
+		 * @return {boolean} Whether selected and no error.
 		 */
 		isSelected: function isSelected() {
 			var control = this;
+
+			if ( control.model.get( 'error' ) ) {
+				return false;
+			}
 
 			return Boolean( control.model.get( 'attachment_id' ) || control.model.get( 'url' ) );
 		},
@@ -456,7 +445,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'insert', function onInsert() {
-				var attachment = { error: false }, state = mediaFrame.state();
+				var attachment = {}, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				if ( 'embed' === state.get( 'id' ) ) {
@@ -466,6 +455,7 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 
 				control.selectedAttachment.set( attachment );
+				control.model.set( 'error', false );
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
@@ -473,7 +463,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function() {
+			wp.media.model.Attachment.prototype.sync = function rejectedSync() {
 				return $.Deferred().rejectWith( this ).promise();
 			};
 			mediaFrame.on( 'close', function onClose() {
@@ -484,7 +474,7 @@ wp.mediaWidgets = ( function( $ ) {
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.
-			selection.on( 'destroy', function( attachment ) {
+			selection.on( 'destroy', function onDestroy( attachment ) {
 				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
 					control.model.set( {
 						attachment_id: 0,
@@ -735,7 +725,6 @@ wp.mediaWidgets = ( function( $ ) {
 			var property = $( this ).data( 'property' );
 			attributes[ property ] = $( this ).val();
 		} );
-		delete attributes.id; // Read only.
 
 		// Suspend syncing model back to inputs when syncing from inputs to model, preventing infinite loop.
 		widgetControl.stopListening( widgetControl.model, 'change', widgetControl.syncModelToInputs );
