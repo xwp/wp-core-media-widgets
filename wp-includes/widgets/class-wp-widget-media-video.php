@@ -47,14 +47,17 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
+	 * @see WP_REST_Controller::get_additional_fields()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
@@ -91,20 +94,21 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
+		error_log( print_r($instance,true));
 
-		// @todo Support external video defined by 'url' only.
-		if ( empty( $instance['attachment_id'] ) ) {
+		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
 			return;
 		}
+		$src = $instance['url'];
 
 		$attachment = get_post( $instance['attachment_id'] );
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return;
+		if ( $attachment && 'attachment' === $attachment->post_type ) {
+			$src = wp_get_attachment_url( $attachment->ID );
 		}
 
 		// TODO: height and width
 		echo wp_video_shortcode( array(
-			'src' => wp_get_attachment_url( $attachment->ID ),
+			'src' => $src,
 			'loop' => $instance['loop'],
 			'autoplay' => $instance['autoplay'],
 			'preload' => $instance['preload'],

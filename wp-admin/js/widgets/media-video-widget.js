@@ -30,7 +30,7 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, shortcode, previewFrame;
+			var control = this, previewContainer, previewTemplate, shortcode, previewFrame, attachmentId, attachmentUrl, shortcodeOptions, ajaxAction;
 			previewContainer = control.$el.find( '.media-widget-preview .rendered' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
 			previewContainer.html( previewTemplate( { attachment: control.selectedAttachment.attributes } ) );
@@ -38,16 +38,29 @@
 			// This is the same approach taken with within the editor for video embeds
 			// Not sure if this is the best approach to use here or not
 			// TODO: test this out with external services
-			shortcode = new wp.shortcode( {
-				tag: 'video',
-				attrs: {
-					src: control.model.get( 'url' ),
-					width: '250',
-					height: '150' //TODO better job of setting these size attributes
-				}
-			} );
+			attachmentId = control.model.get( 'attachment_id' );
+			attachmentUrl = control.model.get( 'url' );
 
-			wp.ajax.post( 'parse-media-shortcode', {
+			if ( attachmentId ) {
+				ajaxAction = 'parse-media-shortcode';
+				shortcodeOptions = {
+					tag: 'video',
+					attrs: {
+						src: attachmentUrl,
+						width: '250',
+						height: '150' //TODO better job of setting these size attributes
+					}
+				}
+			} else {
+				// Unfortunately this route fails due to lack of post_ID
+				shortcodeOptions = {
+					tag: 'embed',
+					content: attachmentUrl
+				}
+			}
+			shortcode = new wp.shortcode( shortcodeOptions );
+
+			wp.ajax.post( ajaxAction, {
 				shortcode: shortcode.string()
 			} )
 			.done( function( response ) {
