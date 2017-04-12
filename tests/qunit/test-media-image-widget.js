@@ -10,7 +10,7 @@
 	asyncTest( 'image widget control', function() {
 		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
 
-		expect( 6 );
+		expect( 9 );
 
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
@@ -20,7 +20,18 @@
 		imageWidgetControlInstance = new ImageWidgetControl( {
 			model: imageWidgetModelInstance
 		} );
+
+		// Test isSelected()
 		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when no media is selected' );
+		imageWidgetControlInstance.model.set( { error: 'missing_attachment', attachment_id: 777 } );
+		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when media is selected and error is set' );
+		imageWidgetControlInstance.model.set( { error: false, attachment_id: 777 } );
+		equal( imageWidgetControlInstance.isSelected(), true, 'media_image.isSelected() should return true when media is selected and no error exists' );
+		imageWidgetControlInstance.model.set( { error: false, attachment_id: 0, url: 'http://s.w.org/style/images/wp-header-logo.png' } );
+		equal( imageWidgetControlInstance.isSelected(), true, 'media_image.isSelected() should return true when url is set and no error exists' );
+
+		// Reset model
+		imageWidgetControlInstance.model.set( { error: false, attachment_id: 0, url: null } );
 
 		// Test editing of Widget Title
 		imageWidgetControlInstance.render();
