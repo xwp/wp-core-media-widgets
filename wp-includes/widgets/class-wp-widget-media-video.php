@@ -184,7 +184,9 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
 			<# } else if ( data.model && data.model.poster && ! data.model.attachment_id ) { #>
-				<img class="attachment-thumb" src="{{ data.model.poster }}" draggable="false" />
+				<a href="{{ data.model.src }}" target="_blank">
+					<img class="attachment-thumb" src="{{ data.model.poster }}" draggable="false" />
+				</a>
 			<# } else if ( data.model && data.model.attachment_id ) { #>
 				<?php wp_underscore_video_template() ?>
 			<# } #>
