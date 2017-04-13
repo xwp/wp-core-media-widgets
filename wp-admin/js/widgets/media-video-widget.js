@@ -68,47 +68,44 @@
 		/**
 		 * Get the external video thumbnail for the preview
 		 *
-		 * @returns {Promise} CORS response
+		 * @returns {Promise} Promise that resolves with oEmbed object containing thumbnail_url.
 		 */
 		getExternalThumbnail: function getExternalThumbnail() {
-			var control = this, url, isYouTube, isVimeo, deffered;
-			url = control.model.get( 'url' );
-			isYouTube = url.match( /youtube|youtu\.be/ );
-			isVimeo = -1 !== url.indexOf('vimeo');
-			deffered = $.Deferred();
+			var control = this, urlParser = document.createElement( 'a' );
+			urlParser.href = control.model.get( 'url' );
 
-			// If the external video is hosted elsewhere, return default icon
-			// TODO: Get markup/image for generic thumbnail
-			if ( ! isYouTube && ! isVimeo ) {
-				return deffered.resolveWith( control, [ { thumbnail_url: '' } ] ).promise();
-			}
-
-			// YouTube does not support CORS
-			if ( isYouTube ) {
-				return deffered.resolveWith( control, [ {
-					thumbnail_url: 'https://img.youtube.com/vi/' + control._getYouTubeIdFromUrl( url ) + '/mqdefault.jpg'
+			// YouTube does not support CORS, but the thumbnail URL can be constructed from the video ID.
+			if ( /youtube|youtu\.be/.test( urlParser.hostname ) ) {
+				return $.Deferred().resolveWith( control, [ {
+					thumbnail_url: 'https://img.youtube.com/vi/' + control._getYouTubeIdFromUrl( control.model.get( 'url' ) ) + '/mqdefault.jpg'
 				} ] ).promise();
 			}
 
-			// Else request Vimeo oembed data
-			return $.ajax( {
-				url: 'https://vimeo.com/api/oembed.json?url=' + encodeURIComponent( url ),
-				type: 'GET',
-				crossDomain: true,
-				dataType: 'json'
-			} );
+			// Else request Vimeo oEmbed data.
+			if ( /vimeo/.test( urlParser.hostname ) ) {
+				return $.ajax( {
+					url: 'https://vimeo.com/api/oembed.json?url=' + encodeURIComponent( control.model.get( 'url' ) ),
+					type: 'GET',
+					crossDomain: true,
+					dataType: 'json'
+				} );
+			}
+
+			// If the external video is hosted elsewhere, return default icon.
+			// TODO: Get markup/image for generic thumbnail
+			return $.Deferred().resolveWith( control, [ { thumbnail_url: '' } ] ).promise();
 		},
 
 		/**
-		 * Get YouTube video ID from URL
+		 * Get YouTube video ID from URL.
 		 *
-		 * @param {string} url from model
+		 * @param {string} url URL from model.
 		 * @returns {string} YouTube video ID
 		 */
 		_getYouTubeIdFromUrl: function _getYouTubeIdFromUrl( url ) {
 			var urlParts;
 			urlParts = url.split( /(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/ );
-			return urlParts[2] !== undefined ? urlParts[2].split( /[^0-9a-z_\-]/i )[0] : urlParts[0];
+			return ! _.isUndefined( urlParts[2] ) ? urlParts[2].split( /[^0-9a-z_\-]/i )[0] : urlParts[0];
 		},
 
 		/**

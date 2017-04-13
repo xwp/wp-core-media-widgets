@@ -110,7 +110,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			$src = wp_get_attachment_url( $attachment->ID );
 		}
 
-		// TODO: height and width
+		// TODO: height and width.
 		echo wp_video_shortcode( array(
 			'src' => $src,
 			'loop' => $instance['loop'],
