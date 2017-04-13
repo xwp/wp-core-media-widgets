@@ -28,7 +28,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @class PersistentDisplaySettingsLibrary
 	 * @constructor
 	 */
-	component.PersistentDisplaySettingsLibrary = wp.media.controller.Library.extend( {
+	component.PersistentDisplaySettingsLibrary = wp.media.controller.Library.extend({
 
 		/**
 		 * Initialize.
@@ -74,7 +74,7 @@ wp.mediaWidgets = ( function( $ ) {
 			display.on( 'change', this.handleDisplaySettingChange );
 			return display;
 		}
-	} );
+	});
 
 	/**
 	 * Custom media frame for selecting uploaded media or providing media by URL.
@@ -82,7 +82,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @class MediaFrameSelect
 	 * @constructor
 	 */
-	component.MediaFrameSelect = wp.media.view.MediaFrame.Post.extend( {
+	component.MediaFrameSelect = wp.media.view.MediaFrame.Post.extend({
 
 		/**
 		 * Create the default states.
@@ -93,28 +93,28 @@ wp.mediaWidgets = ( function( $ ) {
 			this.states.add( [
 
 				// Main states.
-				new component.PersistentDisplaySettingsLibrary( {
+				new component.PersistentDisplaySettingsLibrary({
 					id:         'insert',
 					title:      this.options.title,
 					selection:  this.options.selection,
 					priority:   20,
 					toolbar:    'main-insert',
 					filterable: 'dates',
-					library:    wp.media.query( {
+					library:    wp.media.query({
 						type: this.options.mimeType
-					} ),
+					}),
 					multiple:   false,
 					editable:   true,
 
 					selectedDisplaySettings: this.options.selectedDisplaySettings,
 					displaySettings: true,
 					displayUserSettings: false // We use the display settings from the current/default widget instance props.
-				} ),
+				}),
 
-				new wp.media.controller.EditImage( { model: this.options.editImage } ),
+				new wp.media.controller.EditImage({ model: this.options.editImage }),
 
 				// Embed states.
-				new wp.media.controller.Embed( { metadata: this.options.metadata } )
+				new wp.media.controller.Embed({ metadata: this.options.metadata })
 			] );
 		},
 
@@ -167,7 +167,7 @@ wp.mediaWidgets = ( function( $ ) {
 				event: 'insert'
 			});
 		}
-	} );
+	});
 
 	/**
 	 * Media widget control.
@@ -176,7 +176,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @constructor
 	 * @abstract
 	 */
-	component.MediaWidgetControl = Backbone.View.extend( {
+	component.MediaWidgetControl = Backbone.View.extend({
 
 		/**
 		 * Translation strings.
@@ -255,7 +255,7 @@ wp.mediaWidgets = ( function( $ ) {
 						return true;
 					}
 					return false;
-				} );
+				});
 				if ( ! control.id_base ) {
 					throw new Error( 'Missing id_base.' );
 				}
@@ -283,10 +283,10 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Update the title.
 			control.$el.on( 'input', '.title', function updateTitle() {
-				control.model.set( {
+				control.model.set({
 					title: $.trim( $( this ).val() )
-				} );
-			} );
+				});
+			});
 
 			/*
 			 * Copy current display settings from the widget model to serve as basis
@@ -295,12 +295,12 @@ wp.mediaWidgets = ( function( $ ) {
 			 * when a new selection is made, the settings from this will be synced
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
-			control.displaySettings = new Backbone.Model( {
+			control.displaySettings = new Backbone.Model({
 				align: control.model.get( 'align' ),
 				size: control.model.get( 'size' ),
 				link: control.model.get( 'link_type' ),
 				linkUrl: control.model.get( 'link_url' )
-			} );
+			});
 		},
 
 		/**
@@ -315,17 +315,17 @@ wp.mediaWidgets = ( function( $ ) {
 				control.selectedAttachment.clear();
 				control.model.set( 'error', false );
 			} else if ( control.model.get( 'attachment_id' ) !== control.selectedAttachment.get( 'id' ) ) {
-				attachment = new wp.media.model.Attachment( {
+				attachment = new wp.media.model.Attachment({
 					id: control.model.get( 'attachment_id' )
-				} );
+				});
 				attachment.fetch()
 					.done( function done() {
 						control.model.set( 'error', false );
 						control.selectedAttachment.set( attachment.toJSON() );
-					} )
+					})
 					.fail( function fail() {
 						control.model.set( 'error', 'missing_attachment' );
-					} );
+					});
 			}
 		},
 
@@ -348,7 +348,7 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 				input.val( value );
 				input.trigger( 'change' );
-			} );
+			});
 		},
 
 		/**
@@ -437,14 +437,14 @@ wp.mediaWidgets = ( function( $ ) {
 				selection = null;
 			}
 
-			mediaFrame = new component.MediaFrameSelect( {
+			mediaFrame = new component.MediaFrameSelect({
 				title: control.l10n.select_media,
 				frame: 'post',
 				text: control.l10n.add_to_widget,
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings
-			} );
+			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
@@ -463,7 +463,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 				// Update widget instance.
 				control.model.set( control.getSelectFrameProps( mediaFrame ) );
-			} );
+			});
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;
@@ -472,7 +472,7 @@ wp.mediaWidgets = ( function( $ ) {
 			};
 			mediaFrame.on( 'close', function onClose() {
 				wp.media.model.Attachment.prototype.sync = defaultSync;
-			} );
+			});
 
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
@@ -481,12 +481,12 @@ wp.mediaWidgets = ( function( $ ) {
 			if ( selection ) {
 				selection.on( 'destroy', function onDestroy( attachment ) {
 					if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
-						control.model.set( {
+						control.model.set({
 							attachment_id: 0,
 							url: ''
-						} );
+						});
 					}
-				} );
+				});
 			}
 
 			/*
@@ -527,7 +527,7 @@ wp.mediaWidgets = ( function( $ ) {
 		editMedia: function editMedia() {
 			throw new Error( 'editMedia not implemented' );
 		}
-	} );
+	});
 
 	/**
 	 * Media widget model.
@@ -535,7 +535,7 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @class MediaWidgetModel
 	 * @constructor
 	 */
-	component.MediaWidgetModel = Backbone.Model.extend( {
+	component.MediaWidgetModel = Backbone.Model.extend({
 
 		/**
 		 * Instance schema.
@@ -569,7 +569,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var defaults = {};
 			_.each( this.schema, function( fieldSchema, field ) {
 				defaults[ field ] = fieldSchema['default'];
-			} );
+			});
 			return defaults;
 		},
 
@@ -614,20 +614,20 @@ wp.mediaWidgets = ( function( $ ) {
 				} else {
 					castedAttrs[ name ] = value;
 				}
-			} );
+			});
 
 			return Backbone.Model.prototype.set.call( this, castedAttrs, opts );
 		}
-	} );
+	});
 
 	/**
 	 * Collection of all widget model instances.
 	 *
 	 * @type {Backbone.Collection}
 	 */
-	component.modelCollection = new ( Backbone.Collection.extend( {
+	component.modelCollection = new ( Backbone.Collection.extend({
 		model: component.MediaWidgetModel
-	} ) )();
+	}) )();
 
 	/**
 	 * Mapping of widget ID to instances of MediaWidgetControl subclasses.
@@ -685,15 +685,15 @@ wp.mediaWidgets = ( function( $ ) {
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var input = $( this );
 			modelAttributes[ input.data( 'property' ) ] = input.val();
-		} );
+		});
 		modelAttributes.id = widgetId;
 
 		widgetModel = new ModelConstructor( modelAttributes );
 
-		widgetControl = new ControlConstructor( {
+		widgetControl = new ControlConstructor({
 			el: controlContainer,
 			model: widgetModel
-		} );
+		});
 		widgetControl.render();
 
 		/*
@@ -730,7 +730,7 @@ wp.mediaWidgets = ( function( $ ) {
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var property = $( this ).data( 'property' );
 			attributes[ property ] = $( this ).val();
-		} );
+		});
 
 		// Suspend syncing model back to inputs when syncing from inputs to model, preventing infinite loop.
 		widgetControl.stopListening( widgetControl.model, 'change', widgetControl.syncModelToInputs );
@@ -771,9 +771,9 @@ wp.mediaWidgets = ( function( $ ) {
 			widgetContainers.one( 'click.toggle-widget-expanded', function toggleWidgetExpanded() {
 				var widgetContainer = $( this );
 				component.handleWidgetAdded( new jQuery.Event( 'widget-added' ), widgetContainer );
-			} );
+			});
 		});
 	};
 
 	return component;
-} )( jQuery );
+})( jQuery );
