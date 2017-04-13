@@ -443,7 +443,8 @@ wp.mediaWidgets = ( function( $ ) {
 				text: control.l10n.add_to_widget,
 				selection: selection,
 				mimeType: control.mime_type,
-				selectedDisplaySettings: control.displaySettings
+				selectedDisplaySettings: control.displaySettings,
+				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			} );
 			wp.media.frame = mediaFrame; // See wp.media().
 
