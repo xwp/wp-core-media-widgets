@@ -65,11 +65,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					'type' => 'boolean',
 					'default' => false,
 				),
-				'caption' => array(
-					'type' => 'string',
-					'default' => '',
-					'sanitize_callback' => 'wp_kses_post',
-				),
 				'poster' => array(
 					'type' => 'string',
 					'default' => '',
@@ -84,12 +79,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				'loop' => array(
 					'type' => 'boolean',
 					'default' => false,
-				),
-				'thumbnail_url' => array(
-					'type' => 'string',
-					'default' => '',
-					'format' => 'uri',
-					'description' => __( 'URL to the video thumbnail file' ),
 				),
 			)
 		);
@@ -106,6 +95,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
+		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
 		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
 			return;
 		}

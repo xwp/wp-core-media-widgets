@@ -141,7 +141,6 @@
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: attachment.id,
-					caption: attachment.caption,
 					description: attachment.description,
 					link_type: displaySettings.link,
 					url: attachment.url
@@ -164,7 +163,6 @@
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: 0,
-					caption: attachment.caption,
 					description: attachment.description,
 					link_type: attachment.link,
 					url: attachment.url
@@ -185,7 +183,6 @@
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
 				autoplay: control.model.get( 'autoplay' ),
-				caption: control.model.get( 'caption' ),
 				description: control.model.get( 'description' ),
 				link_type: control.model.get( 'link_type' ),
 				loop: control.model.get( 'loop' ),
@@ -210,7 +207,6 @@
 				control.model.set( {
 					attachment_id: mediaData.attachment_id,
 					autoplay: mediaData.autoplay,
-					caption: mediaData.caption,
 					description: mediaData.description,
 					link_type: mediaData.link,
 					loop: mediaData.loop,
