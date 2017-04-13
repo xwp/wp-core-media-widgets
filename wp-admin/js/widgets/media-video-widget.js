@@ -1,5 +1,5 @@
 /* eslint consistent-this: [ "error", "control" ] */
-(function( component ) {
+(function( component, $ ) {
 	'use strict';
 
 	var VideoWidgetModel, VideoWidgetControl;
@@ -37,17 +37,78 @@
 			if ( ! attachmentId && ! attachmentUrl ) {
 				return;
 			}
+
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
-			previewContainer.html( previewTemplate( {
-				model: {
-					src: attachmentUrl,
-					width: control.model.get( 'width' ),
-					height: control.model.get( 'width' )
-				},
-				error: control.model.get( 'error' )
-			} ) );
 
+			// If no attachment get the external thumbnail
+			if ( ! attachmentId ) {
+				control.getExternalThumbnail().done( function( response ) {
+					previewContainer.html( previewTemplate( {
+						model: {
+							src: response.thumbnail_url
+						},
+						error: control.model.get( 'error' )
+					} ) );
+				} );
+			} else {
+				previewContainer.html( previewTemplate( {
+					model: {
+						attachment_id: control.model.get( 'attachment_id' ),
+						src: attachmentUrl,
+						width: control.model.get( 'width' ),
+						height: control.model.get( 'width' )
+					},
+					error: control.model.get( 'error' )
+				} ) );
+			}
+
+		},
+
+		/**
+		 * Get the external video thumbnail for the preview
+		 *
+		 * @returns {Promise} CORS response
+		 */
+		getExternalThumbnail: function getExternalThumbnail() {
+			var control = this, url, isYouTube, isVimeo, deffered;
+			url = control.model.get( 'url' );
+			isYouTube = url.match( /youtube|youtu\.be/ );
+			isVimeo = -1 !== url.indexOf('vimeo');
+			deffered = $.Deferred();
+
+			// If the external video is hosted elsewhere, return default icon
+			// TODO: Get markup/image for generic thumbnail
+			if ( ! isYouTube && ! isVimeo ) {
+				return deffered.resolveWith( control, [ { thumbnail_url: '' } ] ).promise();
+			}
+
+			// YouTube does not support CORS
+			if ( isYouTube ) {
+				return deffered.resolveWith( control, [ {
+					thumbnail_url: 'https://img.youtube.com/vi/' + control._getYouTubeIdFromUrl( url ) + '/mqdefault.jpg'
+				} ] ).promise();
+			}
+
+			// Else request Vimeo oembed data
+			return $.ajax( {
+				url: 'https://vimeo.com/api/oembed.json?url=' + encodeURIComponent( url ),
+				type: 'GET',
+				crossDomain: true,
+				dataType: 'json'
+			} );
+		},
+
+		/**
+		 * Get YouTube video ID from URL
+		 *
+		 * @param {string} url from model
+		 * @returns {string} YouTube video ID
+		 */
+		_getYouTubeIdFromUrl: function _getYouTubeIdFromUrl( url ) {
+			var urlParts;
+			urlParts = url.split( /(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/ );
+			return urlParts[2] !== undefined ? urlParts[2].split( /[^0-9a-z_\-]/i )[0] : urlParts[0];
 		},
 
 		/**
@@ -175,4 +236,4 @@
 	component.controlConstructors.media_video = VideoWidgetControl;
 	component.modelConstructors.media_video = VideoWidgetModel;
 
-})( wp.mediaWidgets );
+})( wp.mediaWidgets, jQuery );

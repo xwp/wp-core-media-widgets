@@ -79,6 +79,12 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					'type' => 'boolean',
 					'default' => false,
 				),
+				'thumbnail_url' => array(
+					'type' => 'string',
+					'default' => '',
+					'format' => 'uri',
+					'description' => __( 'URL to the video thumbnail file' ),
+				),
 			)
 		);
 	}
@@ -94,8 +100,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
-		error_log( print_r($instance,true));
-
 		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
 			return;
 		}
@@ -172,7 +176,9 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else { #>
+			<# } else if ( data.model && data.model.src && ! data.model.attachment_id ) { #>
+				<img class="attachment-thumb" src="{{ data.model.src }}" draggable="false" />
+			<# } else if ( data.model && data.model.attachment_id ) { #>
 				<?php wp_underscore_video_template() ?>
 			<# } #>
 		</script>
