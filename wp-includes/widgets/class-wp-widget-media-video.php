@@ -26,7 +26,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 */
 	public function __construct() {
 		parent::__construct( 'media_video', __( 'Video' ), array(
-			'description' => __( 'Displays a video file.' ),
+			'description' => __( 'Displays a video from the media library or from YouTube, Vimeo, or another provider.' ),
 			'mime_type'   => 'video',
 		) );
 
