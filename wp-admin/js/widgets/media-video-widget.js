@@ -185,9 +185,12 @@
 
 			metadata = {
 				attachment_id: control.model.get( 'attachment_id' ),
+				autoplay: control.model.get( 'autoplay' ),
 				caption: control.model.get( 'caption' ),
 				description: control.model.get( 'description' ),
-				link_type: control.model.get( 'link_type' )
+				link_type: control.model.get( 'link_type' ),
+				loop: control.model.get( 'loop' ),
+				url: control.model.get( 'url' )
 			};
 
 			// Set up the media frame.
@@ -198,12 +201,10 @@
 			} );
 
 			updateCallback = function( mediaData ) {
-				var attachment;
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = mediaData;
-				attachment.error = false;
-				control.selectedAttachment.set( attachment );
+				control.model.set( 'error', false );
+				control.selectedAttachment.set( mediaData );
 
 				control.model.set( {
 					attachment_id: mediaData.attachment_id,
