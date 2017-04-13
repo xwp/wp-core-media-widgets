@@ -87,7 +87,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Create the default states.
 		 *
-		 * @return {void}
+		 * @returns {void}
 		 */
 		createStates: function createStates() {
 			this.states.add( [
@@ -306,7 +306,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Update the selected attachment if necessary.
 		 *
-		 * @return {void}
+		 * @returns {void}
 		 */
 		updateSelectedAttachment: function updateSelectedAttachment() {
 			var control = this, attachment;
@@ -354,7 +354,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Get template.
 		 *
-		 * @return {Function} Template.
+		 * @returns {Function} Template.
 		 */
 		template: function template() {
 			var control = this;
@@ -399,7 +399,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Whether a media item is selected.
 		 *
-		 * @return {boolean} Whether selected and no error.
+		 * @returns {boolean} Whether selected and no error.
 		 */
 		isSelected: function isSelected() {
 			var control = this;
@@ -500,7 +500,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Get the instance props from the media selection frame.
 		 *
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
-		 * @return {Object} Props.
+		 * @returns {Object} Props.
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
 			var attachment, props;
@@ -583,7 +583,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @param {string|Object} key - Attribute name or attribute pairs.
 		 * @param {mixed|Object}  [val] - Attribute value or options object.
 		 * @param {Object}        [options] - Options when attribute name and value are passed separately.
-		 * @return {wp.mediaWidgets.MediaWidgetModel} This model.
+		 * @returns {wp.mediaWidgets.MediaWidgetModel} This model.
 		 */
 		set: function set( key, val, options ) {
 			var model = this, attrs, opts, castedAttrs; // eslint-disable-line consistent-this
