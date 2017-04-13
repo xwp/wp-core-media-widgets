@@ -33,7 +33,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Initialize.
 		 *
-		 * @param {object} options Options.
+		 * @param {object} options - Options.
 		 * @returns {void}
 		 */
 		initialize: function initialize( options ) {
@@ -44,7 +44,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Sync changes to the current display settings back into the current customized
 		 *
-		 * @param {Backbone.Model} displaySettings Modified display settings.
+		 * @param {Backbone.Model} displaySettings - Modified display settings.
 		 * @returns {void}
 		 */
 		handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
@@ -59,7 +59,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * will sync back into the model storing the session's customized display
 		 * settings.
 		 *
-		 * @param {Backbone.Model} model Display settings model.
+		 * @param {Backbone.Model} model - Display settings model.
 		 * @returns {Backbone.Model} Display settings model.
 		 */
 		display: function getDisplaySettingsModel( model ) {
@@ -123,7 +123,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 *
 		 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
 		 *
-		 * @param {wp.Backbone.View} view Toolbar view.
+		 * @param {wp.Backbone.View} view - Toolbar view.
 		 * @this {wp.media.controller.Library}
 		 * @returns {void}
 		 */
@@ -156,7 +156,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 *
 		 * Forked override of {wp.media.view.MediaFrame.Post#mainEmbedToolbar()} to override text.
 		 *
-		 * @param {wp.Backbone.View} toolbar Toolbar view.
+		 * @param {wp.Backbone.View} toolbar - Toolbar view.
 		 * @this {wp.media.controller.Library}
 		 * @returns {void}
 		 */
@@ -499,7 +499,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
 		 * @return {Object} Props.
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
@@ -580,9 +580,9 @@ wp.mediaWidgets = ( function( $ ) {
 		 * cast the attribute values from the hidden inputs' string values into
 		 * the appropriate data types (integers or booleans).
 		 *
-		 * @param {string|Object} key       Attribute name or attribute pairs.
-		 * @param {mixed|Object}  [val]     Attribute value or options object.
-		 * @param {Object}        [options] Options when attribute name and value are passed separately.
+		 * @param {string|Object} key - Attribute name or attribute pairs.
+		 * @param {mixed|Object}  [val] - Attribute value or options object.
+		 * @param {Object}        [options] - Options when attribute name and value are passed separately.
 		 * @return {wp.mediaWidgets.MediaWidgetModel} This model.
 		 */
 		set: function set( key, val, options ) {

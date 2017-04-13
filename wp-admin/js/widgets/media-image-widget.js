@@ -42,7 +42,7 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
 		 * @returns {object} Props
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
@@ -62,8 +62,8 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @param {object} attachment Attachment object.
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
+		 * @param {object}                          attachment - Attachment object.
 		 * @returns {object} Props
 		 */
 		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
@@ -96,8 +96,8 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @param {object} attachment Attachment object.
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
+		 * @param {object}                          attachment - Attachment object.
 		 * @returns {object} Props
 		 */
 		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
