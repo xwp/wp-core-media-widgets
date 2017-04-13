@@ -70,6 +70,12 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					'default' => '',
 					'sanitize_callback' => 'wp_kses_post',
 				),
+				'poster' => array(
+					'type' => 'string',
+					'default' => '',
+					'format' => 'uri',
+					'description' => __( 'URL to the poster frame' ),
+				),
 				'preload' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'auto', 'metadata' ),
@@ -113,9 +119,10 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		// TODO: height and width.
 		echo wp_video_shortcode( array(
 			'src' => $src,
-			'loop' => $instance['loop'],
 			'autoplay' => $instance['autoplay'],
+			'poster' => $instance['poster'],
 			'preload' => $instance['preload'],
+			'loop' => $instance['loop'],
 		) );
 	}
 
@@ -176,8 +183,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.model && data.model.src && ! data.model.attachment_id ) { #>
-				<img class="attachment-thumb" src="{{ data.model.src }}" draggable="false" />
+			<# } else if ( data.model && data.model.poster && ! data.model.attachment_id ) { #>
+				<img class="attachment-thumb" src="{{ data.model.poster }}" draggable="false" />
 			<# } else if ( data.model && data.model.attachment_id ) { #>
 				<?php wp_underscore_video_template() ?>
 			<# } #>

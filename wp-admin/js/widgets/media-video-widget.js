@@ -30,7 +30,7 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl;
+			var control = this, previewContainer, model, previewTemplate, attachmentId, attachmentUrl;
 			attachmentId = control.model.get( 'attachment_id' );
 			attachmentUrl = control.model.get( 'url' );
 
@@ -41,24 +41,23 @@
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
 
-			// If no attachment get the external thumbnail
-			if ( ! attachmentId ) {
+			// If no attachment get the external thumbnail.
+			model = {
+				attachment_id: control.model.get( 'attachment_id' ),
+				src: attachmentUrl,
+				poster: control.model.get( 'poster' )
+			};
+			if ( ! attachmentId && ! control.model.get( 'poster' ) ) {
 				control.getExternalThumbnail().done( function( response ) {
+					model.poster = response.thumbnail_url;
 					previewContainer.html( previewTemplate( {
-						model: {
-							src: response.thumbnail_url
-						},
+						model: model,
 						error: control.model.get( 'error' )
 					} ) );
 				} );
 			} else {
 				previewContainer.html( previewTemplate( {
-					model: {
-						attachment_id: control.model.get( 'attachment_id' ),
-						src: attachmentUrl,
-						width: control.model.get( 'width' ),
-						height: control.model.get( 'width' )
-					},
+					model: model,
 					error: control.model.get( 'error' )
 				} ) );
 			}
@@ -190,6 +189,8 @@
 				description: control.model.get( 'description' ),
 				link_type: control.model.get( 'link_type' ),
 				loop: control.model.get( 'loop' ),
+				poster: control.model.get( 'poster' ),
+				preload: control.model.get( 'preload' ),
 				url: control.model.get( 'url' )
 			};
 
@@ -213,6 +214,8 @@
 					description: mediaData.description,
 					link_type: mediaData.link,
 					loop: mediaData.loop,
+					poster: mediaData.poster || '',
+					preload: mediaData.preload,
 					url: mediaData.url
 				} );
 			};
