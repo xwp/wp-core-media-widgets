@@ -14,12 +14,12 @@
 		equal( typeof wp.mediaWidgets.handleWidgetAdded, 'function', 'wp.mediaWidgets.handleWidgetAdded is an function' );
 		equal( typeof wp.mediaWidgets.handleWidgetUpdated, 'function', 'wp.mediaWidgets.handleWidgetUpdated is an function' );
 		equal( typeof wp.mediaWidgets.init, 'function', 'wp.mediaWidgets.init is an function' );
-	} );
+	});
 
 	test( 'media widget control', function() {
 		equal( typeof wp.mediaWidgets.MediaWidgetControl, 'function', 'wp.mediaWidgets.MediaWidgetControl' );
 		ok( wp.mediaWidgets.MediaWidgetControl.prototype instanceof Backbone.View, 'wp.mediaWidgets.MediaWidgetControl subclasses Backbone.View' );
-	} );
+	});
 
 	test( 'media widget model', function() {
 		var widgetModelInstance;
@@ -31,14 +31,14 @@
 		equal( widgetModelInstance.get( 'attachment_id' ), 0, 'wp.mediaWidgets.MediaWidgetModel defaults attachment_id to 0' );
 		equal( widgetModelInstance.get( 'url' ), 0, 'wp.mediaWidgets.MediaWidgetModel defaults url to empty string' );
 
-		widgetModelInstance.set( {
+		widgetModelInstance.set({
 			title: 'chicken and ribs',
 			attachment_id: '1',
 			url: 'https://wordpress.org'
-		} );
+		});
 		equal( widgetModelInstance.get( 'title' ), 'chicken and ribs', 'wp.mediaWidgets.MediaWidgetModel properly sets the title attribute' );
 		equal( widgetModelInstance.get( 'url' ), 'https://wordpress.org', 'wp.mediaWidgets.MediaWidgetModel properly sets the url attribute' );
 		equal( widgetModelInstance.get( 'attachment_id' ), 1, 'wp.mediaWidgets.MediaWidgetModel properly sets and casts the attachment_id attribute' );
-	} );
+	});
 
 })();
