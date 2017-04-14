@@ -106,6 +106,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				'default' => 0,
 				'minimum' => 0,
 				'description' => __( 'Attachment post ID' ),
+				'media_prop' => 'id',
 			),
 			'url' => array(
 				'type' => 'string',

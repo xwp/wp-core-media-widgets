@@ -533,7 +533,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Map model props to media frame props.
 		 *
-		 * @return {Object} Props from model with names mapped for media frame.
+		 * @returns {Object} Props from model with names mapped for media frame.
 		 */
 		mapModelToMediaFrameProps: function mapModelToMediaFrameProps() {
 			var control = this, props = {};
