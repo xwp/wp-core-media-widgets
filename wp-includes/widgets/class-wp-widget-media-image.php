@@ -124,7 +124,6 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => 'sanitize_text_field',
-					'media_prop' => 'title',
 				),
 
 				/*
@@ -194,8 +193,14 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 			$caption = $instance['caption'];
 			$width   = $instance['width'];
 			$classes = 'image ' . $instance['image_classes'];
+			if ( 0 === $instance['width'] ) {
+				$instance['width'] = '';
+			}
+			if ( 0 === $instance['height'] ) {
+				$instance['height'] = '';
+			}
 
-			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
+			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$s" height="%5$s" />',
 				esc_attr( $classes ),
 				esc_url( $instance['url'] ),
 				esc_attr( $instance['alt'] ),

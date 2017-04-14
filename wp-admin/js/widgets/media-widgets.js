@@ -428,13 +428,16 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, defaultSync;
+			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 
 			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
 				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 			} else {
 				selection = null;
 			}
+
+			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
+			control.displaySettings.set( 'size', mediaFrameProps.size );
 
 			mediaFrame = new component.MediaFrameSelect({
 				title: control.l10n.select_media,
@@ -443,7 +446,7 @@ wp.mediaWidgets = ( function( $ ) {
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
-				metadata: control.mapModelToMediaFrameProps(),
+				metadata: mediaFrameProps,
 				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
@@ -463,7 +466,7 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( 'error', false );
 
 				// Update widget instance.
-				control.model.set( control.getSelectFrameProps( mediaFrame ) );
+				control.model.set( control.getModelPropsFromMediaFrame( mediaFrame ) );
 			});
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
@@ -500,44 +503,89 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @todo Rename to mapMediaFrameToModelProps.
-		 * @todo Move to the actual model? Define model props in the schema?
-		 * @todo There may be differences in prop naming between different frames.
-		 *
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
 		 * @returns {Object} Props.
 		 */
-		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var control = this, attachment, props = {}, modelToMediaPropMap;
+		getModelPropsFromMediaFrame: function getModelPropsFromMediaFrame( mediaFrame ) {
+			var control = this, state, mediaFrameProps;
 
-			modelToMediaPropMap = {};
+			state = mediaFrame.state();
+			if ( 'insert' === state.get( 'id' ) ) {
+				mediaFrameProps = _.extend(
+					state.get( 'selection' ).first().toJSON(),
+					mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
+				);
+				if ( mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
+					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
+				}
+			} else if ( 'embed' === state.get( 'id' ) ) {
+				mediaFrameProps = _.extend(
+					state.props.toJSON(),
+					{
+						id: 0,
+						attachment_id: 0,
+						size: 'full',
+						width: 0,
+						height: 0
+					}
+				);
+			}  else {
+				throw new Error( 'Unexpected state: ' + state.get( 'id' ) );
+			}
+
+			return control.mapMediaToModelProps( mediaFrameProps );
+		},
+
+		/**
+		 * Map media frame props to model props.
+		 *
+		 * @param {Object} mediaFrameProps - Media frame props.
+		 * @returns {Object} Model props.
+		 */
+		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
+			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {};
 			_.each( control.model.schema, function( fieldSchema, modelProp ) {
-				modelToMediaPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
+				mediaFramePropToModelPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
 			});
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			_.each( attachment, function( value, mediaProp ) {
-				var propName = modelToMediaPropMap[ mediaProp ] || mediaProp;
-				props[ propName ] = value;
+			_.each( mediaFrameProps, function( value, mediaProp ) {
+				var propName = mediaFramePropToModelPropMap[ mediaProp ] || mediaProp;
+				if ( control.model.schema[ propName ] ) {
+					modelProps[ propName ] = value;
+				}
 			});
 
-			return props;
+			if ( 'custom' === mediaFrameProps.size ) {
+				modelProps.width = mediaFrameProps.customWidth;
+				modelProps.height = mediaFrameProps.customHeight;
+			}
+
+			return modelProps;
 		},
 
 		/**
 		 * Map model props to media frame props.
 		 *
-		 * @returns {Object} Props from model with names mapped for media frame.
+		 * @param {Object} modelProps - Model props.
+		 * @returns {Object} Media frame props.
 		 */
-		mapModelToMediaFrameProps: function mapModelToMediaFrameProps() {
-			var control = this, props = {};
+		mapModelToMediaFrameProps: function mapModelToMediaFrameProps( modelProps ) {
+			var control = this, mediaFrameProps = {};
 
-			_.each( control.model.attributes, function( value, modelProp ) {
+			_.each( modelProps, function( value, modelProp ) {
 				var fieldSchema = control.model.schema[ modelProp ] || {};
-				props[ fieldSchema.media_prop || modelProp ] = value;
+				mediaFrameProps[ fieldSchema.media_prop || modelProp ] = value;
 			});
 
-			return props;
+			// Some media frames use attachment_id.
+			mediaFrameProps.attachment_id = mediaFrameProps.id;
+
+			if ( 'custom' === mediaFrameProps.size ) {
+				mediaFrameProps.customWidth = control.model.get( 'width' );
+				mediaFrameProps.customHeight = control.model.get( 'height' );
+			}
+
+			return mediaFrameProps;
 		},
 
 		/**
