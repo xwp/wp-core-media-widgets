@@ -730,7 +730,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * when a widget gets removed/deleted because there is no widget-removed event.
 		 */
 		component.modelCollection.add( [ widgetModel ] );
-		component.widgetControls[ widgetModel.get( 'id' ) ] = widgetControl;
+		component.widgetControls[ widgetModel.get( 'widget_id' ) ] = widgetControl;
 	};
 
 	/**
