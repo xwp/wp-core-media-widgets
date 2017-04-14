@@ -12,7 +12,7 @@
 	 * @class ImageWidgetModel
 	 * @constructor
 	 */
-	ImageWidgetModel = component.MediaWidgetModel.extend( {} );
+	ImageWidgetModel = component.MediaWidgetModel.extend({});
 
 	/**
 	 * Image widget control.
@@ -22,7 +22,7 @@
 	 * @class ImageWidgetModel
 	 * @constructor
 	 */
-	ImageWidgetControl = component.MediaWidgetControl.extend( {
+	ImageWidgetControl = component.MediaWidgetControl.extend({
 
 		/**
 		 * Render preview.
@@ -42,8 +42,8 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @returns {object} Props
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
+		 * @returns {object} Props from select frame.
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
 			var control = this,
@@ -62,9 +62,9 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @param {object} attachment Attachment object.
-		 * @returns {object} Props
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
+		 * @param {object}                          attachment - Attachment object.
+		 * @returns {object} Attachment props.
 		 */
 		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
 			var props = {}, displaySettings;
@@ -87,7 +87,7 @@
 					url: attachment.sizes[ displaySettings.size ].url,
 					width: 0, // Reset.
 					height: 0 // Reset.
-				} );
+				});
 			}
 
 			return props;
@@ -96,9 +96,9 @@
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @param {object} attachment Attachment object.
-		 * @returns {object} Props
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
+		 * @param {object}                          attachment - Attachment object.
+		 * @returns {object} Embed props.
 		 */
 		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
 			var props = {};
@@ -119,7 +119,7 @@
 					url: attachment.url,
 					width: attachment.width,
 					height: attachment.height
-				} );
+				});
 			}
 
 			return props;
@@ -151,11 +151,11 @@
 			};
 
 			// Set up the media frame.
-			mediaFrame = wp.media( {
+			mediaFrame = wp.media({
 				frame: 'image',
 				state: 'image-details',
 				metadata: metadata
-			} );
+			});
 			mediaFrame.$el.addClass( 'media-widget' );
 
 			updateCallback = function( imageData ) {
@@ -166,7 +166,7 @@
 				control.selectedAttachment.set( attachment.toJSON() );
 				control.model.set( 'error', false );
 
-				control.model.set( {
+				control.model.set({
 					attachment_id: imageData.attachment_id,
 					alt: imageData.alt,
 					caption: imageData.caption,
@@ -181,7 +181,7 @@
 					url: imageData.url,
 					width: 'custom' === imageData.size ? imageData.customWidth : imageData.width,
 					height: 'custom' === imageData.size ? imageData.customHeight : imageData.height
-				} );
+				});
 			};
 
 			mediaFrame.state( 'image-details' ).on( 'update', updateCallback );
@@ -199,7 +199,7 @@
 
 			mediaFrame.open();
 		}
-	} );
+	});
 
 	// Exports.
 	component.controlConstructors.media_image = ImageWidgetControl;
