@@ -62,3 +62,23 @@
 .media-widget-video-preview {
 	width: 100%;
 }
+
+.media-widget-video-link {
+	display: inline-block;
+	min-height: 132px;
+	width: 100%;
+	background: black;
+}
+
+.media-widget-video-link .dashicons {
+	font: normal 68px/1 'dashicons';
+	position: relative;
+	top: -90px;
+	left: -30px;
+	color: white;
+	text-decoration: none;
+}
+
+.media-widget-video-link.no-poster .dashicons {
+	top: 30px;
+}
