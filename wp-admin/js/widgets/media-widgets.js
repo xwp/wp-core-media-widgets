@@ -444,6 +444,13 @@ wp.mediaWidgets = ( function( $ ) {
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
+				metadata: {
+					url: control.model.get( 'url' ),
+					alt:  control.model.get( 'alt' ),
+					caption:  control.model.get( 'caption' ),
+					link:  control.model.get( 'link_type' ),
+					linkUrl:  control.model.get( 'link_url' )
+				},
 				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			} );
 			wp.media.frame = mediaFrame; // See wp.media().
