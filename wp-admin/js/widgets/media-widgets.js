@@ -498,32 +498,26 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
-		 * Map of model prop names to media prop names.
-		 *
-		 * @todo Move to the actual model? Define model props in the schema?
-		 * @todo There may be differences in prop naming between different frames.
-		 * @type {Object}
-		 */
-		modelToMediaPropMap: {
-			attachment_id: 'id'
-		},
-
-		/**
 		 * Get the instance props from the media selection frame.
 		 *
 		 * @todo Rename to mapMediaFrameToModelProps.
+		 * @todo Move to the actual model? Define model props in the schema?
+		 * @todo There may be differences in prop naming between different frames.
 		 *
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
 		 * @returns {Object} Props.
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var control = this, attachment, props = {}, mediaToModelPropMap;
+			var control = this, attachment, props = {}, modelToMediaPropMap;
+
+			modelToMediaPropMap = {};
+			_.each( control.model.schema, function( fieldSchema, modelProp ) {
+				modelToMediaPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
+			});
 
 			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-
-			mediaToModelPropMap = _.invert( control.modelToMediaPropMap );
 			_.each( attachment, function( value, mediaProp ) {
-				var propName = mediaToModelPropMap[ mediaProp ] || mediaProp;
+				var propName = modelToMediaPropMap[ mediaProp ] || mediaProp;
 				props[ propName ] = value;
 			});
 
@@ -539,8 +533,8 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, props = {};
 
 			_.each( control.model.attributes, function( value, modelProp ) {
-				var propName = control.modelToMediaPropMap[ modelProp ] || modelProp;
-				props[ propName ] = value;
+				var fieldSchema = control.model.schema[ modelProp ] || {};
+				props[ fieldSchema.media_prop || modelProp ] = value;
 			});
 
 			return props;
@@ -566,12 +560,19 @@ wp.mediaWidgets = ( function( $ ) {
 	component.MediaWidgetModel = Backbone.Model.extend({
 
 		/**
+		 * Id attribute.
+		 *
+		 * @type {string}
+		 */
+		idAttribute: 'widget_id',
+
+		/**
 		 * Instance schema.
 		 *
 		 * This adheres to JSON Schema and subclasses should have their schema
 		 * exported from PHP to JS such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
-		 * @param {Object.<string, Object>}
+		 * @type {Object.<string, Object>}
 		 */
 		schema: {
 			title: {
@@ -714,7 +715,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var input = $( this );
 			modelAttributes[ input.data( 'property' ) ] = input.val();
 		});
-		modelAttributes.id = widgetId;
+		modelAttributes.widget_id = widgetId;
 
 		widgetModel = new ModelConstructor( modelAttributes );
 

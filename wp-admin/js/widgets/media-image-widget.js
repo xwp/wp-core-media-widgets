@@ -96,24 +96,6 @@
 		},
 
 		/**
-		 * Map of model prop names to media prop names.
-		 *
-		 * @type {Object}
-		 */
-		modelToMediaPropMap: {
-			id: 'attachment_id',
-			width: 'customWidth',
-			height: 'customHeight',
-			image_classes: 'extraClasses',
-			link_type: 'link',
-			link_classes: 'linkClassName',
-			link_rel: 'linkRel',
-			link_target_blank: 'linkTargetBlank',
-			link_url: 'linkUrl',
-			image_title: 'title'
-		},
-
-		/**
 		 * Get the instance props from the media selection frame.
 		 *
 		 * @access private
@@ -154,13 +136,21 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, updateCallback, defaultSync;
+			var control = this, mediaFrame, updateCallback, defaultSync, metadata;
+
+			metadata = control.mapModelToMediaFrameProps();
+
+			// @todo Add this to subclass of mapModelToMediaFrameProps?
+			// Needed or else none will not be selected if linkUrl is not also empty.
+			if ( 'none' === metadata.link ) {
+				metadata.linkUrl = '';
+			}
 
 			// Set up the media frame.
 			mediaFrame = wp.media({
 				frame: 'image',
 				state: 'image-details',
-				metadata: control.mapModelToMediaFrameProps()
+				metadata: metadata
 			});
 			mediaFrame.$el.addClass( 'media-widget' );
 
@@ -174,7 +164,7 @@
 
 				// @todo Make use of modelToMediaPropMap.
 				control.model.set({
-					attachment_id: imageData.attachment_id,
+					id: imageData.attachment_id,
 					alt: imageData.alt,
 					caption: imageData.caption,
 					image_classes: imageData.extraClasses,
