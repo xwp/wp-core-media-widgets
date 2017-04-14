@@ -443,13 +443,7 @@ wp.mediaWidgets = ( function( $ ) {
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
-				metadata: {
-					url: control.model.get( 'url' ),
-					alt:  control.model.get( 'alt' ),
-					caption:  control.model.get( 'caption' ),
-					link:  control.model.get( 'link_type' ),
-					linkUrl:  control.model.get( 'link_url' )
-				},
+				metadata: control.mapModelToMediaFrameProps(),
 				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			} );
 			wp.media.frame = mediaFrame; // See wp.media().
@@ -504,23 +498,50 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
+		 * Map of model prop names to media prop names.
+		 *
+		 * @todo Move to the actual model? Define model props in the schema?
+		 * @todo There may be differences in prop naming between different frames.
+		 * @type {Object}
+		 */
+		modelToMediaPropMap: {
+			attachment_id: 'id'
+		},
+
+		/**
 		 * Get the instance props from the media selection frame.
+		 *
+		 * @todo Rename to mapMediaFrameToModelProps.
 		 *
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
 		 * @return {Object} Props.
 		 */
 		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, props;
+			var control = this, attachment, props = {}, mediaToModelPropMap;
 
 			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			if ( _.isEmpty( attachment ) ) {
-				return {};
-			}
 
-			props = {
-				attachment_id: attachment.id,
-				url: attachment.url
-			};
+			mediaToModelPropMap = _.invert( control.modelToMediaPropMap );
+			_.each( attachment, function( value, mediaProp ) {
+				var propName = mediaToModelPropMap[ mediaProp ] || mediaProp;
+				props[ propName ] = value;
+			});
+
+			return props;
+		},
+
+		/**
+		 * Map model props to media frame props.
+		 *
+		 * @return {Object} Props from model with names mapped for media frame.
+		 */
+		mapModelToMediaFrameProps: function mapModelToMediaFrameProps() {
+			var control = this, props = {};
+
+			_.each( control.model.attributes, function( value, modelProp ) {
+				var propName = control.modelToMediaPropMap[ modelProp ] || modelProp;
+				props[ propName ] = value;
+			});
 
 			return props;
 		},

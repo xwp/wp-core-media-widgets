@@ -71,6 +71,7 @@
 
 			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
 
+			// @todo Make use of modelToMediaPropMap.
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: attachment.id,
@@ -94,6 +95,24 @@
 		},
 
 		/**
+		 * Map of model prop names to media prop names.
+		 *
+		 * @type {Object}
+		 */
+		modelToMediaPropMap: {
+			id: 'attachment_id',
+			width: 'customWidth',
+			height: 'customHeight',
+			image_classes: 'extraClasses',
+			link_type: 'link',
+			link_classes: 'linkClassName',
+			link_rel: 'linkRel',
+			link_target_blank: 'linkTargetBlank',
+			link_url: 'linkUrl',
+			image_title: 'title'
+		},
+
+		/**
 		 * Get the instance props from the media selection frame.
 		 *
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
@@ -103,6 +122,8 @@
 		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
 			var props = {};
 
+			// @todo Make use of modelToMediaPropMap.
+			// @todo Make use of defaults in defined schema.
 			if ( ! _.isEmpty( attachment ) ) {
 				_.extend( props, {
 					attachment_id: 0,
@@ -131,30 +152,13 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, defaultSync;
-
-			metadata = {
-				attachment_id: control.model.get( 'attachment_id' ),
-				alt: control.model.get( 'alt' ),
-				caption: control.model.get( 'caption' ),
-				customWidth: control.model.get( 'width' ),
-				customHeight: control.model.get( 'height' ),
-				extraClasses: control.model.get( 'image_classes' ),
-				link: control.model.get( 'link_type' ),
-				linkClassName: control.model.get( 'link_classes' ),
-				linkRel: control.model.get( 'link_rel' ),
-				linkTargetBlank: control.model.get( 'link_target_blank' ),
-				linkUrl: control.model.get( 'link_url' ),
-				size: control.model.get( 'size' ),
-				title: control.model.get( 'image_title' ),
-				url: control.model.get( 'url' )
-			};
+			var control = this, mediaFrame, updateCallback, defaultSync;
 
 			// Set up the media frame.
 			mediaFrame = wp.media( {
 				frame: 'image',
 				state: 'image-details',
-				metadata: metadata
+				metadata: control.mapModelToMediaFrameProps()
 			} );
 			mediaFrame.$el.addClass( 'media-widget' );
 
@@ -166,6 +170,7 @@
 				control.selectedAttachment.set( attachment.toJSON() );
 				control.model.set( 'error', false );
 
+				// @todo Make use of modelToMediaPropMap.
 				control.model.set( {
 					attachment_id: imageData.attachment_id,
 					alt: imageData.alt,
