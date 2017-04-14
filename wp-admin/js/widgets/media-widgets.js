@@ -296,7 +296,6 @@ wp.mediaWidgets = ( function( $ ) {
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
 			control.displaySettings = new Backbone.Model( {
-				align: control.model.get( 'align' ),
 				size: control.model.get( 'size' ),
 				link: control.model.get( 'link_type' ),
 				linkUrl: control.model.get( 'link_url' )
