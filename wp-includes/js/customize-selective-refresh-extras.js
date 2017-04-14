@@ -15,6 +15,6 @@
 		if ( wp.mediaelement ) {
 			wp.mediaelement.initialize();
 		}
-	} );
+	});
 
 })( wp.customize );

@@ -17,21 +17,21 @@
 		ok( ImageWidgetControl.prototype instanceof wp.mediaWidgets.MediaWidgetControl, 'wp.mediaWidgets.controlConstructors.media_image subclasses wp.mediaWidgets.MediaWidgetControl' );
 
 		imageWidgetModelInstance = new wp.mediaWidgets.modelConstructors.media_image();
-		imageWidgetControlInstance = new ImageWidgetControl( {
+		imageWidgetControlInstance = new ImageWidgetControl({
 			model: imageWidgetModelInstance
-		} );
+		});
 
 		// Test isSelected()
 		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when no media is selected' );
-		imageWidgetControlInstance.model.set( { error: 'missing_attachment', attachment_id: 777 } );
+		imageWidgetControlInstance.model.set({ error: 'missing_attachment', attachment_id: 777 });
 		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when media is selected and error is set' );
-		imageWidgetControlInstance.model.set( { error: false, attachment_id: 777 } );
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 777 });
 		equal( imageWidgetControlInstance.isSelected(), true, 'media_image.isSelected() should return true when media is selected and no error exists' );
-		imageWidgetControlInstance.model.set( { error: false, attachment_id: 0, url: 'http://s.w.org/style/images/wp-header-logo.png' } );
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: 'http://s.w.org/style/images/wp-header-logo.png' });
 		equal( imageWidgetControlInstance.isSelected(), true, 'media_image.isSelected() should return true when url is set and no error exists' );
 
 		// Reset model
-		imageWidgetControlInstance.model.set( { error: false, attachment_id: 0, url: null } );
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: null });
 
 		// Test editing of Widget Title
 		imageWidgetControlInstance.render();
@@ -47,7 +47,7 @@
 			equal( imageWidgetControlInstance.$el.find( 'img[src="http://s.w.org/style/images/wp-header-logo.png"]' ).length, 1, 'One image should be rendered' );
 		}, 50 );
 		setTimeout( start, 1000 );
-	} );
+	});
 
 	test( 'image media model', function() {
 		var ImageWidgetModel, imageWidgetModelInstance;
@@ -58,7 +58,7 @@
 		imageWidgetModelInstance = new ImageWidgetModel();
 		_.each( imageWidgetModelInstance.attributes, function( value, key ) {
 			equal( value, ImageWidgetModel.prototype.schema[ key ][ 'default' ], 'Should properly set default for ' + key );
-		} );
-	} );
+		});
+	});
 
-} )();
+})();
