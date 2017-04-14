@@ -33,7 +33,7 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Initialize.
 		 *
-		 * @param {object} options - Options.
+		 * @param {Object} options - Options.
 		 * @returns {void}
 		 */
 		initialize: function initialize( options ) {
@@ -42,7 +42,7 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
-		 * Sync changes to the current display settings back into the current customized
+		 * Sync changes to the current display settings back into the current customized.
 		 *
 		 * @param {Backbone.Model} displaySettings - Modified display settings.
 		 * @returns {void}

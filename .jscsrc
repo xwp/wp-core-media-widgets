@@ -1,1 +1,24 @@
-dev-lib/.jscsrc
+{
+	"preset": "wordpress",
+	"jsDoc": {
+		"checkAnnotations": "jsdoc3",
+		"checkParamExistence": true,
+		"checkParamNames": true,
+		"requireParamTypes": true,
+		"checkRedundantParams": true,
+		"checkReturnTypes": true,
+		"requireReturnTypes": true,
+		"checkTypes": "strictNativeCase",
+		"checkRedundantAccess": "enforceLeadingUnderscore",
+		"leadingUnderscoreAccess": "private",
+		"requireHyphenBeforeDescription": true,
+		"requireNewlineAfterDescription": true,
+		"requireParamDescription": true
+	},
+	"excludeFiles": [
+		"**/*.min.js",
+		"**/*.jsx",
+		"**/node_modules/**",
+		"**/vendor/**"
+	]
+}
