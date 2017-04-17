@@ -515,7 +515,7 @@ wp.mediaWidgets = ( function( $ ) {
 					state.get( 'selection' ).first().toJSON(),
 					mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
 				);
-				if ( mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
+				if ( mediaFrameProps.sizes && mediaFrameProps.size && mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
 					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
 				}
 			} else if ( 'embed' === state.get( 'id' ) ) {
