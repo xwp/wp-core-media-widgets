@@ -103,16 +103,8 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media::get_instance_schema
 	 */
 	function test_get_instance_schema() {
-		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
-			return;
-		}
-
-		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
-		$get_instance_schema = $wp_widget_media->getMethod( 'get_instance_schema' );
-		$get_instance_schema->setAccessible( true );
-
-		$schema = $get_instance_schema->invoke( $this->get_mocked_class_instance() );
+		$widget = $this->get_mocked_class_instance();
+		$schema = $widget->get_instance_schema();
 
 		$this->assertEqualSets( array(
 			'attachment_id',

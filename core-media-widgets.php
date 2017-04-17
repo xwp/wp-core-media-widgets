@@ -26,6 +26,12 @@
 
 define( 'WP_CORE_MEDIA_WIDGETS_MERGED', file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
 
+// Register WP-CLI command for generating QUnit test suite.
+if ( defined( 'WP_CLI' ) ) {
+	require_once dirname( __FILE__ ) . '/php/class-media-widgets-wp-cli-command.php';
+	WP_CLI::add_command( 'media-widgets', new Media_Widgets_WP_CLI_Command() );
+}
+
 /**
  * Register widget scripts.
  *
@@ -107,11 +113,11 @@ function wp32417_twentyten_styles() {
  */
 function wp32417_widgets_init() {
 
-	register_widget( 'WP_Widget_Image' );
+	register_widget( 'WP_Widget_Media_Image' );
 
-	/* TODO: register_widget( 'WP_Widget_Audio' ); */
+	/* TODO: register_widget( 'WP_Widget_Media_Audio' ); */
 
-	/* TODO: register_widget( 'WP_Widget_Video' ); */
+	/* TODO: register_widget( 'WP_Widget_Media_Video' ); */
 }
 add_action( 'widgets_init', 'wp32417_widgets_init', 0 );
 
@@ -135,11 +141,11 @@ function wp32417_maybe_load_widgets() {
 
 	// Require media widgets from plugin instead of core.
 	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php';
-	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-image.php';
+	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php';
 
-	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-audio.php'; */
+	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php'; */
 
-	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-video.php'; */
+	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php'; */
 
 	add_action( '_admin_menu', 'wp_widgets_add_menu' );
 }

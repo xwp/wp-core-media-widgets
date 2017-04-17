@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget API: WP_Widget_Image class
+ * Widget API: WP_Widget_Media_Image class
  *
  * @package WordPress
  * @subpackage Widgets
@@ -14,7 +14,7 @@
  *
  * @see WP_Widget
  */
-class WP_Widget_Image extends WP_Widget_Media {
+class WP_Widget_Media_Image extends WP_Widget_Media {
 
 	/**
 	 * Constructor.
@@ -24,7 +24,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 	 */
 	public function __construct() {
 		parent::__construct( 'media_image', __( 'Image' ), array(
-			'description' => __( 'Displays an image file.' ),
+			'description' => __( 'Displays an image.' ),
 			'mime_type'   => 'image',
 		) );
 
@@ -45,14 +45,17 @@ class WP_Widget_Image extends WP_Widget_Media {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
+	 * @see WP_REST_Controller::get_additional_fields()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
@@ -82,36 +85,42 @@ class WP_Widget_Image extends WP_Widget_Media {
 					'default' => '',
 					'sanitize_callback' => 'sanitize_text_field',
 				),
-				'link_type' => array( // Via 'link' property.
+				'link_type' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'file', 'post', 'custom' ),
 					'default' => 'none',
+					'media_prop' => 'link',
 				),
-				'link_url' => array( // Via 'linkUrl' property.
+				'link_url' => array(
 					'type' => 'string',
 					'default' => '',
 					'format' => 'uri',
+					'media_prop' => 'linkUrl',
 				),
-				'image_classes' => array( // Via 'extraClasses' property.
+				'image_classes' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+					'media_prop' => 'extraClasses',
 				),
-				'link_classes' => array( // Via 'linkClassName' property.
+				'link_classes' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+					'media_prop' => 'linkClassName',
 				),
-				'link_rel' => array( // Via 'linkRel' property.
+				'link_rel' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+					'media_prop' => 'linkRel',
 				),
 				'link_target_blank' => array( // Via 'linkTargetBlank' property.
 					'type' => 'boolean',
 					'default' => false,
+					'media_prop' => 'linkTargetBlank',
 				),
-				'image_title' => array( // Via 'title' property.
+				'image_title' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => 'sanitize_text_field',
@@ -184,8 +193,14 @@ class WP_Widget_Image extends WP_Widget_Media {
 			$caption = $instance['caption'];
 			$width   = $instance['width'];
 			$classes = 'image ' . $instance['image_classes'];
+			if ( 0 === $instance['width'] ) {
+				$instance['width'] = '';
+			}
+			if ( 0 === $instance['height'] ) {
+				$instance['height'] = '';
+			}
 
-			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
+			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$s" height="%5$s" />',
 				esc_attr( $classes ),
 				esc_url( $instance['url'] ),
 				esc_attr( $instance['alt'] ),
@@ -238,7 +253,7 @@ class WP_Widget_Image extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
 		}
 		wp_add_inline_script(
 			$handle,
@@ -277,16 +292,16 @@ class WP_Widget_Image extends WP_Widget_Media {
 			<#
 			var describedById = 'describedBy-' + String( Math.random() );
 			#>
-			<# if ( data.attachment.error && 'missing_attachment' === data.attachment.error ) { #>
+			<# if ( data.error && 'missing_attachment' === data.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
-			<# } else if ( data.attachment.error ) { #>
+			<# } else if ( data.error ) { #>
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.attachment.url || data.url ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment.url || data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
+			<# } else if ( data.attachment_id || data.url ) { #>
+				<img class="attachment-thumb" src="{{ data.attachment_id && data.attachment.url ? data.attachment.url : data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
 				<# if ( ! data.alt ) { #>
 					<#
 					var alt = ( data.attachment.url || data.url );
