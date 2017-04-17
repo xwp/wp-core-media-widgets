@@ -85,36 +85,42 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 					'default' => '',
 					'sanitize_callback' => 'sanitize_text_field',
 				),
-				'link_type' => array( // Via 'link' property.
+				'link_type' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'file', 'post', 'custom' ),
 					'default' => 'none',
+					'media_prop' => 'link',
 				),
-				'link_url' => array( // Via 'linkUrl' property.
+				'link_url' => array(
 					'type' => 'string',
 					'default' => '',
 					'format' => 'uri',
+					'media_prop' => 'linkUrl',
 				),
-				'image_classes' => array( // Via 'extraClasses' property.
+				'image_classes' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+					'media_prop' => 'extraClasses',
 				),
-				'link_classes' => array( // Via 'linkClassName' property.
+				'link_classes' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+					'media_prop' => 'linkClassName',
 				),
-				'link_rel' => array( // Via 'linkRel' property.
+				'link_rel' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
+					'media_prop' => 'linkRel',
 				),
 				'link_target_blank' => array( // Via 'linkTargetBlank' property.
 					'type' => 'boolean',
 					'default' => false,
+					'media_prop' => 'linkTargetBlank',
 				),
-				'image_title' => array( // Via 'title' property.
+				'image_title' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => 'sanitize_text_field',
@@ -187,8 +193,14 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 			$caption = $instance['caption'];
 			$width   = $instance['width'];
 			$classes = 'image ' . $instance['image_classes'];
+			if ( 0 === $instance['width'] ) {
+				$instance['width'] = '';
+			}
+			if ( 0 === $instance['height'] ) {
+				$instance['height'] = '';
+			}
 
-			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$d" height="%5$d" />',
+			$image = sprintf( '<img class="%1$s" src="%2$s" alt="%3$s" width="%4$s" height="%5$s" />',
 				esc_attr( $classes ),
 				esc_url( $instance['url'] ),
 				esc_attr( $instance['alt'] ),
@@ -241,7 +253,7 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
 		}
 		wp_add_inline_script(
 			$handle,

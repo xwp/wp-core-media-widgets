@@ -295,12 +295,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 * when a new selection is made, the settings from this will be synced
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
-			control.displaySettings = new Backbone.Model({
-				align: control.model.get( 'align' ),
-				size: control.model.get( 'size' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' )
-			});
+			control.displaySettings = new Backbone.Model( control.mapMediaToModelProps( control.model.attributes ) );
 		},
 
 		/**
@@ -429,12 +424,17 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, defaultSync;
+			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 
 			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
 				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 			} else {
 				selection = null;
+			}
+
+			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
+			if ( mediaFrameProps.size ) {
+				control.displaySettings.set( 'size', mediaFrameProps.size );
 			}
 
 			mediaFrame = new component.MediaFrameSelect({
@@ -443,7 +443,9 @@ wp.mediaWidgets = ( function( $ ) {
 				text: control.l10n.add_to_widget,
 				selection: selection,
 				mimeType: control.mime_type,
-				selectedDisplaySettings: control.displaySettings
+				selectedDisplaySettings: control.displaySettings,
+				metadata: mediaFrameProps,
+				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
@@ -462,7 +464,7 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( 'error', false );
 
 				// Update widget instance.
-				control.model.set( control.getSelectFrameProps( mediaFrame ) );
+				control.model.set( control.getModelPropsFromMediaFrame( mediaFrame ) );
 			});
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
@@ -502,20 +504,90 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
 		 * @returns {Object} Props.
 		 */
-		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, props;
+		getModelPropsFromMediaFrame: function getModelPropsFromMediaFrame( mediaFrame ) {
+			var control = this, state, mediaFrameProps;
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			if ( _.isEmpty( attachment ) ) {
-				return {};
+			state = mediaFrame.state();
+			if ( 'insert' === state.get( 'id' ) ) {
+				mediaFrameProps = _.extend(
+					state.get( 'selection' ).first().toJSON(),
+					mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
+				);
+				if ( mediaFrameProps.sizes && mediaFrameProps.size && mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
+					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
+				}
+			} else if ( 'embed' === state.get( 'id' ) ) {
+				mediaFrameProps = _.extend(
+					state.props.toJSON(),
+					{ attachment_id: 0 }, // Because some media frames use `attachment_id` not `id`.
+					control.model.getEmbedResetProps()
+				);
+			}  else {
+				throw new Error( 'Unexpected state: ' + state.get( 'id' ) );
 			}
 
-			props = {
-				attachment_id: attachment.id,
-				url: attachment.url
-			};
+			if ( mediaFrameProps.id ) {
+				mediaFrameProps.attachment_id = mediaFrameProps.id;
+			}
 
-			return props;
+			return control.mapMediaToModelProps( mediaFrameProps );
+		},
+
+		/**
+		 * Map media frame props to model props.
+		 *
+		 * @param {Object} mediaFrameProps - Media frame props.
+		 * @returns {Object} Model props.
+		 */
+		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
+			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {};
+			_.each( control.model.schema, function( fieldSchema, modelProp ) {
+				mediaFramePropToModelPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
+			});
+
+			_.each( mediaFrameProps, function( value, mediaProp ) {
+				var propName = mediaFramePropToModelPropMap[ mediaProp ] || mediaProp;
+				if ( control.model.schema[ propName ] ) {
+					modelProps[ propName ] = value;
+				}
+			});
+
+			if ( 'custom' === mediaFrameProps.size ) {
+				modelProps.width = mediaFrameProps.customWidth;
+				modelProps.height = mediaFrameProps.customHeight;
+			}
+
+			// Because some media frames use `id` instead of `attachment_id`.
+			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
+				modelProps.attachment_id = mediaFrameProps.id;
+			}
+
+			return modelProps;
+		},
+
+		/**
+		 * Map model props to media frame props.
+		 *
+		 * @param {Object} modelProps - Model props.
+		 * @returns {Object} Media frame props.
+		 */
+		mapModelToMediaFrameProps: function mapModelToMediaFrameProps( modelProps ) {
+			var control = this, mediaFrameProps = {};
+
+			_.each( modelProps, function( value, modelProp ) {
+				var fieldSchema = control.model.schema[ modelProp ] || {};
+				mediaFrameProps[ fieldSchema.media_prop || modelProp ] = value;
+			});
+
+			// Some media frames use attachment_id.
+			mediaFrameProps.attachment_id = mediaFrameProps.id;
+
+			if ( 'custom' === mediaFrameProps.size ) {
+				mediaFrameProps.customWidth = control.model.get( 'width' );
+				mediaFrameProps.customHeight = control.model.get( 'height' );
+			}
+
+			return mediaFrameProps;
 		},
 
 		/**
@@ -538,12 +610,19 @@ wp.mediaWidgets = ( function( $ ) {
 	component.MediaWidgetModel = Backbone.Model.extend({
 
 		/**
+		 * Id attribute.
+		 *
+		 * @type {string}
+		 */
+		idAttribute: 'widget_id',
+
+		/**
 		 * Instance schema.
 		 *
 		 * This adheres to JSON Schema and subclasses should have their schema
 		 * exported from PHP to JS such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
-		 * @param {Object.<string, Object>}
+		 * @type {Object.<string, Object>}
 		 */
 		schema: {
 			title: {
@@ -617,6 +696,17 @@ wp.mediaWidgets = ( function( $ ) {
 			});
 
 			return Backbone.Model.prototype.set.call( this, castedAttrs, opts );
+		},
+
+		/**
+		 * Get props which are merged on top of the model when an embed is chosen (as opposed to an attachment).
+		 *
+		 * @returns {Object} Reset/override props.
+		 */
+		getEmbedResetProps: function getEmbedResetProps() {
+			return {
+				id: 0
+			};
 		}
 	});
 
@@ -686,7 +776,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var input = $( this );
 			modelAttributes[ input.data( 'property' ) ] = input.val();
 		});
-		modelAttributes.id = widgetId;
+		modelAttributes.widget_id = widgetId;
 
 		widgetModel = new ModelConstructor( modelAttributes );
 
@@ -701,7 +791,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * when a widget gets removed/deleted because there is no widget-removed event.
 		 */
 		component.modelCollection.add( [ widgetModel ] );
-		component.widgetControls[ widgetModel.get( 'id' ) ] = widgetControl;
+		component.widgetControls[ widgetModel.get( 'widget_id' ) ] = widgetControl;
 	};
 
 	/**
