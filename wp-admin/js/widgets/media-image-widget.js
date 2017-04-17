@@ -89,6 +89,22 @@
 			});
 
 			mediaFrame.open();
+		},
+
+		/**
+		 * Get props which are merged on top of the model when an embed is chosen (as opposed to an attachment).
+		 *
+		 * @returns {Object} Reset/override props.
+		 */
+		getEmbedResetProps: function getEmbedResetProps() {
+			return _.extend(
+				component.MediaWidgetControl.prototype.getEmbedResetProps.call( this ),
+				{
+					size: 'full',
+					width: 0,
+					height: 0
+				}
+			);
 		}
 	});
 

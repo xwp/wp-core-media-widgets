@@ -519,16 +519,15 @@ wp.mediaWidgets = ( function( $ ) {
 			} else if ( 'embed' === state.get( 'id' ) ) {
 				mediaFrameProps = _.extend(
 					state.props.toJSON(),
-					{
-						id: 0,
-						attachment_id: 0,
-						size: 'full',
-						width: 0,
-						height: 0
-					}
+					{ attachment_id: 0 }, // Because some media frames use `attachment_id` not `id`.
+					control.model.getEmbedResetProps()
 				);
 			}  else {
 				throw new Error( 'Unexpected state: ' + state.get( 'id' ) );
+			}
+
+			if ( mediaFrameProps.id ) {
+				mediaFrameProps.attachment_id = mediaFrameProps.id;
 			}
 
 			return control.mapMediaToModelProps( mediaFrameProps );
@@ -556,6 +555,11 @@ wp.mediaWidgets = ( function( $ ) {
 			if ( 'custom' === mediaFrameProps.size ) {
 				modelProps.width = mediaFrameProps.customWidth;
 				modelProps.height = mediaFrameProps.customHeight;
+			}
+
+			// Because some media frames use `id` instead of `attachment_id`.
+			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
+				modelProps.attachment_id = mediaFrameProps.id;
 			}
 
 			return modelProps;
@@ -692,6 +696,17 @@ wp.mediaWidgets = ( function( $ ) {
 			});
 
 			return Backbone.Model.prototype.set.call( this, castedAttrs, opts );
+		},
+
+		/**
+		 * Get props which are merged on top of the model when an embed is chosen (as opposed to an attachment).
+		 *
+		 * @returns {Object} Reset/override props.
+		 */
+		getEmbedResetProps: function getEmbedResetProps() {
+			return {
+				id: 0
+			};
 		}
 	});
 
