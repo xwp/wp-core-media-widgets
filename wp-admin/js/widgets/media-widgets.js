@@ -437,7 +437,9 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
-			control.displaySettings.set( 'size', mediaFrameProps.size );
+			if ( mediaFrameProps.size ) {
+				control.displaySettings.set( 'size', mediaFrameProps.size );
+			}
 
 			mediaFrame = new component.MediaFrameSelect({
 				title: control.l10n.select_media,
