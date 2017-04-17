@@ -295,11 +295,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 * when a new selection is made, the settings from this will be synced
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
-			control.displaySettings = new Backbone.Model({
-				size: control.model.get( 'size' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' )
-			});
+			control.displaySettings = new Backbone.Model( control.mapMediaToModelProps( control.model.attributes ) );
 		},
 
 		/**
