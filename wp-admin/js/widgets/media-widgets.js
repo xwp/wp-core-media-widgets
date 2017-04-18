@@ -98,7 +98,55 @@ wp.mediaWidgets = ( function( $ ) {
 				Constructor = wp.media.view.EmbedImage;
 			} else if ( 'link' === type ) {
 				Constructor = wp.media.view.EmbedLink.extend( {
-					renderFail: function() {} // Prevent showing "Link Text" field.
+
+					/**
+					 * Fetch media.
+					 *
+					 * This is a TEMPORARY measure until the WP API supports an oEmbed proxy endpoint. See #40450.
+					 *
+					 * @see https://core.trac.wordpress.org/ticket/40450
+					 * @returns {void}
+					 */
+					fetch: function() {
+						var embedLinkView = this; // eslint-disable-line consistent-this
+
+						// Check if they haven't typed in 500ms.
+						if ( $( '#embed-url-field' ).val() !== embedLinkView.model.get( 'url' ) ) {
+							return;
+						}
+
+						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
+							embedLinkView.dfd.abort();
+						}
+
+						embedLinkView.dfd = $.ajax({
+							url: 'https://noembed.com/embed',
+							data: _.pick( embedLinkView.model.attributes, [ 'width', 'height', 'url' ] ),
+							type: 'GET',
+							crossDomain: true,
+							dataType: 'json'
+						} );
+
+						embedLinkView.dfd.done( function( response ) {
+							embedLinkView.renderoEmbed( {
+								data: {
+									body: response.html
+								}
+							} );
+						} );
+						embedLinkView.dfd.fail( embedLinkView.renderFail );
+					},
+
+					/**
+					 * Handle render failure.
+					 *
+					 * Overrides the {EmbedLink#renderFail()} method to prevent showing the "Link Text" field.
+					 * The element is getting display:none in the stylesheet, but the underlying method uses
+					 * uses {jQuery.fn.show()} which adds an inline style. This avoids the need for !important.
+					 *
+					 * @returns {void}
+					 */
+					renderFail: function() {}
 				} );
 			} else {
 				return;
