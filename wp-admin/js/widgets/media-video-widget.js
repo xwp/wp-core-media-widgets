@@ -25,6 +25,13 @@
 	VideoWidgetControl = component.MediaWidgetControl.extend( {
 
 		/**
+		 * Show display settings.
+		 *
+		 * @type {boolean}
+		 */
+		showDisplaySettings: false,
+
+		/**
 		 * Map model props to media frame props.
 		 *
 		 * @param {Object} modelProps - Model props.
