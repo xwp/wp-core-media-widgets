@@ -106,6 +106,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				'default' => 0,
 				'minimum' => 0,
 				'description' => __( 'Attachment post ID' ),
+				'media_prop' => 'id',
 			),
 			'url' => array(
 				'type' => 'string',
@@ -353,7 +354,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
 				</div>
 			</div>
-			<p class="media-widget-buttons">
+			<div class="media-widget-buttons">
 				<button type="button" class="button edit-media selected">
 					<?php echo esc_html( $this->l10n['edit_media'] ); ?>
 				</button>
@@ -363,7 +364,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<button type="button" class="button select-media not-selected">
 					<?php echo esc_html( $this->l10n['select_media'] ); ?>
 				</button>
-			</p>
+			</div>
 		</script>
 		<?php
 	}
