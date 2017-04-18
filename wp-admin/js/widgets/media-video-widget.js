@@ -116,16 +116,7 @@
 		editMedia: function editMedia() {
 			var control = this, mediaFrame, metadata, updateCallback;
 
-			metadata = {
-				attachment_id: control.model.get( 'attachment_id' ),
-				autoplay: control.model.get( 'autoplay' ),
-				description: control.model.get( 'description' ),
-				link_type: control.model.get( 'link_type' ),
-				loop: control.model.get( 'loop' ),
-				poster: control.model.get( 'poster' ),
-				preload: control.model.get( 'preload' ),
-				url: control.model.get( 'url' )
-			};
+			metadata = control.mapModelToMediaFrameProps( control.model.toJSON() );
 
 			// Set up the media frame.
 			mediaFrame = wp.media({
@@ -134,22 +125,16 @@
 				metadata: metadata
 			} );
 
-			updateCallback = function( mediaData ) {
+			updateCallback = function( mediaFrameProps ) {
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.model.set( 'error', false );
-				control.selectedAttachment.set( mediaData );
+				control.selectedAttachment.set( mediaFrameProps );
 
-				control.model.set( {
-					attachment_id: mediaData.attachment_id,
-					autoplay: mediaData.autoplay,
-					description: mediaData.description,
-					link_type: mediaData.link,
-					loop: mediaData.loop,
-					poster: mediaData.poster || '',
-					preload: mediaData.preload,
-					url: mediaData.url
-				} );
+				control.model.set( _.extend(
+					control.model.defaults(),
+					control.mapMediaToModelProps( mediaFrameProps ),
+					{ error: false }
+				) );
 			};
 
 			// TODO: additional states. which do we track?
