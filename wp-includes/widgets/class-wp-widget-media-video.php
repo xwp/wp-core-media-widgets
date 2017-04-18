@@ -58,7 +58,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 * @return array Schema for properties.
 	 */
 	public function get_instance_schema() {
-		return array_merge(
+		$schema = array_merge(
 			parent::get_instance_schema(),
 			array(
 				'autoplay' => array(
@@ -82,6 +82,20 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				),
 			)
 		);
+
+		foreach ( wp_get_video_extensions() as $video_extension ) {
+			$schema[ $video_extension ] = array(
+				'type' => 'string',
+				'default' => '',
+				'format' => 'uri',
+				/* translators: placeholder is video extension */
+				'description' => sprintf( __( 'URL to the %s video source file' ), $video_extension ),
+				'media_prop' => $video_extension,
+			);
+		}
+
+		// TODO: height and width?
+		return $schema;
 	}
 
 	/**
@@ -115,13 +129,9 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			return;
 		}
 
-		// TODO: height and width.
-		echo wp_video_shortcode( array(
-			'src' => $src,
-			'autoplay' => $instance['autoplay'],
-			'poster' => $instance['poster'],
-			'preload' => $instance['preload'],
-			'loop' => $instance['loop'],
+		echo wp_video_shortcode( array_merge(
+			$instance,
+			compact( 'src' )
 		) );
 	}
 

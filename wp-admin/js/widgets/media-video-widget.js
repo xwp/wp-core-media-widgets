@@ -91,7 +91,7 @@
 		 */
 		getExternalThumbnail: function getExternalThumbnail() {
 			var control = this, urlParser = document.createElement( 'a' );
-			urlParser.href = control.model.get( 'url' );
+			urlParser.href = control.model.get( 'url' ); // @todo Or mp4, ogv, webm, etc?
 
 			// YouTube does not support CORS, but the thumbnail URL can be constructed from the video ID.
 			if ( /youtube|youtu\.be/.test( urlParser.hostname ) ) {
@@ -166,7 +166,6 @@
 			});
 
 			mediaFrame.open();
-
 		}
 	} );
 

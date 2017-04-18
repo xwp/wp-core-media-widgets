@@ -22,15 +22,21 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$widget = new WP_Widget_Media_Video();
 		$schema = $widget->get_instance_schema();
 
-		$this->assertEqualSets( array(
-			'attachment_id',
-			'autoplay',
-			'poster',
-			'preload',
-			'loop',
-			'title',
-			'url',
-		), array_keys( $schema ) );
+		$this->assertEqualSets(
+			array_merge(
+				array(
+					'attachment_id',
+					'autoplay',
+					'poster',
+					'preload',
+					'loop',
+					'title',
+					'url',
+				),
+				wp_get_video_extensions()
+			),
+			array_keys( $schema )
+		);
 	}
 
 	/**
