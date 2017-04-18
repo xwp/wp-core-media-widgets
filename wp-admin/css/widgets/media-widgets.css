@@ -73,8 +73,8 @@
 .media-widget-video-link .dashicons {
 	font: normal 68px/1 'dashicons';
 	position: relative;
-	top: -90px;
-	left: -30px;
+    width: 100%;
+	top: -94px;
 	color: white;
 	text-decoration: none;
 }
