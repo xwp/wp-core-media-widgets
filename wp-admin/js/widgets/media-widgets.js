@@ -77,6 +77,42 @@ wp.mediaWidgets = ( function( $ ) {
 	});
 
 	/**
+	 * Extended view for managing the embed UI.
+	 *
+	 * @class MediaEmbedView
+	 * @constructor
+	 */
+	component.MediaEmbedView = wp.media.view.Embed.extend({
+
+		/**
+		 * Refresh embed view.
+		 *
+		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field.
+		 *
+		 * @returns {void}
+		 */
+		refresh: function refresh() {
+			var type = this.model.get( 'type' ), Constructor;
+
+			if ( 'image' === type ) {
+				Constructor = wp.media.view.EmbedImage;
+			} else if ( 'link' === type ) {
+				Constructor = wp.media.view.EmbedLink.extend( {
+					renderFail: function() {} // Prevent showing "Link Text" field.
+				} );
+			} else {
+				return;
+			}
+
+			this.settings( new Constructor({
+				controller: this.controller,
+				model:      this.model.props,
+				priority:   40
+			}) );
+		}
+	});
+
+	/**
 	 * Custom media frame for selecting uploaded media or providing media by URL.
 	 *
 	 * @class MediaFrameSelect
@@ -166,6 +202,26 @@ wp.mediaWidgets = ( function( $ ) {
 				text: this.options.text,
 				event: 'insert'
 			});
+		},
+
+		/**
+		 * Embed content.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#embedContent()} to suppress irrelevant "link text" field.
+		 *
+		 * @returns {void}
+		 */
+		embedContent: function embedContent() {
+			var view = new component.MediaEmbedView({
+				controller: this,
+				model:      this.state()
+			}).render();
+
+			this.content.set( view );
+
+			if ( ! wp.media.isTouchDevice ) {
+				view.url.focus();
+			}
 		}
 	});
 
