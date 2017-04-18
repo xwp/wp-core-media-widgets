@@ -61,12 +61,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
-				'link_type' => array(
-					'type' => 'string',
-					'enum' => array( 'embed', 'file', 'post' ),
-					'default' => 'embed',
-					'media_prop' => 'link',
-				),
 				'autoplay' => array(
 					'type' => 'boolean',
 					'default' => false,
