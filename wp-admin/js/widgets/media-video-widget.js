@@ -98,7 +98,8 @@
 		/**
 		 * Get YouTube video ID from URL.
 		 *
-		 * @param {string} url URL from model.
+		 * @access private
+		 * @param {string} url - URL from model.
 		 * @returns {string} YouTube video ID
 		 */
 		_getYouTubeIdFromUrl: function _getYouTubeIdFromUrl( url ) {
