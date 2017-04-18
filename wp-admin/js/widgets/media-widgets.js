@@ -107,7 +107,7 @@ wp.mediaWidgets = ( function( $ ) {
 					editable:   true,
 
 					selectedDisplaySettings: this.options.selectedDisplaySettings,
-					displaySettings: true,
+					displaySettings: _.isUndefined( this.options.showDisplaySettings ) ? true : this.options.showDisplaySettings,
 					displayUserSettings: false // We use the display settings from the current/default widget instance props.
 				}),
 
@@ -224,6 +224,13 @@ wp.mediaWidgets = ( function( $ ) {
 			'click .select-media': 'selectMedia',
 			'click .edit-media': 'editMedia'
 		},
+
+		/**
+		 * Show display settings.
+		 *
+		 * @type {boolean}
+		 */
+		showDisplaySettings: true,
 
 		/**
 		 * Initialize.
@@ -449,6 +456,7 @@ wp.mediaWidgets = ( function( $ ) {
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
+				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
 				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			});
@@ -514,10 +522,13 @@ wp.mediaWidgets = ( function( $ ) {
 
 			state = mediaFrame.state();
 			if ( 'insert' === state.get( 'id' ) ) {
-				mediaFrameProps = _.extend(
-					state.get( 'selection' ).first().toJSON(),
-					mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
-				);
+				mediaFrameProps = state.get( 'selection' ).first().toJSON();
+				if ( control.showDisplaySettings ) {
+					_.extend(
+						mediaFrameProps,
+						mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
+					);
+				}
 				if ( mediaFrameProps.sizes && mediaFrameProps.size && mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
 					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
 				}
