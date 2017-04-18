@@ -61,6 +61,12 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
+				'link_type' => array(
+					'type' => 'string',
+					'enum' => array( 'embed', 'file', 'post' ),
+					'default' => 'embed',
+					'media_prop' => 'link',
+				),
 				'autoplay' => array(
 					'type' => 'boolean',
 					'default' => false,
@@ -130,7 +136,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
 		}
 		wp_add_inline_script(
 			$handle,
