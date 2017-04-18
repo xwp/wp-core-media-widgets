@@ -105,11 +105,16 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
 			return;
 		}
-		$src = $instance['url'];
 
-		$attachment = get_post( $instance['attachment_id'] );
-		if ( $attachment && 'attachment' === $attachment->post_type ) {
+		$attachment = null;
+		if ( ! empty( $instance['attachment_id'] ) && 'attachment' === get_post_type( $instance['attachment_id'] ) ) {
+			$attachment = get_post( $instance['attachment_id'] );
+		}
+
+		if ( $attachment ) {
 			$src = wp_get_attachment_url( $attachment->ID );
+		} else {
+			$src = $instance['url'];
 		}
 
 		// TODO: height and width.
