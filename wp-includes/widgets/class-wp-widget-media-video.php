@@ -61,18 +61,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
-				'link_type' => array(
-					'type' => 'string',
-					'enum' => array( 'embed', 'file', 'post' ),
-					'default' => 'embed',
-					'media_prop' => 'link',
-				),
-				'link_text' => array(
-					'type' => 'string',
-					'default' => '',
-					'sanitize_callback' => 'sanitize_text_field',
-					'media_prop' => 'linkText',
-				),
 				'autoplay' => array(
 					'type' => 'boolean',
 					'default' => false,
@@ -115,35 +103,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		$attachment = null;
 		if ( ! empty( $instance['attachment_id'] ) && 'attachment' === get_post_type( $instance['attachment_id'] ) ) {
 			$attachment = get_post( $instance['attachment_id'] );
-		}
-
-		if ( 'embed' !== $instance['link_type'] ) {
-			if ( $attachment ) {
-				$link_text = get_the_title( $attachment->ID );
-			} else {
-				$link_text = __( 'Watch video' );
-			}
-
-			if ( ! $attachment ) {
-				$url = $instance['url'];
-			} elseif ( 'file' === $instance['link_type'] ) {
-				$url = wp_get_attachment_url( $attachment->ID );
-			} else {
-				$url = get_attachment_link( $attachment->ID );
-			}
-
-			echo '<a href="' . esc_url( $url ) . '">';
-			if ( ! empty( $instance['poster'] ) ) {
-				printf(
-					'<img src="%s" alt="%s">',
-					esc_url( $instance['poster'] ),
-					esc_attr( $link_text )
-				);
-			} else {
-				echo $link_text;
-			}
-			echo '</a>';
-			return;
 		}
 
 		if ( $attachment ) {

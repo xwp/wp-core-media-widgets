@@ -24,8 +24,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 
 		$this->assertEqualSets( array(
 			'attachment_id',
-			'link_type',
-			'link_text',
 			'autoplay',
 			'poster',
 			'preload',

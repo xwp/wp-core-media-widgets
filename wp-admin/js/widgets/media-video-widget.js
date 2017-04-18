@@ -25,6 +25,19 @@
 	VideoWidgetControl = component.MediaWidgetControl.extend( {
 
 		/**
+		 * Map model props to media frame props.
+		 *
+		 * @param {Object} modelProps - Model props.
+		 * @returns {Object} Media frame props.
+		 */
+		mapModelToMediaFrameProps: function mapModelToMediaFrameProps( modelProps ) {
+			var control = this, mediaFrameProps;
+			mediaFrameProps = component.MediaWidgetControl.prototype.mapModelToMediaFrameProps.call( control, modelProps );
+			mediaFrameProps.link = 'embed';
+			return mediaFrameProps;
+		},
+
+		/**
 		 * Render preview.
 		 *
 		 * @returns {void}
