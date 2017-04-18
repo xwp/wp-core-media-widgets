@@ -71,10 +71,10 @@
 }
 
 .media-widget-video-link .dashicons {
-	font: normal 68px/1 'dashicons';
+	font: normal 60px/1 'dashicons';
 	position: relative;
     width: 100%;
-	top: -94px;
+	top: -90px;
 	color: white;
 	text-decoration: none;
 }
