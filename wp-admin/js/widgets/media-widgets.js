@@ -542,6 +542,11 @@ wp.mediaWidgets = ( function( $ ) {
 		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
 			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {};
 			_.each( control.model.schema, function( fieldSchema, modelProp ) {
+
+				// Ignore widget title attribute.
+				if ( 'title' === modelProp ) {
+					return;
+				}
 				mediaFramePropToModelPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
 			});
 
