@@ -8,9 +8,9 @@
 	module( 'Image Media Widget' );
 
 	asyncTest( 'image widget control', function() {
-		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance;
+		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, mappedProps;
 
-		expect( 9 );
+		expect( 12 );
 
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
@@ -38,15 +38,16 @@
 		imageWidgetControlInstance.$el.find( '.title' ).val( 'Chicken and Ribs' ).trigger( 'input' );
 		equal( imageWidgetModelInstance.get( 'title' ), 'Chicken and Ribs', 'Changing title should update model title attribute' );
 
-		// Test Preview
-		equal( imageWidgetControlInstance.$el.find( 'img' ).length, 0, 'No images should be rendered' );
-		imageWidgetModelInstance.set( 'url', 'http://s.w.org/style/images/wp-header-logo.png' );
+		// Test mapModelToMediaFrameProps();
+		imageWidgetControlInstance.model.set({ error: false, id: 777, url: 'http://s.w.org/style/images/wp-header-logo.png', 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150 });
+		mappedProps = imageWidgetControlInstance.mapModelToMediaFrameProps( imageWidgetControlInstance.model.toJSON() );
+		equal( mappedProps.linkUrl, 'https://wordpress.org', 'mapModelToMediaFrameProps should set linkUrl from model.link_url' );
+		equal( mappedProps.link, 'custom', 'mapModelToMediaFrameProps should set link from model.link_type' );
+		equal( mappedProps.attachment_id, 777, 'mapModelToMediaFrameProps should set attachment_id from model.id' );
+		equal( mappedProps.width, 100, 'mapModelToMediaFrameProps should set width when model.size is custom' );
+		equal( mappedProps.height, 150, 'mapModelToMediaFrameProps should set height when model.size is custom' );
 
-		// Due to renderPreview being deferred.
-		setTimeout( function() {
-			equal( imageWidgetControlInstance.$el.find( 'img[src="http://s.w.org/style/images/wp-header-logo.png"]' ).length, 1, 'One image should be rendered' );
-		}, 50 );
-		setTimeout( start, 1000 );
+		start();
 	});
 
 	test( 'image media model', function() {
