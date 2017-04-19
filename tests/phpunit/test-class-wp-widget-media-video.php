@@ -32,6 +32,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 					'loop',
 					'title',
 					'url',
+					'content',
 				),
 				wp_get_video_extensions()
 			),
@@ -238,12 +239,14 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 
 		// Externally hosted video.
 		ob_start();
+		$content = '<track srclang="en" label="English" kind="subtitles" src="http://example.com/wp-content/uploads/2017/04/subtitles-en.vtt">';
 		$widget->render_media( array(
 			'attachment_id' => null,
 			'autoplay' => true,
 			'loop' => false,
 			'url' => 'https://www.youtube.com/watch?v=OQSNhk5ICTI',
 			'poster' => 'https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg',
+			'content' => $content,
 		) );
 		$output = ob_get_clean();
 
@@ -252,6 +255,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$this->assertContains( 'autoplay="1"', $output );
 		$this->assertContains( 'poster="https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg"', $output );
 		$this->assertContains( 'src="https://www.youtube.com/watch?v=OQSNhk5ICTI', $output );
+		$this->assertContains( $content, $output );
 	}
 
 	/**
