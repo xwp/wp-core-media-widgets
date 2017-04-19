@@ -16,7 +16,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Media_Video::get_instance_schema
+	 * @covers WP_Widget_Media_Video::get_instance_schema()
 	 */
 	function test_get_instance_schema() {
 		$widget = new WP_Widget_Media_Video();
@@ -67,7 +67,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Media_Video::update
+	 * @covers WP_Widget_Media_Video::update()
 	 */
 	function test_update() {
 		$widget = new WP_Widget_Media_Video();
@@ -176,7 +176,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	/**
 	 * Test render_media method.
 	 *
-	 * @covers WP_Widget_Media_Video::render_media
+	 * @covers WP_Widget_Media_Video::render_media()
 	 */
 	function test_render_media() {
 		$test_movie_file = __FILE__ . '../data/small-video.m4v';
@@ -255,9 +255,36 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test enqueue_preview_scripts method.
+	 *
+	 * @global WP_Scripts $wp_scripts
+	 * @global WP_Styles $wp_styles
+	 * @covers WP_Widget_Media_Video::enqueue_preview_scripts()
+	 */
+	function test_enqueue_preview_scripts() {
+		global $wp_scripts, $wp_styles;
+		$widget = new WP_Widget_Media_Video();
+
+		$wp_scripts = null;
+		$wp_styles = null;
+		$widget->enqueue_preview_scripts();
+		$this->assertTrue( wp_script_is( 'wp-mediaelement' ) );
+		$this->assertTrue( wp_style_is( 'wp-mediaelement' ) );
+		$this->assertTrue( wp_script_is( 'froogaloop' ) );
+
+		$wp_scripts = null;
+		$wp_styles = null;
+		add_filter( 'wp_video_shortcode_library', '__return_empty_string' );
+		$widget->enqueue_preview_scripts();
+		$this->assertFalse( wp_script_is( 'wp-mediaelement' ) );
+		$this->assertFalse( wp_style_is( 'wp-mediaelement' ) );
+		$this->assertTrue( wp_script_is( 'froogaloop' ) );
+	}
+
+	/**
 	 * Test enqueue_admin_scripts method.
 	 *
-	 * @covers WP_Widget_Media_Video::enqueue_admin_scripts
+	 * @covers WP_Widget_Media_Video::enqueue_admin_scripts()
 	 */
 	function test_enqueue_admin_scripts() {
 		$widget = new WP_Widget_Media_Video();
@@ -269,7 +296,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	/**
 	 * Test render_control_template_scripts method.
 	 *
-	 * @covers WP_Widget_Media_Video::render_control_template_scripts
+	 * @covers WP_Widget_Media_Video::render_control_template_scripts()
 	 */
 	function test_render_control_template_scripts() {
 		$widget = new WP_Widget_Media_Video();

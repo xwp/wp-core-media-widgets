@@ -136,7 +136,29 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	}
 
 	/**
-	 * Loads the required media files for the media manager and scripts for .
+	 * Enqueue preview scripts.
+	 *
+	 * These scripts normally are enqueued just-in-time when a video shortcode is used.
+	 * In the customizer, however, widgets can be dynamically added and rendered via
+	 * selective refresh, and so it is important to unconditionally enqueue them in
+	 * case a widget does get added.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function enqueue_preview_scripts() {
+		/** This filter is documented in wp-includes/media.php */
+		if ( 'mediaelement' === apply_filters( 'wp_video_shortcode_library', 'mediaelement' ) ) {
+			wp_enqueue_style( 'wp-mediaelement' );
+			wp_enqueue_script( 'wp-mediaelement' );
+		}
+
+		// Enqueue script needed by Vimeo; see wp_video_shortcode().
+		wp_enqueue_script( 'froogaloop' );
+	}
+
+	/**
+	 * Loads the required scripts and styles for the widget control.
 	 *
 	 * @since 4.8.0
 	 * @access public
