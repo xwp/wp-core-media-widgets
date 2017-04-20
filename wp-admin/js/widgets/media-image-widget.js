@@ -34,7 +34,7 @@
 			attachmentId = control.model.get( 'attachment_id' );
 			size = control.model.get( 'size' );
 
-			// If size is not custom, return attachment.size.url.
+			// Attempt to return the specific attachment image size requested.
 			attachmentSizes = control.selectedAttachment.get( 'sizes' );
 			if ( attachmentId && 'custom' !== size && attachmentSizes && attachmentSizes[ size ] ) {
 				return attachmentSizes[ size ].url;
@@ -49,12 +49,17 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate;
+			var control = this, previewContainer, previewTemplate, imageSrc;
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
+
+			imageSrc = control.getImagePreviewUrl();
 			previewContainer.html( previewTemplate( _.extend(
 				control.model.toJSON(),
-				{ attachment: control.selectedAttachment.toJSON(), imageSrc: control.getImagePreviewUrl() }
+				{
+					imageSrc: imageSrc,
+					currentFilename: imageSrc.replace( /\?.*$/, '' ).replace( /^.+\//, '' )
+				}
 			) ) );
 		},
 
