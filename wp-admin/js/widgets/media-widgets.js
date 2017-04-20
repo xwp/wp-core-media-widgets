@@ -136,8 +136,8 @@ wp.mediaWidgets = ( function( $ ) {
 								data: {
 									body: response.html
 								}
-							} );
-						} );
+							});
+						});
 						embedLinkView.dfd.fail( embedLinkView.renderFail );
 					},
 
@@ -151,7 +151,7 @@ wp.mediaWidgets = ( function( $ ) {
 					 * @returns {void}
 					 */
 					renderFail: function() {}
-				} );
+				});
 			} else {
 				return;
 			}
