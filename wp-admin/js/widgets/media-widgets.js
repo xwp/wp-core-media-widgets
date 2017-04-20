@@ -408,7 +408,7 @@ wp.mediaWidgets = ( function( $ ) {
 			control.selectedAttachment = new wp.media.model.Attachment();
 			control.renderPreview = _.debounce( control.renderPreview );
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
-			control.listenTo( control.model, 'change', control.renderPreview );
+			control.listenTo( control.model, 'change', control.maybeRenderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change:attachment_id', control.updateSelectedAttachment );
@@ -444,6 +444,43 @@ wp.mediaWidgets = ( function( $ ) {
 				),
 				_.keys( wp.media.view.settings.defaultProps )
 			) );
+		},
+
+		/**
+		 * Determine if attributes changed in model should result in a render of preview.
+		 *
+		 * @param {Object} changes - Attributes changed in control.model.
+		 * @returns {boolean} Should the preview re-render.
+		 */
+		shouldPreviewUpdate: function shouldPreviewUpdate( changes ) {
+			var control = this;
+			return _.some( changes, function( value, prop ) {
+				var propSchema = control.model.schema[ prop ];
+
+				// Error is not in the schema, but should trigger a re-render.
+				if ( ! propSchema && 'error' === prop ) {
+					return true;
+				}
+
+				// If propSchema for should_preview_update is missing, assume true.
+				if ( ! propSchema.hasOwnProperty( 'should_preview_update' ) ) {
+					return true;
+				}
+				return propSchema.should_preview_update;
+			});
+		},
+
+		/**
+		 * Maybe call renderPreview if necessary.
+		 *
+		 * @param {Object.<string, wp.mediaWidgets.MediaWidgetModel>} model - Media widget model.
+		 * @returns {void}
+		 */
+		maybeRenderPreview: function maybeRenderPreview( model ) {
+			var control = this;
+			if ( control.shouldPreviewUpdate( model.changed ) ) {
+				control.renderPreview();
+			}
 		},
 
 		/**

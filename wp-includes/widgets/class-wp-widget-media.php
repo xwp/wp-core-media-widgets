@@ -122,6 +122,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				'default' => '',
 				'sanitize_callback' => 'sanitize_text_field',
 				'description' => __( 'Title for the widget' ),
+				'should_preview_update' => false,
 			),
 		);
 	}

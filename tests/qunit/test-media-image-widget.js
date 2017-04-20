@@ -19,6 +19,13 @@
 			model: imageWidgetModelInstance
 		});
 
+		// Test shouldPreviewUpdate().
+		equal( imageWidgetControlInstance.shouldPreviewUpdate( { error: false } ), true, 'shouldPreviewUpdate is true when changes to error occur' );
+		equal( imageWidgetControlInstance.shouldPreviewUpdate( { title: 'Chicken and Ribs' } ), false, 'shouldPreviewUpdate is false when title is changed' );
+		equal( imageWidgetControlInstance.shouldPreviewUpdate( { url: 'http://s.w.org/style/images/wp-header-logo.png' } ), true, 'shouldPreviewUpdate is true when url is changed' );
+		equal( imageWidgetControlInstance.shouldPreviewUpdate( { title: 'babyback ribs', alt: 'some alt text' } ), true, 'shouldPreviewUpdate is true when alt is changed' );
+		equal( imageWidgetControlInstance.shouldPreviewUpdate( { caption: 'yummy bbq', link_type: 'none' } ), false, 'shouldPreviewUpdate is false when caption and link_type is changed' );
+
 		// Test isSelected().
 		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when no media is selected' );
 		imageWidgetControlInstance.model.set({ error: 'missing_attachment', attachment_id: 777 });
