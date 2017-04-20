@@ -37,12 +37,13 @@
 		equal( imageWidgetModelInstance.get( 'title' ), 'Chicken and Ribs', 'Changing title should update model title attribute' );
 
 		// Test mapModelToMediaFrameProps().
-		imageWidgetControlInstance.model.set({ error: false, url: 'http://s.w.org/style/images/wp-header-logo.png', 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150 });
+		imageWidgetControlInstance.model.set({ error: false, url: 'http://s.w.org/style/images/wp-header-logo.png', 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150, 'title': 'widget title', 'image_title': 'title of image' });
 		mappedProps = imageWidgetControlInstance.mapModelToMediaFrameProps( imageWidgetControlInstance.model.toJSON() );
 		equal( mappedProps.linkUrl, 'https://wordpress.org', 'mapModelToMediaFrameProps should set linkUrl from model.link_url' );
 		equal( mappedProps.link, 'custom', 'mapModelToMediaFrameProps should set link from model.link_type' );
 		equal( mappedProps.width, 100, 'mapModelToMediaFrameProps should set width when model.size is custom' );
 		equal( mappedProps.height, 150, 'mapModelToMediaFrameProps should set height when model.size is custom' );
+		equal( mappedProps.title, 'title of image', 'mapModelToMediaFrameProps should set title from model.image_title' );
 	});
 
 	asyncTest( 'image widget control renderPreview', function() {
