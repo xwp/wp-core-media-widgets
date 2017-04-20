@@ -23,26 +23,6 @@
 	 * @constructor
 	 */
 	ImageWidgetControl = component.MediaWidgetControl.extend({
-
-		/**
-		 * Get the appropriate image url for the preview.
-		 *
-		 * @returns {string} Image url
-		 */
-		getImagePreviewUrl: function getImagePreviewUrl() {
-			var control = this, attachmentId, size, attachmentSizes;
-			attachmentId = control.model.get( 'attachment_id' );
-			size = control.model.get( 'size' );
-
-			// Attempt to return the specific attachment image size requested.
-			attachmentSizes = control.selectedAttachment.get( 'sizes' );
-			if ( attachmentId && 'custom' !== size && attachmentSizes && attachmentSizes[ size ] ) {
-				return attachmentSizes[ size ].url;
-			}
-
-			return control.model.get( 'url' );
-		},
-
 		/**
 		 * Render preview.
 		 *
@@ -53,13 +33,10 @@
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
 
-			imageSrc = control.getImagePreviewUrl();
+			imageSrc = control.model.get( 'url' );
 			previewContainer.html( previewTemplate( _.extend(
 				control.model.toJSON(),
-				{
-					imageSrc: imageSrc,
-					currentFilename: imageSrc.replace( /\?.*$/, '' ).replace( /^.+\//, '' )
-				}
+				{ currentFilename: imageSrc.replace( /\?.*$/, '' ).replace( /^.+\//, '' ) }
 			) ) );
 		},
 

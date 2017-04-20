@@ -31,19 +31,6 @@
 		// Reset model.
 		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: null });
 
-		// Test getImagePreviewUrl().
-		equal( imageWidgetControlInstance.getImagePreviewUrl(), null, 'getImagePreviewUrl should return null when no url is set' );
-		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: testImageUrl });
-		equal( imageWidgetControlInstance.getImagePreviewUrl(), testImageUrl, 'getImagePreviewUrl should return url when set and no attachment set' );
-		imageWidgetControlInstance.model.set({ size: 'custom', attachment_id: 777, url: testImageUrl });
-		imageWidgetControlInstance.selectedAttachment.set( { sizes: { 'thumbnail': { url: 'http://s.w.org/style/images/wp-header-logo-100x100.png' } } } );
-		equal( imageWidgetControlInstance.getImagePreviewUrl(), testImageUrl, 'getImagePreviewUrl should return url when attachment set but size is custom' );
-		imageWidgetControlInstance.model.set({ size: 'thumbnail' });
-		equal( imageWidgetControlInstance.getImagePreviewUrl(), 'http://s.w.org/style/images/wp-header-logo-100x100.png', 'getImagePreviewUrl should return size url when attachment set but size is not custom' );
-
-		// Reset model.
-		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: null });
-
 		// Test editing of widget title.
 		imageWidgetControlInstance.render();
 		imageWidgetControlInstance.$el.find( '.title' ).val( 'Chicken and Ribs' ).trigger( 'input' );
