@@ -23,6 +23,7 @@
 	 * @constructor
 	 */
 	ImageWidgetControl = component.MediaWidgetControl.extend({
+
 		/**
 		 * Render preview.
 		 *
