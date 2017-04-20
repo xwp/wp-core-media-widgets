@@ -87,17 +87,20 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Refresh embed view.
 		 *
-		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field.
+		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field
+		 * and so that the thumbnail_id for oEmbeds can be captured for use as the poster frame.
 		 *
 		 * @returns {void}
 		 */
 		refresh: function refresh() {
-			var type = this.model.get( 'type' ), Constructor;
+			var type = this.model.get( 'type' ), PatchedConstructor, Constructor;
 
 			if ( 'image' === type ) {
 				Constructor = wp.media.view.EmbedImage;
 			} else if ( 'link' === type ) {
-				Constructor = wp.media.view.EmbedLink.extend( {
+
+				// This should be eliminated once #40450 lands of when this is merged into core.
+				PatchedConstructor = wp.media.view.EmbedLink.extend({
 
 					/**
 					 * Fetch media.
@@ -151,6 +154,31 @@ wp.mediaWidgets = ( function( $ ) {
 					 * @returns {void}
 					 */
 					renderFail: function() {}
+				});
+
+				// After #40450 lands, PatchedConstructor would be replaced with wp.media.view.EmbedLink; the following would stay while the previous would go.
+				Constructor = PatchedConstructor.extend({
+
+					/**
+					 * Fetch media.
+					 *
+					 * Wrap the fetch method to capture the oEmbed fetch request promise
+					 * to obtain the thumbnail_id for poster frame.
+					 *
+					 * @returns {void}
+					 */
+					fetch: function fetch() {
+						var view = this; // eslint-disable-line consistent-this
+						PatchedConstructor.prototype.fetch.call( view );
+
+						if ( view.dfd ) {
+							view.dfd.done( function( response ) {
+								if ( response.thumbnail_url ) {
+									view.model.set( 'poster', response.thumbnail_url );
+								}
+							});
+						}
+					}
 				});
 			} else {
 				return;
