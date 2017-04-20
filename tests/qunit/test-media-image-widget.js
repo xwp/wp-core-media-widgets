@@ -8,8 +8,8 @@
 	module( 'Image Media Widget' );
 
 	test( 'image widget control', function() {
-		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, mappedProps;
-
+		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, mappedProps, testImageUrl;
+		testImageUrl = 'http://s.w.org/style/images/wp-header-logo.png';
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
 		ok( ImageWidgetControl.prototype instanceof wp.mediaWidgets.MediaWidgetControl, 'wp.mediaWidgets.controlConstructors.media_image subclasses wp.mediaWidgets.MediaWidgetControl' );
@@ -25,8 +25,21 @@
 		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when media is selected and error is set' );
 		imageWidgetControlInstance.model.set({ error: false, attachment_id: 777 });
 		equal( imageWidgetControlInstance.isSelected(), true, 'media_image.isSelected() should return true when media is selected and no error exists' );
-		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: 'http://s.w.org/style/images/wp-header-logo.png' });
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: testImageUrl });
 		equal( imageWidgetControlInstance.isSelected(), true, 'media_image.isSelected() should return true when url is set and no error exists' );
+
+		// Reset model.
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: null });
+
+		// Test getImagePreviewUrl().
+		equal( imageWidgetControlInstance.getImagePreviewUrl(), null, 'getImagePreviewUrl should return null when no url is set' );
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: testImageUrl });
+		equal( imageWidgetControlInstance.getImagePreviewUrl(), testImageUrl, 'getImagePreviewUrl should return url when set and no attachment set' );
+		imageWidgetControlInstance.model.set({ size: 'custom', attachment_id: 777, url: testImageUrl });
+		imageWidgetControlInstance.selectedAttachment.set( { sizes: { 'thumbnail': { url: 'http://s.w.org/style/images/wp-header-logo-100x100.png' } } } );
+		equal( imageWidgetControlInstance.getImagePreviewUrl(), testImageUrl, 'getImagePreviewUrl should return url when attachment set but size is custom' );
+		imageWidgetControlInstance.model.set({ size: 'thumbnail' });
+		equal( imageWidgetControlInstance.getImagePreviewUrl(), 'http://s.w.org/style/images/wp-header-logo-100x100.png', 'getImagePreviewUrl should return size url when attachment set but size is not custom' );
 
 		// Reset model.
 		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: null });
@@ -37,7 +50,7 @@
 		equal( imageWidgetModelInstance.get( 'title' ), 'Chicken and Ribs', 'Changing title should update model title attribute' );
 
 		// Test mapModelToMediaFrameProps().
-		imageWidgetControlInstance.model.set({ error: false, url: 'http://s.w.org/style/images/wp-header-logo.png', 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150, 'title': 'widget title', 'image_title': 'title of image' });
+		imageWidgetControlInstance.model.set({ error: false, url: testImageUrl, 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150, 'title': 'widget title', 'image_title': 'title of image' });
 		mappedProps = imageWidgetControlInstance.mapModelToMediaFrameProps( imageWidgetControlInstance.model.toJSON() );
 		equal( mappedProps.linkUrl, 'https://wordpress.org', 'mapModelToMediaFrameProps should set linkUrl from model.link_url' );
 		equal( mappedProps.link, 'custom', 'mapModelToMediaFrameProps should set link from model.link_type' );
