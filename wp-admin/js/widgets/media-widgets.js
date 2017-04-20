@@ -121,11 +121,15 @@ wp.mediaWidgets = ( function( $ ) {
 
 						embedLinkView.dfd = $.ajax({
 							url: 'https://noembed.com/embed',
-							data: _.pick( embedLinkView.model.attributes, [ 'width', 'height', 'url' ] ),
+							data: {
+								url: embedLinkView.model.get( 'url' ),
+								maxwidth: embedLinkView.model.get( 'width' ),
+								maxheight: embedLinkView.model.get( 'height' )
+							},
 							type: 'GET',
 							crossDomain: true,
 							dataType: 'json'
-						} );
+						});
 
 						embedLinkView.dfd.done( function( response ) {
 							embedLinkView.renderoEmbed( {
