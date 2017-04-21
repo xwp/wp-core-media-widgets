@@ -30,14 +30,15 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, imageSrc;
+			var control = this, previewContainer, previewTemplate;
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
 
-			imageSrc = control.model.get( 'url' );
 			previewContainer.html( previewTemplate( _.extend(
 				control.model.toJSON(),
-				{ currentFilename: imageSrc.replace( /\?.*$/, '' ).replace( /^.+\//, '' ) }
+				{
+					currentFilename: control.model.get( 'url' ).replace( /\?.*$/, '' ).replace( /^.+\//, '' )
+				}
 			) ) );
 		},
 
