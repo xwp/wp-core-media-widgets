@@ -301,17 +301,12 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.attachment_id || data.url ) { #>
-				<img class="attachment-thumb" src="{{ data.attachment_id && data.attachment.url ? data.attachment.url : data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt ) { #> aria-describedby="{{ describedById }}" <# } #> />
-				<# if ( ! data.alt ) { #>
-					<#
-					var alt = ( data.attachment.url || data.url );
-					alt = alt.replace( /\?.*$/, '' );
-					alt = alt.replace( /^.+\//, '' );
-					#>
+			<# } else if ( data.url ) { #>
+				<img class="attachment-thumb" src="{{ data.url }}" draggable="false" alt="{{ data.alt }}" <# if ( ! data.alt && data.currentFilename ) { #> aria-describedby="{{ describedById }}" <# } #> />
+				<# if ( ! data.alt && data.currentFilename ) { #>
 					<p class="hidden" id="{{ describedById }}"><?php
 						/* translators: placeholder is image filename */
-						echo sprintf( __( 'Current image: %s' ), '{{ alt }}' );
+						echo sprintf( __( 'Current image: %s' ), '{{ data.currentFilename }}' );
 					?></p>
 				<# } #>
 			<# } else { #>
