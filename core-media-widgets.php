@@ -42,7 +42,7 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 
 	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
 
-	/* TODO: $scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
+	$scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js', array( 'media-widgets' ) );
 
 	/* TODO: $scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
 
@@ -91,11 +91,11 @@ function wp32417_widgets_init() {
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
 	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php' ); */
 	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php' );
-	/* TODO: require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php' ); */
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php' );
 
 	/* TODO: register_widget( 'WP_Widget_Media_Audio' ); */
 	register_widget( 'WP_Widget_Media_Image' );
-	/* TODO: register_widget( 'WP_Widget_Media_Video' ); */
+	register_widget( 'WP_Widget_Media_Video' );
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );
 

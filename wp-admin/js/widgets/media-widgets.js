@@ -77,6 +77,122 @@ wp.mediaWidgets = ( function( $ ) {
 	});
 
 	/**
+	 * Extended view for managing the embed UI.
+	 *
+	 * @class MediaEmbedView
+	 * @constructor
+	 */
+	component.MediaEmbedView = wp.media.view.Embed.extend({
+
+		/**
+		 * Refresh embed view.
+		 *
+		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field
+		 * and so that the thumbnail_id for oEmbeds can be captured for use as the poster frame.
+		 *
+		 * @returns {void}
+		 */
+		refresh: function refresh() {
+			var type = this.model.get( 'type' ), PatchedConstructor, Constructor;
+
+			if ( 'image' === type ) {
+				Constructor = wp.media.view.EmbedImage;
+			} else if ( 'link' === type ) {
+
+				// This should be eliminated once #40450 lands of when this is merged into core.
+				PatchedConstructor = wp.media.view.EmbedLink.extend({
+
+					/**
+					 * Fetch media.
+					 *
+					 * This is a TEMPORARY measure until the WP API supports an oEmbed proxy endpoint. See #40450.
+					 *
+					 * @see https://core.trac.wordpress.org/ticket/40450
+					 * @returns {void}
+					 */
+					fetch: function() {
+						var embedLinkView = this; // eslint-disable-line consistent-this
+
+						// Check if they haven't typed in 500ms.
+						if ( $( '#embed-url-field' ).val() !== embedLinkView.model.get( 'url' ) ) {
+							return;
+						}
+
+						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
+							embedLinkView.dfd.abort();
+						}
+
+						embedLinkView.dfd = $.ajax({
+							url: 'https://noembed.com/embed',
+							data: {
+								url: embedLinkView.model.get( 'url' ),
+								maxwidth: embedLinkView.model.get( 'width' ),
+								maxheight: embedLinkView.model.get( 'height' )
+							},
+							type: 'GET',
+							crossDomain: true,
+							dataType: 'json'
+						});
+
+						embedLinkView.dfd.done( function( response ) {
+							embedLinkView.renderoEmbed( {
+								data: {
+									body: response.html
+								}
+							});
+						});
+						embedLinkView.dfd.fail( embedLinkView.renderFail );
+					},
+
+					/**
+					 * Handle render failure.
+					 *
+					 * Overrides the {EmbedLink#renderFail()} method to prevent showing the "Link Text" field.
+					 * The element is getting display:none in the stylesheet, but the underlying method uses
+					 * uses {jQuery.fn.show()} which adds an inline style. This avoids the need for !important.
+					 *
+					 * @returns {void}
+					 */
+					renderFail: function() {}
+				});
+
+				// After #40450 lands, PatchedConstructor would be replaced with wp.media.view.EmbedLink; the following would stay while the previous would go.
+				Constructor = PatchedConstructor.extend({
+
+					/**
+					 * Fetch media.
+					 *
+					 * Wrap the fetch method to capture the oEmbed fetch request promise
+					 * to obtain the thumbnail_id for poster frame.
+					 *
+					 * @returns {void}
+					 */
+					fetch: function fetch() {
+						var view = this; // eslint-disable-line consistent-this
+						PatchedConstructor.prototype.fetch.call( view );
+
+						if ( view.dfd ) {
+							view.dfd.done( function( response ) {
+								if ( response.thumbnail_url ) {
+									view.model.set( 'poster', response.thumbnail_url );
+								}
+							});
+						}
+					}
+				});
+			} else {
+				return;
+			}
+
+			this.settings( new Constructor({
+				controller: this.controller,
+				model:      this.model.props,
+				priority:   40
+			}) );
+		}
+	});
+
+	/**
 	 * Custom media frame for selecting uploaded media or providing media by URL.
 	 *
 	 * @class MediaFrameSelect
@@ -107,7 +223,7 @@ wp.mediaWidgets = ( function( $ ) {
 					editable:   true,
 
 					selectedDisplaySettings: this.options.selectedDisplaySettings,
-					displaySettings: true,
+					displaySettings: _.isUndefined( this.options.showDisplaySettings ) ? true : this.options.showDisplaySettings,
 					displayUserSettings: false // We use the display settings from the current/default widget instance props.
 				}),
 
@@ -166,6 +282,26 @@ wp.mediaWidgets = ( function( $ ) {
 				text: this.options.text,
 				event: 'insert'
 			});
+		},
+
+		/**
+		 * Embed content.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#embedContent()} to suppress irrelevant "link text" field.
+		 *
+		 * @returns {void}
+		 */
+		embedContent: function embedContent() {
+			var view = new component.MediaEmbedView({
+				controller: this,
+				model:      this.state()
+			}).render();
+
+			this.content.set( view );
+
+			if ( ! wp.media.isTouchDevice ) {
+				view.url.focus();
+			}
 		}
 	});
 
@@ -224,6 +360,13 @@ wp.mediaWidgets = ( function( $ ) {
 			'click .select-media': 'selectMedia',
 			'click .edit-media': 'editMedia'
 		},
+
+		/**
+		 * Show display settings.
+		 *
+		 * @type {boolean}
+		 */
+		showDisplaySettings: true,
 
 		/**
 		 * Initialize.
@@ -295,7 +438,12 @@ wp.mediaWidgets = ( function( $ ) {
 			 * when a new selection is made, the settings from this will be synced
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
-			control.displaySettings = new Backbone.Model( control.mapMediaToModelProps( control.model.attributes ) );
+			control.displaySettings = new Backbone.Model( _.pick(
+				control.mapModelToMediaFrameProps(
+					_.extend( control.model.defaults(), control.model.toJSON() )
+				),
+				_.keys( wp.media.view.settings.defaultProps )
+			) );
 		},
 
 		/**
@@ -444,6 +592,7 @@ wp.mediaWidgets = ( function( $ ) {
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
+				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
 				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
 			});
@@ -509,10 +658,13 @@ wp.mediaWidgets = ( function( $ ) {
 
 			state = mediaFrame.state();
 			if ( 'insert' === state.get( 'id' ) ) {
-				mediaFrameProps = _.extend(
-					state.get( 'selection' ).first().toJSON(),
-					mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
-				);
+				mediaFrameProps = state.get( 'selection' ).first().toJSON();
+				if ( control.showDisplaySettings ) {
+					_.extend(
+						mediaFrameProps,
+						mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
+					);
+				}
 				if ( mediaFrameProps.sizes && mediaFrameProps.size && mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
 					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
 				}

@@ -81,6 +81,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		if ( $this->is_preview() ) {
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_preview_scripts' ) );
+		}
 
 		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
@@ -324,7 +327,20 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Loads the required media files for the media manager and scripts for .
+	 * Enqueue preview scripts.
+	 *
+	 * These scripts normally are enqueued just-in-time when a widget is rendered.
+	 * In the customizer, however, widgets can be dynamically added and rendered via
+	 * selective refresh, and so it is important to unconditionally enqueue them in
+	 * case a widget does get added.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function enqueue_preview_scripts() {}
+
+	/**
+	 * Loads the required scripts and styles for the widget control.
 	 *
 	 * @since 4.8.0
 	 * @access public
