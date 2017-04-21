@@ -80,6 +80,18 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					'type' => 'boolean',
 					'default' => false,
 				),
+				'width' => array(
+					'type' => 'integer',
+					'minimum' => 0,
+					'default' => 640, // Same as default shortcode attribute in wp_video_shortcode().
+					'description' => __( 'Video width' ),
+				),
+				'height' => array(
+					'type' => 'integer',
+					'minimum' => 0,
+					'default' => 360, // Same as default shortcode attribute in wp_video_shortcode().
+					'description' => __( 'Video height' ),
+				),
 				'content' => array(
 					'type' => 'string',
 					'default' => '',
@@ -133,6 +145,14 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 
 		if ( empty( $src ) ) {
 			return;
+		}
+
+		$schema = $this->get_instance_schema();
+		if ( empty( $instance['width'] ) ) {
+			$instance['width'] = $schema['width']['default'];
+		}
+		if ( empty( $instance['height'] ) ) {
+			$instance['height'] = $schema['height']['default'];
 		}
 
 		echo wp_video_shortcode(
