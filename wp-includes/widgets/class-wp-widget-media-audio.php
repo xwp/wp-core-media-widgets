@@ -72,12 +72,6 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 					'type' => 'boolean',
 					'default' => false,
 				),
-				'content' => array(
-					'type' => 'string',
-					'default' => '',
-					'sanitize_callback' => 'wp_kses_post',
-					'description' => __( 'Tracks (subtitles, captions, descriptions, chapters, or metadata)' ),
-				),
 			)
 		);
 
@@ -128,8 +122,7 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 			array_merge(
 				$instance,
 				compact( 'src' )
-			),
-			$instance['content']
+			)
 		);
 	}
 

@@ -31,7 +31,6 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 					'loop',
 					'title',
 					'url',
-					'content',
 				),
 				wp_get_audio_extensions()
 			),
