@@ -22,11 +22,21 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 		$wp_widget_audio = new WP_Widget_Media_Audio();
 		$schema = $wp_widget_audio->get_instance_schema();
 
-		$this->assertEqualSets( array(
-			'attachment_id',
-			'title',
-			'url',
-		), array_keys( $schema ) );
+		$this->assertEqualSets(
+			array_merge(
+				array(
+					'attachment_id',
+					'autoplay',
+					'preload',
+					'loop',
+					'title',
+					'url',
+					'content',
+				),
+				wp_get_audio_extensions()
+			),
+			array_keys( $schema )
+		);
 	}
 
 	/**

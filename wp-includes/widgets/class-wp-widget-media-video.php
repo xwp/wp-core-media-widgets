@@ -94,7 +94,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				'format' => 'uri',
 				/* translators: placeholder is video extension */
 				'description' => sprintf( __( 'URL to the %s video source file' ), $video_extension ),
-				'media_prop' => $video_extension,
 			);
 		}
 

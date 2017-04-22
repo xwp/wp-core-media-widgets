@@ -56,12 +56,42 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 	 * @return array Schema for properties.
 	 */
 	public function get_instance_schema() {
-		return array_merge(
+		$schema = array_merge(
 			parent::get_instance_schema(),
 			array(
-				/* TODO */
+				'autoplay' => array(
+					'type' => 'boolean',
+					'default' => false,
+				),
+				'preload' => array(
+					'type' => 'string',
+					'enum' => array( 'none', 'auto', 'metadata' ),
+					'default' => 'none',
+				),
+				'loop' => array(
+					'type' => 'boolean',
+					'default' => false,
+				),
+				'content' => array(
+					'type' => 'string',
+					'default' => '',
+					'sanitize_callback' => 'wp_kses_post',
+					'description' => __( 'Tracks (subtitles, captions, descriptions, chapters, or metadata)' ),
+				),
 			)
 		);
+
+		foreach ( wp_get_audio_extensions() as $audio_extension ) {
+			$schema[ $audio_extension ] = array(
+				'type' => 'string',
+				'default' => '',
+				'format' => 'uri',
+				/* translators: placeholder is audio extension */
+				'description' => sprintf( __( 'URL to the %s audio source file' ), $audio_extension ),
+			);
+		}
+
+		return $schema;
 	}
 
 	/**
@@ -74,44 +104,32 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 	 * @return void
 	 */
 	public function render_media( $instance ) {
+		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
+		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
+			return;
+		}
 		$attachment = null;
-		if ( $instance['attachment_id'] ) {
+		if ( ! empty( $instance['attachment_id'] ) && 'attachment' === get_post_type( $instance['attachment_id'] ) ) {
 			$attachment = get_post( $instance['attachment_id'] );
 		}
-		if ( $attachment && 'attachment' === $attachment->post_type ) {
 
-			if ( in_array( $instance['link_type'], array( 'file', 'post' ), true ) ) {
-				echo $this->create_link_for( $attachment, $instance['link'] );
-				return;
-			} else {
-				$src = wp_get_attachment_url( $attachment->ID );
-			}
+		if ( $attachment ) {
+			$src = wp_get_attachment_url( $attachment->ID );
 		} else {
-
-			if ( empty( $instance['url'] ) ) {
-				return;
-			}
-
 			$src = $instance['url'];
 		}
 
-		echo wp_audio_shortcode( array(
-			'src' => $src,
-		) );
-	}
+		if ( empty( $src ) ) {
+			return;
+		}
 
-	/**
-	 * Render form template scripts.
-	 *
-	 * @since 4.8.0
-	 * @access public
-	 */
-	public function render_control_template_scripts() {
-		parent::render_control_template_scripts();
-
-		echo '<script type="text/html" id="tmpl-wp-media-widget-audio-preview">' . "\n";
-		wp_underscore_audio_template();
-		echo '</script>' . "\n";
+		echo wp_audio_shortcode(
+			array_merge(
+				$instance,
+				compact( 'src' )
+			),
+			$instance['content']
+		);
 	}
 
 	/**
@@ -147,7 +165,7 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
 		}
 		wp_add_inline_script(
 			$handle,
@@ -170,5 +188,34 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 				wp_json_encode( $this->l10n )
 			)
 		);
+	}
+
+	/**
+	 * Render form template scripts.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function render_control_template_scripts() {
+		parent::render_control_template_scripts()
+		?>
+		<script type="text/html" id="tmpl-wp-media-widget-audio-preview">
+			<# if ( data.error && 'missing_attachment' === data.error ) { #>
+				<div class="notice notice-error notice-alt notice-missing-attachment">
+					<p><?php echo $this->l10n['missing_attachment']; ?></p>
+				</div>
+			<# } else if ( data.error ) { #>
+				<div class="notice notice-error notice-alt">
+					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
+				</div>
+			<# } else if ( data.model && ! data.model.attachment_id ) { #>
+				<a href="{{ data.model.src }}" target="_blank" class="media-widget-audio-link">
+					<span class="dashicons dashicons-format-audio"></span>
+				</a>
+			<# } else if ( data.model && data.model.attachment_id ) { #>
+				<?php wp_underscore_audio_template() ?>
+			<# } #>
+		</script>
+		<?php
 	}
 }
