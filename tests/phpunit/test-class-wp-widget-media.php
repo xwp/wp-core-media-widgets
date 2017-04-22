@@ -58,6 +58,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$this->assertEquals( count( $widget->l10n ), count( array_filter( $widget->l10n ) ), 'Expected all translation strings to be defined.' );
 		$this->assertEquals( 10, has_action( 'admin_print_scripts-widgets.php', array( $widget, 'enqueue_admin_scripts' ) ) );
 		$this->assertEquals( 10, has_action( 'customize_controls_print_scripts', array( $widget, 'enqueue_admin_scripts' ) ) );
+		$this->assertFalse( has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ), 'Did not expect preview scripts to be enqueued when not in customize preview context.' );
 		$this->assertEquals( 10, has_action( 'admin_footer-widgets.php', array( $widget, 'render_control_template_scripts' ) ) );
 		$this->assertEquals( 10, has_action( 'customize_controls_print_footer_scripts', array( $widget, 'render_control_template_scripts' ) ) );
 
@@ -83,6 +84,27 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test constructor in customize preview.
+	 *
+	 * @global WP_Customize_Manager $wp_customize
+	 * @covers WP_Widget_Media::__construct()
+	 */
+	function test_constructor_in_customize_preview() {
+		global $wp_customize;
+		wp_set_current_user( $this->factory()->user->create( array(
+			'role' => 'administrator',
+		) ) );
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$wp_customize = new WP_Customize_Manager( array(
+			'changeset_uuid' => wp_generate_uuid4(),
+		) );
+		$wp_customize->start_previewing_theme();
+
+		$widget = $this->get_mocked_class_instance();
+		$this->assertEquals( 10, has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ) );
+	}
+
+	/**
 	 * Test sanitize_token_list method.
 	 *
 	 * @covers WP_Widget_Media::sanitize_token_list
@@ -103,16 +125,8 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media::get_instance_schema
 	 */
 	function test_get_instance_schema() {
-		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
-			return;
-		}
-
-		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
-		$get_instance_schema = $wp_widget_media->getMethod( 'get_instance_schema' );
-		$get_instance_schema->setAccessible( true );
-
-		$schema = $get_instance_schema->invoke( $this->get_mocked_class_instance() );
+		$widget = $this->get_mocked_class_instance();
+		$schema = $widget->get_instance_schema();
 
 		$this->assertEqualSets( array(
 			'attachment_id',

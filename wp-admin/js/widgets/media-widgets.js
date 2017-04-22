@@ -23,19 +23,302 @@ wp.mediaWidgets = ( function( $ ) {
 	component.modelConstructors = {};
 
 	/**
+	 * Library which persists the customized display settings across selections.
+	 *
+	 * @class PersistentDisplaySettingsLibrary
+	 * @constructor
+	 */
+	component.PersistentDisplaySettingsLibrary = wp.media.controller.Library.extend({
+
+		/**
+		 * Initialize.
+		 *
+		 * @param {Object} options - Options.
+		 * @returns {void}
+		 */
+		initialize: function initialize( options ) {
+			_.bindAll( this, 'handleDisplaySettingChange' );
+			wp.media.controller.Library.prototype.initialize.call( this, options );
+		},
+
+		/**
+		 * Sync changes to the current display settings back into the current customized.
+		 *
+		 * @param {Backbone.Model} displaySettings - Modified display settings.
+		 * @returns {void}
+		 */
+		handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
+			this.get( 'selectedDisplaySettings' ).set( displaySettings.attributes );
+		},
+
+		/**
+		 * Get the display settings model.
+		 *
+		 * Model returned is updated with the current customized display settings,
+		 * and an event listener is added so that changes made to the settings
+		 * will sync back into the model storing the session's customized display
+		 * settings.
+		 *
+		 * @param {Backbone.Model} model - Display settings model.
+		 * @returns {Backbone.Model} Display settings model.
+		 */
+		display: function getDisplaySettingsModel( model ) {
+			var display, selectedDisplaySettings = this.get( 'selectedDisplaySettings' );
+			display = wp.media.controller.Library.prototype.display.call( this, model );
+
+			display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
+			display.set( selectedDisplaySettings.attributes );
+			if ( 'custom' === selectedDisplaySettings.get( 'link_type' ) ) {
+				display.linkUrl = selectedDisplaySettings.get( 'link_url' );
+			}
+			display.on( 'change', this.handleDisplaySettingChange );
+			return display;
+		}
+	});
+
+	/**
+	 * Extended view for managing the embed UI.
+	 *
+	 * @class MediaEmbedView
+	 * @constructor
+	 */
+	component.MediaEmbedView = wp.media.view.Embed.extend({
+
+		/**
+		 * Refresh embed view.
+		 *
+		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field
+		 * and so that the thumbnail_id for oEmbeds can be captured for use as the poster frame.
+		 *
+		 * @returns {void}
+		 */
+		refresh: function refresh() {
+			var type = this.model.get( 'type' ), PatchedConstructor, Constructor;
+
+			if ( 'image' === type ) {
+				Constructor = wp.media.view.EmbedImage;
+			} else if ( 'link' === type ) {
+
+				// This should be eliminated once #40450 lands of when this is merged into core.
+				PatchedConstructor = wp.media.view.EmbedLink.extend({
+
+					/**
+					 * Fetch media.
+					 *
+					 * This is a TEMPORARY measure until the WP API supports an oEmbed proxy endpoint. See #40450.
+					 *
+					 * @see https://core.trac.wordpress.org/ticket/40450
+					 * @returns {void}
+					 */
+					fetch: function() {
+						var embedLinkView = this; // eslint-disable-line consistent-this
+
+						// Check if they haven't typed in 500ms.
+						if ( $( '#embed-url-field' ).val() !== embedLinkView.model.get( 'url' ) ) {
+							return;
+						}
+
+						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
+							embedLinkView.dfd.abort();
+						}
+
+						embedLinkView.dfd = $.ajax({
+							url: 'https://noembed.com/embed',
+							data: {
+								url: embedLinkView.model.get( 'url' ),
+								maxwidth: embedLinkView.model.get( 'width' ),
+								maxheight: embedLinkView.model.get( 'height' )
+							},
+							type: 'GET',
+							crossDomain: true,
+							dataType: 'json'
+						});
+
+						embedLinkView.dfd.done( function( response ) {
+							embedLinkView.renderoEmbed( {
+								data: {
+									body: response.html
+								}
+							});
+						});
+						embedLinkView.dfd.fail( embedLinkView.renderFail );
+					},
+
+					/**
+					 * Handle render failure.
+					 *
+					 * Overrides the {EmbedLink#renderFail()} method to prevent showing the "Link Text" field.
+					 * The element is getting display:none in the stylesheet, but the underlying method uses
+					 * uses {jQuery.fn.show()} which adds an inline style. This avoids the need for !important.
+					 *
+					 * @returns {void}
+					 */
+					renderFail: function() {}
+				});
+
+				// After #40450 lands, PatchedConstructor would be replaced with wp.media.view.EmbedLink; the following would stay while the previous would go.
+				Constructor = PatchedConstructor.extend({
+
+					/**
+					 * Fetch media.
+					 *
+					 * Wrap the fetch method to capture the oEmbed fetch request promise
+					 * to obtain the thumbnail_id for poster frame.
+					 *
+					 * @returns {void}
+					 */
+					fetch: function fetch() {
+						var view = this; // eslint-disable-line consistent-this
+						PatchedConstructor.prototype.fetch.call( view );
+
+						if ( view.dfd ) {
+							view.dfd.done( function( response ) {
+								if ( response.thumbnail_url ) {
+									view.model.set( 'poster', response.thumbnail_url );
+								}
+							});
+						}
+					}
+				});
+			} else {
+				return;
+			}
+
+			this.settings( new Constructor({
+				controller: this.controller,
+				model:      this.model.props,
+				priority:   40
+			}) );
+		}
+	});
+
+	/**
+	 * Custom media frame for selecting uploaded media or providing media by URL.
+	 *
+	 * @class MediaFrameSelect
+	 * @constructor
+	 */
+	component.MediaFrameSelect = wp.media.view.MediaFrame.Post.extend({
+
+		/**
+		 * Create the default states.
+		 *
+		 * @returns {void}
+		 */
+		createStates: function createStates() {
+			this.states.add( [
+
+				// Main states.
+				new component.PersistentDisplaySettingsLibrary({
+					id:         'insert',
+					title:      this.options.title,
+					selection:  this.options.selection,
+					priority:   20,
+					toolbar:    'main-insert',
+					filterable: 'dates',
+					library:    wp.media.query({
+						type: this.options.mimeType
+					}),
+					multiple:   false,
+					editable:   true,
+
+					selectedDisplaySettings: this.options.selectedDisplaySettings,
+					displaySettings: _.isUndefined( this.options.showDisplaySettings ) ? true : this.options.showDisplaySettings,
+					displayUserSettings: false // We use the display settings from the current/default widget instance props.
+				}),
+
+				new wp.media.controller.EditImage({ model: this.options.editImage }),
+
+				// Embed states.
+				new wp.media.controller.Embed({ metadata: this.options.metadata })
+			] );
+		},
+
+		/**
+		 * Main insert toolbar.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
+		 *
+		 * @param {wp.Backbone.View} view - Toolbar view.
+		 * @this {wp.media.controller.Library}
+		 * @returns {void}
+		 */
+		mainInsertToolbar: function mainInsertToolbar( view ) {
+			var controller = this; // eslint-disable-line consistent-this
+			view.set( 'insert', {
+				style:    'primary',
+				priority: 80,
+				text:     controller.options.text, // The whole reason for the fork.
+				requires: { selection: true },
+
+				/**
+				 * Handle click.
+				 *
+				 * @fires wp.media.controller.State#insert()
+				 * @returns {void}
+				 */
+				click: function onClick() {
+					var state = controller.state(),
+						selection = state.get( 'selection' );
+
+					controller.close();
+					state.trigger( 'insert', selection ).reset();
+				}
+			});
+		},
+
+		/**
+		 * Main embed toolbar.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#mainEmbedToolbar()} to override text.
+		 *
+		 * @param {wp.Backbone.View} toolbar - Toolbar view.
+		 * @this {wp.media.controller.Library}
+		 * @returns {void}
+		 */
+		mainEmbedToolbar: function mainEmbedToolbar( toolbar ) {
+			toolbar.view = new wp.media.view.Toolbar.Embed({
+				controller: this,
+				text: this.options.text,
+				event: 'insert'
+			});
+		},
+
+		/**
+		 * Embed content.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#embedContent()} to suppress irrelevant "link text" field.
+		 *
+		 * @returns {void}
+		 */
+		embedContent: function embedContent() {
+			var view = new component.MediaEmbedView({
+				controller: this,
+				model:      this.state()
+			}).render();
+
+			this.content.set( view );
+
+			if ( ! wp.media.isTouchDevice ) {
+				view.url.focus();
+			}
+		}
+	});
+
+	/**
 	 * Media widget control.
 	 *
 	 * @class MediaWidgetControl
 	 * @constructor
 	 * @abstract
 	 */
-	component.MediaWidgetControl = Backbone.View.extend( {
+	component.MediaWidgetControl = Backbone.View.extend({
 
 		/**
 		 * Translation strings.
 		 *
 		 * The mapping of translation strings is handled by media widget subclasses,
-		 * exported from PHP to JS such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 * exported from PHP to JS such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
 		 * @type {Object}
 		 */
@@ -48,7 +331,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Widget ID base.
 		 *
 		 * This may be defined by the subclass. It may be exported from PHP to JS
-		 * such as is done in WP_Widget_Image::enqueue_admin_scripts(). If not,
+		 * such as is done in WP_Widget_Media_Image::enqueue_admin_scripts(). If not,
 		 * it will attempt to be discovered by looking to see if this control
 		 * instance extends each member of component.controlConstructors, and if
 		 * it does extend one, will use the key as the id_base.
@@ -61,7 +344,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * Mime type.
 		 *
 		 * This must be defined by the subclass. It may be exported from PHP to JS
-		 * such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 * such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
 		 * @type {string}
 		 */
@@ -79,22 +362,34 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
+		 * Show display settings.
+		 *
+		 * @type {boolean}
+		 */
+		showDisplaySettings: true,
+
+		/**
 		 * Initialize.
 		 *
 		 * @param {Object}         options - Options.
 		 * @param {Backbone.Model} options.model - Model.
-		 * @param {function}       options.template - Control template.
 		 * @param {jQuery}         options.el - Control container element.
 		 * @returns {void}
 		 */
 		initialize: function initialize( options ) {
-			var control = this,
-				customizedDisplaySettings, CustomizedDisplaySettingsLibrary;
+			var control = this;
 
 			Backbone.View.prototype.initialize.call( control, options );
 
+			if ( ! control.el ) {
+				throw new Error( 'Missing options.el' );
+			}
+			if ( ! ( control.model instanceof component.MediaWidgetModel ) ) {
+				throw new Error( 'Missing options.model' );
+			}
+
 			// Allow methods to be passed in with control context preserved.
-			_.bindAll( control, 'syncModelToInputs', 'render', 'fetchSelectedAttachment', 'renderPreview' );
+			_.bindAll( control, 'syncModelToInputs', 'render', 'updateSelectedAttachment', 'renderPreview' );
 
 			if ( ! control.id_base ) {
 				_.find( component.controlConstructors, function( Constructor, idBase ) {
@@ -103,19 +398,22 @@ wp.mediaWidgets = ( function( $ ) {
 						return true;
 					}
 					return false;
-				} );
+				});
 				if ( ! control.id_base ) {
 					throw new Error( 'Missing id_base.' );
 				}
 			}
 
 			// Re-render the preview when the attachment changes.
-			control.selectedAttachment = new wp.media.model.Attachment( { id: 0 } );
+			control.selectedAttachment = new wp.media.model.Attachment();
+			control.renderPreview = _.debounce( control.renderPreview );
 			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
+			control.listenTo( control.model, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
-			control.model.on( 'change', control.fetchSelectedAttachment );
-			control.fetchSelectedAttachment();
+			control.model.on( 'change:attachment_id', control.updateSelectedAttachment );
+			control.model.on( 'change:url', control.updateSelectedAttachment );
+			control.updateSelectedAttachment();
 
 			/*
 			 * Sync the widget instance model attributes onto the hidden inputs that widgets currently use to store the state.
@@ -127,11 +425,11 @@ wp.mediaWidgets = ( function( $ ) {
 			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
-			control.$el.on( 'input', '.title', function() {
-				control.model.set( {
+			control.$el.on( 'input', '.title', function updateTitle() {
+				control.model.set({
 					title: $.trim( $( this ).val() )
-				} );
-			} );
+				});
+			});
 
 			/*
 			 * Copy current display settings from the widget model to serve as basis
@@ -140,189 +438,37 @@ wp.mediaWidgets = ( function( $ ) {
 			 * when a new selection is made, the settings from this will be synced
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
-			customizedDisplaySettings = new Backbone.Model( {
-				align: control.model.get( 'align' ),
-				size: control.model.get( 'size' ),
-				link: control.model.get( 'link_type' ),
-				linkUrl: control.model.get( 'link_url' )
-			} );
-
-			/**
-			 * Library which persists the customized display settings across selections.
-			 *
-			 * @todo Move this out of MediaWidgetControl instances to be directly on wp.mediaWidgets, only extending the class once for all instances.
-			 * @class
-			 */
-			CustomizedDisplaySettingsLibrary = wp.media.controller.Library.extend( {
-
-				/**
-				 * Sync changes to the current display settings back into the current customized
-				 *
-				 * @param {Backbone.Model} displaySettings Modified display settings.
-				 * @returns {void}
-				 */
-				handleDisplaySettingChange: function handleDisplaySettingChange( displaySettings ) {
-					customizedDisplaySettings.set( displaySettings.attributes );
-				},
-
-				/**
-				 * Get the display settings model.
-				 *
-				 * Model returned is updated with the current customized display settings,
-				 * and an event listener is added so that changes made to the settings
-				 * will sync back into the model storing the session's customized display
-				 * settings.
-				 *
-				 * @param {Backbone.Model} model Display settings model.
-				 * @returns {Backbone.Model} Display settings model.
-				 */
-				display: function getDisplaySettingsModel( model ) {
-					var display;
-					display = wp.media.controller.Library.prototype.display.call( this, model );
-
-					display.off( 'change', this.handleDisplaySettingChange ); // Prevent duplicated event handlers.
-					display.set( customizedDisplaySettings.attributes );
-					if ( 'custom' === customizedDisplaySettings.get( 'link_type' ) ) {
-						display.linkUrl = customizedDisplaySettings.get( 'link_url' );
-					}
-					display.on( 'change', this.handleDisplaySettingChange );
-					return display;
-				}
-			} );
-
-			/**
-			 * Custom media frame for selecting uploaded media or providing media by URL.
-			 *
-			 * @todo Move this out of MediaWidgetControl instances to be directly on wp.mediaWidgets, only extending the class once for all instances.
-			 * @class CustomMediaFrameSelect
-			 * @constructor
-			 */
-			control.CustomMediaFrameSelect = wp.media.view.MediaFrame.Post.extend( {
-
-				/**
-				 * Create the default states.
-				 *
-				 * @return {void}
-				 */
-				createStates: function createStates() {
-					this.states.add( [
-
-						// Main states.
-						new CustomizedDisplaySettingsLibrary( {
-							id:         'insert',
-							title:      control.l10n.select_media,
-							selection:  this.options.selection,
-							priority:   20,
-							toolbar:    'main-insert',
-							filterable: 'dates',
-							library:    wp.media.query( {
-								type: control.mime_type
-							} ),
-							multiple:   false,
-							editable:   true,
-
-							displaySettings: true,
-							displayUserSettings: false // We use the display settings from the current/default widget instance props.
-						} ),
-
-						new wp.media.controller.EditImage( { model: this.options.editImage } ),
-
-						// Embed states.
-						new wp.media.controller.Embed( { metadata: this.options.metadata } )
-					] );
-				},
-
-				/**
-				 * Main insert toolbar.
-				 *
-				 * Forked override of {wp.media.view.MediaFrame.Post#mainInsertToolbar()} to override text.
-				 *
-				 * @param {wp.Backbone.View} view Toolbar view.
-				 * @this {wp.media.controller.Library}
-				 * @returns {void}
-				 */
-				mainInsertToolbar: function mainInsertToolbar( view ) {
-					var controller = this; // eslint-disable-line consistent-this
-					view.set( 'insert', {
-						style:    'primary',
-						priority: 80,
-						text:     controller.options.text, // The whole reason for the fork.
-						requires: { selection: true },
-
-						/**
-						 * Handle click.
-						 *
-						 * @fires wp.media.controller.State#insert()
-						 * @returns {void}
-						 */
-						click: function() {
-							var state = controller.state(),
-								selection = state.get( 'selection' );
-
-							controller.close();
-							state.trigger( 'insert', selection ).reset();
-						}
-					});
-				},
-
-				/**
-				 * Main embed toolbar.
-				 *
-				 * Forked override of {wp.media.view.MediaFrame.Post#mainEmbedToolbar()} to override text.
-				 *
-				 * @param {wp.Backbone.View} toolbar Toolbar view.
-				 * @this {wp.media.controller.Library}
-				 * @returns {void}
-				 */
-				mainEmbedToolbar: function mainEmbedToolbar( toolbar ) {
-					toolbar.view = new wp.media.view.Toolbar.Embed({
-						controller: this,
-						text: this.options.text,
-						event: 'insert'
-					});
-				}
-			} );
+			control.displaySettings = new Backbone.Model( _.pick(
+				control.mapModelToMediaFrameProps(
+					_.extend( control.model.defaults(), control.model.toJSON() )
+				),
+				_.keys( wp.media.view.settings.defaultProps )
+			) );
 		},
 
 		/**
-		 * Fetch the selected attachment if necessary.
+		 * Update the selected attachment if necessary.
 		 *
-		 * @return {void}
+		 * @returns {void}
 		 */
-		fetchSelectedAttachment: function fetchSelectedAttachment() {
+		updateSelectedAttachment: function updateSelectedAttachment() {
 			var control = this, attachment;
 
-			// This is an embed (by URL) image if the url is set and the attachment_id is 0.
-			if ( 0 === control.model.get( 'attachment_id' ) && control.model.get( 'url' ) ) {
-
-				// Construct an attachment model with the data we have.
-				attachment = new wp.media.model.Attachment( control.model.attributes );
-
-				control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
-
-				// Skip the rest.
-				return;
-			}
-
-			// Skip if selectedAttachment is already updated.
-			if ( control.model.get( 'attachment_id' ) === control.selectedAttachment.get( 'id' ) ) {
-				return;
-			}
-
-			control.selectedAttachment.clear( { silent: true } );
-			if ( ! control.model.get( 'attachment_id' ) ) {
-				control.selectedAttachment.set( { id: 0 } );
-			} else {
-				attachment = new wp.media.model.Attachment( {
+			if ( 0 === control.model.get( 'attachment_id' ) ) {
+				control.selectedAttachment.clear();
+				control.model.set( 'error', false );
+			} else if ( control.model.get( 'attachment_id' ) !== control.selectedAttachment.get( 'id' ) ) {
+				attachment = new wp.media.model.Attachment({
 					id: control.model.get( 'attachment_id' )
-				} );
+				});
 				attachment.fetch()
-					.done( function() {
-						control.selectedAttachment.set( _.extend( {}, attachment.attributes, { error: false } ) );
-					} )
-					.fail( function() {
-						control.selectedAttachment.set( { error: 'missing_attachment' } );
-					} );
+					.done( function done() {
+						control.model.set( 'error', false );
+						control.selectedAttachment.set( attachment.toJSON() );
+					})
+					.fail( function fail() {
+						control.model.set( 'error', 'missing_attachment' );
+					});
 			}
 		},
 
@@ -345,13 +491,13 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 				input.val( value );
 				input.trigger( 'change' );
-			} );
+			});
 		},
 
 		/**
 		 * Get template.
 		 *
-		 * @return {Function} Template.
+		 * @returns {Function} Template.
 		 */
 		template: function template() {
 			var control = this;
@@ -370,7 +516,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, titleInput;
 
 			if ( ! control.templateRendered ) {
-				control.$el.html( control.template()( control.model.attributes ) );
+				control.$el.html( control.template()( control.model.toJSON() ) );
 				control.renderPreview(); // Hereafter it will re-render when control.selectedAttachment changes.
 				control.templateRendered = true;
 			}
@@ -396,10 +542,14 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Whether a media item is selected.
 		 *
-		 * @return {boolean} Whether selected.
+		 * @returns {boolean} Whether selected and no error.
 		 */
 		isSelected: function isSelected() {
 			var control = this;
+
+			if ( control.model.get( 'error' ) ) {
+				return false;
+			}
 
 			return Boolean( control.model.get( 'attachment_id' ) || control.model.get( 'url' ) );
 		},
@@ -422,20 +572,35 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame;
+			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 
-			selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
+				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
+			} else {
+				selection = null;
+			}
 
-			mediaFrame = new control.CustomMediaFrameSelect( {
+			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
+			if ( mediaFrameProps.size ) {
+				control.displaySettings.set( 'size', mediaFrameProps.size );
+			}
+
+			mediaFrame = new component.MediaFrameSelect({
+				title: control.l10n.select_media,
 				frame: 'post',
 				text: control.l10n.add_to_widget,
-				selection: selection
-			} );
+				selection: selection,
+				mimeType: control.mime_type,
+				selectedDisplaySettings: control.displaySettings,
+				showDisplaySettings: control.showDisplaySettings,
+				metadata: mediaFrameProps,
+				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
+			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'insert', function() {
-				var attachment = { error: false }, state = mediaFrame.state();
+			mediaFrame.on( 'insert', function onInsert() {
+				var attachment = {}, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				if ( 'embed' === state.get( 'id' ) ) {
@@ -445,22 +610,35 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 
 				control.selectedAttachment.set( attachment );
+				control.model.set( 'error', false );
 
 				// Update widget instance.
-				control.model.set( control.getSelectFrameProps( mediaFrame ) );
-			} );
+				control.model.set( control.getModelPropsFromMediaFrame( mediaFrame ) );
+			});
 
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function rejectedSync() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
+			mediaFrame.on( 'close', function onClose() {
+				wp.media.model.Attachment.prototype.sync = defaultSync;
+			});
+
+			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
 			// Clear the selected attachment when it is deleted in the media select frame.
-			selection.on( 'destroy', function( attachment ) {
-				if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
-					control.model.set( {
-						attachment_id: 0,
-						url: ''
-					} );
-				}
-			} );
+			if ( selection ) {
+				selection.on( 'destroy', function onDestroy( attachment ) {
+					if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
+						control.model.set({
+							attachment_id: 0,
+							url: ''
+						});
+					}
+				});
+			}
 
 			/*
 			 * Make sure focus is set inside of modal so that hitting Esc will close
@@ -472,23 +650,101 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Get the instance props from the media selection frame.
 		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @return {Object} Props.
+		 * @param {wp.media.view.MediaFrame.Select} mediaFrame - Select frame.
+		 * @returns {Object} Props.
 		 */
-		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var attachment, props;
+		getModelPropsFromMediaFrame: function getModelPropsFromMediaFrame( mediaFrame ) {
+			var control = this, state, mediaFrameProps;
 
-			attachment = mediaFrame.state().get( 'selection' ).first().toJSON();
-			if ( _.isEmpty( attachment ) ) {
-				return {};
+			state = mediaFrame.state();
+			if ( 'insert' === state.get( 'id' ) ) {
+				mediaFrameProps = state.get( 'selection' ).first().toJSON();
+				if ( control.showDisplaySettings ) {
+					_.extend(
+						mediaFrameProps,
+						mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
+					);
+				}
+				if ( mediaFrameProps.sizes && mediaFrameProps.size && mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
+					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
+				}
+			} else if ( 'embed' === state.get( 'id' ) ) {
+				mediaFrameProps = _.extend(
+					state.props.toJSON(),
+					{ attachment_id: 0 }, // Because some media frames use `attachment_id` not `id`.
+					control.model.getEmbedResetProps()
+				);
+			}  else {
+				throw new Error( 'Unexpected state: ' + state.get( 'id' ) );
 			}
 
-			props = {
-				attachment_id: attachment.id,
-				url: attachment.url
-			};
+			if ( mediaFrameProps.id ) {
+				mediaFrameProps.attachment_id = mediaFrameProps.id;
+			}
 
-			return props;
+			return control.mapMediaToModelProps( mediaFrameProps );
+		},
+
+		/**
+		 * Map media frame props to model props.
+		 *
+		 * @param {Object} mediaFrameProps - Media frame props.
+		 * @returns {Object} Model props.
+		 */
+		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
+			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {};
+			_.each( control.model.schema, function( fieldSchema, modelProp ) {
+
+				// Ignore widget title attribute.
+				if ( 'title' === modelProp ) {
+					return;
+				}
+				mediaFramePropToModelPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
+			});
+
+			_.each( mediaFrameProps, function( value, mediaProp ) {
+				var propName = mediaFramePropToModelPropMap[ mediaProp ] || mediaProp;
+				if ( control.model.schema[ propName ] ) {
+					modelProps[ propName ] = value;
+				}
+			});
+
+			if ( 'custom' === mediaFrameProps.size ) {
+				modelProps.width = mediaFrameProps.customWidth;
+				modelProps.height = mediaFrameProps.customHeight;
+			}
+
+			// Because some media frames use `id` instead of `attachment_id`.
+			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
+				modelProps.attachment_id = mediaFrameProps.id;
+			}
+
+			return modelProps;
+		},
+
+		/**
+		 * Map model props to media frame props.
+		 *
+		 * @param {Object} modelProps - Model props.
+		 * @returns {Object} Media frame props.
+		 */
+		mapModelToMediaFrameProps: function mapModelToMediaFrameProps( modelProps ) {
+			var control = this, mediaFrameProps = {};
+
+			_.each( modelProps, function( value, modelProp ) {
+				var fieldSchema = control.model.schema[ modelProp ] || {};
+				mediaFrameProps[ fieldSchema.media_prop || modelProp ] = value;
+			});
+
+			// Some media frames use attachment_id.
+			mediaFrameProps.attachment_id = mediaFrameProps.id;
+
+			if ( 'custom' === mediaFrameProps.size ) {
+				mediaFrameProps.customWidth = control.model.get( 'width' );
+				mediaFrameProps.customHeight = control.model.get( 'height' );
+			}
+
+			return mediaFrameProps;
 		},
 
 		/**
@@ -500,7 +756,7 @@ wp.mediaWidgets = ( function( $ ) {
 		editMedia: function editMedia() {
 			throw new Error( 'editMedia not implemented' );
 		}
-	} );
+	});
 
 	/**
 	 * Media widget model.
@@ -508,15 +764,22 @@ wp.mediaWidgets = ( function( $ ) {
 	 * @class MediaWidgetModel
 	 * @constructor
 	 */
-	component.MediaWidgetModel = Backbone.Model.extend( {
+	component.MediaWidgetModel = Backbone.Model.extend({
+
+		/**
+		 * Id attribute.
+		 *
+		 * @type {string}
+		 */
+		idAttribute: 'widget_id',
 
 		/**
 		 * Instance schema.
 		 *
 		 * This adheres to JSON Schema and subclasses should have their schema
-		 * exported from PHP to JS such as is done in WP_Widget_Image::enqueue_admin_scripts().
+		 * exported from PHP to JS such as is done in WP_Widget_Media_Image::enqueue_admin_scripts().
 		 *
-		 * @param {Object.<string, Object>}
+		 * @type {Object.<string, Object>}
 		 */
 		schema: {
 			title: {
@@ -542,7 +805,7 @@ wp.mediaWidgets = ( function( $ ) {
 			var defaults = {};
 			_.each( this.schema, function( fieldSchema, field ) {
 				defaults[ field ] = fieldSchema['default'];
-			} );
+			});
 			return defaults;
 		},
 
@@ -553,10 +816,10 @@ wp.mediaWidgets = ( function( $ ) {
 		 * cast the attribute values from the hidden inputs' string values into
 		 * the appropriate data types (integers or booleans).
 		 *
-		 * @param {string|Object} key       Attribute name or attribute pairs.
-		 * @param {mixed|Object}  [val]     Attribute value or options object.
-		 * @param {Object}        [options] Options when attribute name and value are passed separately.
-		 * @return {wp.mediaWidgets.MediaWidgetModel} This model.
+		 * @param {string|Object} key - Attribute name or attribute pairs.
+		 * @param {mixed|Object}  [val] - Attribute value or options object.
+		 * @param {Object}        [options] - Options when attribute name and value are passed separately.
+		 * @returns {wp.mediaWidgets.MediaWidgetModel} This model.
 		 */
 		set: function set( key, val, options ) {
 			var model = this, attrs, opts, castedAttrs; // eslint-disable-line consistent-this
@@ -573,7 +836,7 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			castedAttrs = {};
-			_.each( attrs, function( value, name ) { // eslint-disable-line complexity
+			_.each( attrs, function( value, name ) {
 				var type;
 				if ( ! model.schema[ name ] ) {
 					castedAttrs[ name ] = value;
@@ -587,20 +850,31 @@ wp.mediaWidgets = ( function( $ ) {
 				} else {
 					castedAttrs[ name ] = value;
 				}
-			} );
+			});
 
 			return Backbone.Model.prototype.set.call( this, castedAttrs, opts );
+		},
+
+		/**
+		 * Get props which are merged on top of the model when an embed is chosen (as opposed to an attachment).
+		 *
+		 * @returns {Object} Reset/override props.
+		 */
+		getEmbedResetProps: function getEmbedResetProps() {
+			return {
+				id: 0
+			};
 		}
-	} );
+	});
 
 	/**
 	 * Collection of all widget model instances.
 	 *
 	 * @type {Backbone.Collection}
 	 */
-	component.modelCollection = new ( Backbone.Collection.extend( {
+	component.modelCollection = new ( Backbone.Collection.extend({
 		model: component.MediaWidgetModel
-	} ) )();
+	}) )();
 
 	/**
 	 * Mapping of widget ID to instances of MediaWidgetControl subclasses.
@@ -658,15 +932,15 @@ wp.mediaWidgets = ( function( $ ) {
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var input = $( this );
 			modelAttributes[ input.data( 'property' ) ] = input.val();
-		} );
-		modelAttributes.id = widgetId;
+		});
+		modelAttributes.widget_id = widgetId;
 
 		widgetModel = new ModelConstructor( modelAttributes );
 
-		widgetControl = new ControlConstructor( {
+		widgetControl = new ControlConstructor({
 			el: controlContainer,
 			model: widgetModel
-		} );
+		});
 		widgetControl.render();
 
 		/*
@@ -674,7 +948,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * when a widget gets removed/deleted because there is no widget-removed event.
 		 */
 		component.modelCollection.add( [ widgetModel ] );
-		component.widgetControls[ widgetModel.get( 'id' ) ] = widgetControl;
+		component.widgetControls[ widgetModel.get( 'widget_id' ) ] = widgetControl;
 	};
 
 	/**
@@ -703,8 +977,7 @@ wp.mediaWidgets = ( function( $ ) {
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var property = $( this ).data( 'property' );
 			attributes[ property ] = $( this ).val();
-		} );
-		delete attributes.id; // Read only.
+		});
 
 		// Suspend syncing model back to inputs when syncing from inputs to model, preventing infinite loop.
 		widgetControl.stopListening( widgetControl.model, 'change', widgetControl.syncModelToInputs );
@@ -745,9 +1018,9 @@ wp.mediaWidgets = ( function( $ ) {
 			widgetContainers.one( 'click.toggle-widget-expanded', function toggleWidgetExpanded() {
 				var widgetContainer = $( this );
 				component.handleWidgetAdded( new jQuery.Event( 'widget-added' ), widgetContainer );
-			} );
+			});
 		});
 	};
 
 	return component;
-} )( jQuery );
+})( jQuery );

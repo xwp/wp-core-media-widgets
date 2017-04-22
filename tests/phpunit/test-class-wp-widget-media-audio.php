@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests covering WP_Widget_Audio functionality.
+ * Unit tests covering WP_Widget_Media_Audio functionality.
  *
  * @package    WordPress
  * @subpackage widgets
@@ -11,24 +11,16 @@
  *
  * @group widgets
  */
-class Test_WP_Widget_Audio extends WP_UnitTestCase {
+class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Audio::get_instance_schema
+	 * @covers WP_Widget_Media_Audio::get_instance_schema
 	 */
 	function test_get_instance_schema() {
-		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
-			return;
-		}
-
-		$wp_widget_audio = new ReflectionClass( 'WP_Widget_Audio' );
-		$get_instance_schema = $wp_widget_audio->getMethod( 'get_instance_schema' );
-		$get_instance_schema->setAccessible( true );
-
-		$schema = $get_instance_schema->invoke( new WP_Widget_Audio() );
+		$wp_widget_audio = new WP_Widget_Media_Audio();
+		$schema = $wp_widget_audio->get_instance_schema();
 
 		$this->assertEqualSets( array(
 			'attachment_id',
@@ -40,10 +32,10 @@ class Test_WP_Widget_Audio extends WP_UnitTestCase {
 	/**
 	 * Test constructor.
 	 *
-	 * @covers WP_Widget_Audio::__construct()
+	 * @covers WP_Widget_Media_Audio::__construct()
 	 */
 	function test_constructor() {
-		$widget = new WP_Widget_Audio();
+		$widget = new WP_Widget_Media_Audio();
 
 		$this->assertArrayHasKey( 'mime_type', $widget->widget_options );
 		$this->assertArrayHasKey( 'customize_selective_refresh', $widget->widget_options );
@@ -65,13 +57,13 @@ class Test_WP_Widget_Audio extends WP_UnitTestCase {
 	/**
 	 * Test get_instance_schema method.
 	 *
-	 * @covers WP_Widget_Audio::update
+	 * @covers WP_Widget_Media_Audio::update
 	 */
 	function test_update() {
 		$this->markTestIncomplete(
 			'This test has not been implemented yet.'
 		);
-		$widget = new WP_Widget_Audio();
+		$widget = new WP_Widget_Media_Audio();
 		$instance = array();
 
 		// Should return valid attachment ID.
@@ -304,13 +296,13 @@ class Test_WP_Widget_Audio extends WP_UnitTestCase {
 	/**
 	 * Test render_media method.
 	 *
-	 * @covers WP_Widget_Audio::render_media
+	 * @covers WP_Widget_Media_Audio::render_media
 	 */
 	function test_render_media() {
 		$this->markTestIncomplete(
 			'This test has not been implemented yet.'
 		);
-		$widget = new WP_Widget_Audio();
+		$widget = new WP_Widget_Media_Audio();
 		$attachment_id = self::factory()->attachment->create_object( array(
 			'file' => DIR_TESTDATA . '/audios/canola.jpg',
 			'post_parent' => 0,
@@ -439,10 +431,10 @@ class Test_WP_Widget_Audio extends WP_UnitTestCase {
 	/**
 	 * Test enqueue_admin_scripts method.
 	 *
-	 * @covers WP_Widget_Audio::enqueue_admin_scripts
+	 * @covers WP_Widget_Media_Audio::enqueue_admin_scripts
 	 */
 	function test_enqueue_admin_scripts() {
-		$widget = new WP_Widget_Audio();
+		$widget = new WP_Widget_Media_Audio();
 		$widget->enqueue_admin_scripts();
 
 		$this->assertTrue( wp_script_is( 'media-audio-widget' ) );
@@ -451,10 +443,10 @@ class Test_WP_Widget_Audio extends WP_UnitTestCase {
 	/**
 	 * Test render_control_template_scripts method.
 	 *
-	 * @covers WP_Widget_Audio::render_control_template_scripts
+	 * @covers WP_Widget_Media_Audio::render_control_template_scripts
 	 */
 	function test_render_control_template_scripts() {
-		$widget = new WP_Widget_Audio();
+		$widget = new WP_Widget_Media_Audio();
 
 		ob_start();
 		$widget->render_control_template_scripts();

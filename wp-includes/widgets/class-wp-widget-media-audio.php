@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget API: WP_Widget_Audio class
+ * Widget API: WP_Widget_Media_Audio class
  *
  * @package WordPress
  * @subpackage Widgets
@@ -12,10 +12,9 @@
  *
  * @since 4.8.0
  *
- * @codeCoverageIgnore
  * @see WP_Widget
  */
-class WP_Widget_Audio extends WP_Widget_Media {
+class WP_Widget_Media_Audio extends WP_Widget_Media {
 
 	/**
 	 * Constructor.
@@ -46,46 +45,21 @@ class WP_Widget_Audio extends WP_Widget_Media {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
+	 * @see WP_REST_Controller::get_additional_fields()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array_merge(
 			parent::get_instance_schema(),
 			array(
-				'caption' => array(
-					'type' => 'string',
-					'default' => '',
-					'sanitize_callback' => 'wp_kses_post',
-				),
-				'link_type' => array(  // Via 'link' property.
-					'type' => 'string',
-					'enum' => array( 'none', 'file', 'post', 'custom' ),
-					'default' => 'none',
-				),
-				'link_url' => array( // Via 'linkUrl' property.
-					'type' => 'string',
-					 'default' => '',
-					'format' => 'uri',
-				),
-				'link_classes' => array( // Via 'linkClassName' property.
-					'type' => 'string',
-					'default' => '',
-					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
-				),
-				'link_rel' => array( // Via 'linkRel' property.
-					'type' => 'string',
-					'default' => '',
-					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
-				),
-				'link_target_blank' => array( // Via 'linkTargetBlank' property.
-					'type' => 'boolean',
-					'default' => false,
-				),
+				/* TODO */
 			)
 		);
 	}

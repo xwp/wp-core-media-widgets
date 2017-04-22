@@ -81,6 +81,9 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		if ( $this->is_preview() ) {
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_preview_scripts' ) );
+		}
 
 		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
@@ -89,20 +92,24 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Get instance schema.
+	 * Get schema for properties of a widget instance (item).
 	 *
-	 * This is protected because it may become part of WP_Widget eventually.
+	 * @since  4.8.0
+	 * @access public
 	 *
+	 * @see WP_REST_Controller::get_item_schema()
+	 * @see WP_REST_Controller::get_additional_fields()
 	 * @link https://core.trac.wordpress.org/ticket/35574
-	 * @return array
+	 * @return array Schema for properties.
 	 */
-	protected function get_instance_schema() {
+	public function get_instance_schema() {
 		return array(
 			'attachment_id' => array(
 				'type' => 'integer',
 				'default' => 0,
 				'minimum' => 0,
 				'description' => __( 'Attachment post ID' ),
+				'media_prop' => 'id',
 			),
 			'url' => array(
 				'type' => 'string',
@@ -320,7 +327,20 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Loads the required media files for the media manager and scripts for .
+	 * Enqueue preview scripts.
+	 *
+	 * These scripts normally are enqueued just-in-time when a widget is rendered.
+	 * In the customizer, however, widgets can be dynamically added and rendered via
+	 * selective refresh, and so it is important to unconditionally enqueue them in
+	 * case a widget does get added.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function enqueue_preview_scripts() {}
+
+	/**
+	 * Loads the required scripts and styles for the widget control.
 	 *
 	 * @since 4.8.0
 	 * @access public
@@ -346,14 +366,11 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
 			</p>
 			<div class="media-widget-preview">
-				<div class="selected rendered">
-					<!-- Media rendering goes here. -->
-				</div>
-				<div class="attachment-media-view not-selected">
+				<div class="attachment-media-view">
 					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
 				</div>
 			</div>
-			<p class="media-widget-buttons">
+			<div class="media-widget-buttons">
 				<button type="button" class="button edit-media selected">
 					<?php echo esc_html( $this->l10n['edit_media'] ); ?>
 				</button>
@@ -363,7 +380,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<button type="button" class="button select-media not-selected">
 					<?php echo esc_html( $this->l10n['select_media'] ); ?>
 				</button>
-			</p>
+			</div>
 		</script>
 		<?php
 	}
