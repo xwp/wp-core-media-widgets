@@ -127,6 +127,30 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
+	 * Determine if the supplied attachment is for a valid attachment post with the specified MIME type.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param int|WP_Post $attachment Attachment post ID or object.
+	 * @param string      $mime_type  MIME type.
+	 * @return bool Is matching MIME type.
+	 */
+	public function is_attachment_with_mime_type( $attachment, $mime_type ) {
+		if ( empty( $attachment ) ) {
+			return false;
+		}
+		$attachment = get_post( $attachment );
+		if ( ! $attachment ) {
+			return false;
+		}
+		if ( 'attachment' !== $attachment->post_type ) {
+			return false;
+		}
+		return strtok( $attachment->post_mime_type, '/' ) === $mime_type;
+	}
+
+	/**
 	 * Sanitize a token list string, such as used in HTML rel and class attributes.
 	 *
 	 * @since 4.8.0
