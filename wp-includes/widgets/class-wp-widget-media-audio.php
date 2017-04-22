@@ -24,12 +24,12 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 	 */
 	public function __construct() {
 		parent::__construct( 'media_audio', __( 'Audio' ), array(
-			'description' => __( 'Displays an audio file.' ),
+			'description' => __( 'Displays an audio player.' ),
 			'mime_type'   => 'audio',
 		) );
 
 		$this->l10n = array_merge( $this->l10n, array(
-			'no_media_selected' => __( 'No audio file selected' ),
+			'no_media_selected' => __( 'No audio selected' ),
 			'select_media' => _x( 'Select File', 'label for button in the audio widget; should not be longer than ~13 characters long' ),
 			'change_media' => _x( 'Change Audio', 'label for button in the audio widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Audio', 'label for button in the audio widget; should not be longer than ~13 characters long' ),
