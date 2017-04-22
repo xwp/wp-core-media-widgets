@@ -114,6 +114,7 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 			$src = $instance['url'];
 		}
 
+		// @todo Handle case where oEmbed URL (e.g. SoundCloud is used), as wp_audio_shortcode() cannot be used.
 		if ( empty( $src ) ) {
 			return;
 		}
@@ -153,6 +154,9 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 	 */
 	public function enqueue_admin_scripts() {
 		parent::enqueue_admin_scripts();
+
+		wp_enqueue_style( 'wp-mediaelement' );
+		wp_enqueue_script( 'wp-mediaelement' );
 
 		$handle = 'media-audio-widget';
 		wp_enqueue_script( $handle );

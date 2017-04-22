@@ -25,102 +25,50 @@
 	AudioWidgetControl = component.MediaWidgetControl.extend( {
 
 		/**
+		 * Show display settings.
+		 *
+		 * @type {boolean}
+		 */
+		showDisplaySettings: false,
+
+		/**
+		 * Map model props to media frame props.
+		 *
+		 * @param {Object} modelProps - Model props.
+		 * @returns {Object} Media frame props.
+		 */
+		mapModelToMediaFrameProps: function mapModelToMediaFrameProps( modelProps ) {
+			var control = this, mediaFrameProps;
+			mediaFrameProps = component.MediaWidgetControl.prototype.mapModelToMediaFrameProps.call( control, modelProps );
+			mediaFrameProps.link = 'embed';
+			return mediaFrameProps;
+		},
+
+		/**
 		 * Render preview.
 		 *
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, model = control.selectedAttachment.attributes, previewContainer, previewTemplate;
-			model = _.extend( model, {
-				src: model.url,
-				type: model.url.split( '.' ).pop()
-			} );
-			previewContainer = control.$el.find( '.media-widget-preview .rendered' );
+			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl;
+			attachmentId = control.model.get( 'attachment_id' );
+			attachmentUrl = control.model.get( 'url' );
+
+			if ( ! attachmentId && ! attachmentUrl ) {
+				return;
+			}
+
+			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-audio-preview' );
-			previewContainer.html( previewTemplate( { model: model } ) );
-		},
 
-		/**
-		 * Get the instance props from the media selection frame.
-		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @returns {object} Props
-		 */
-		getSelectFrameProps: function getSelectFrameProps( mediaFrame ) {
-			var control = this,
-				state = mediaFrame.state(),
-				props = {};
-
-			if ( 'embed' === state.get( 'id' ) ) {
-				props = control._getEmbedProps( mediaFrame, state.props.toJSON() );
-			} else {
-				props = control._getAttachmentProps( mediaFrame, state.get( 'selection' ).first().toJSON() );
-			}
-
-			return props;
-		},
-
-		/**
-		 * Get the instance props from the media selection frame.
-		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @param {object} attachment Attachment object.
-		 * @returns {object} Props
-		 */
-		_getAttachmentProps: function _getAttachmentProps( mediaFrame, attachment ) {
-			var props = {}, displaySettings;
-
-			displaySettings = mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON();
-
-			if ( ! _.isEmpty( attachment ) ) {
-				_.extend( props, {
-					attachment_id: attachment.id,
-					autoplay: displaySettings.autoplay,
-					canEmbed: displaySettings.canEmbed,
-					caption: attachment.caption,
-					description: attachment.description,
-					link: displaySettings.link,
-					linkUrl: displaySettings.linkUrl,
-					loop: displaySettings.loop,
-					src: attachment.url,
-					type: attachment.subtype
-				} );
-			}
-
-			return props;
-		},
-
-		/**
-		 * Get the instance props from the media selection frame.
-		 *
-		 * @param {wp.media.view.MediaFrame.Select} mediaFrame Select frame.
-		 * @param {object} attachment Attachment object.
-		 * @returns {object} Props
-		 */
-		_getEmbedProps: function _getEmbedProps( mediaFrame, attachment ) {
-			var props = {};
-
-			if ( ! _.isEmpty( attachment ) ) {
-				_.extend( props, {
-					attachment_id: 0,
-					align: attachment.align,
-					alt: attachment.alt,
-					caption: attachment.caption,
-					image_classes: '',
-					image_title: '',
-					link_classes: '',
-					link_rel: '',
-					link_url: attachment.linkUrl,
-					link_target_blank: false,
-					link_type: attachment.link,
-					size: 'full',
-					url: attachment.url,
-					width: attachment.width,
-					height: attachment.height
-				} );
-			}
-
-			return props;
+			previewContainer.html( previewTemplate( {
+				model: {
+					attachment_id: control.model.get( 'attachment_id' ),
+					src: attachmentUrl
+				},
+				error: control.model.get( 'error' )
+			} ) );
+			wp.mediaelement.initialize();
 		},
 
 		/**
@@ -129,60 +77,27 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback, mediaFrameContentView;
+			var control = this, mediaFrame, metadata, updateCallback;
 
-			metadata = {
-				attachment_id: control.model.get( 'attachment_id' ),
-				alt: control.model.get( 'alt' ),
-				align: control.model.get( 'align' ),
-				caption: control.model.get( 'caption' ),
-				customWidth: control.model.get( 'width' ),
-				customHeight: control.model.get( 'height' ),
-				extraClasses: control.model.get( 'audio_classes' ),
-				link: control.model.get( 'link_type' ),
-				linkClassName: control.model.get( 'link_classes' ),
-				linkRel: control.model.get( 'link_rel' ),
-				linkTargetBlank: control.model.get( 'link_target_blank' ),
-				linkUrl: control.model.get( 'link_url' ),
-				size: control.model.get( 'size' ),
-				title: control.model.get( 'audio_title' ),
-				url: control.model.get( 'url' )
-			};
+			metadata = control.mapModelToMediaFrameProps( control.model.toJSON() );
 
 			// Set up the media frame.
 			mediaFrame = wp.media({
-				frame: 'audio',
-				state: 'audio-details',
+				frame: 'video',
+				state: 'video-details',
 				metadata: metadata
 			} );
 
-			updateCallback = function( audioData ) {
-				var attachment;
+			updateCallback = function( mediaFrameProps ) {
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				attachment = mediaFrame.state().attributes.audio.toJSON();
-				attachment.error = false;
-				control.selectedAttachment.set( attachment );
+				control.selectedAttachment.set( mediaFrameProps );
 
-				control.model.set( {
-					attachment_id: audioData.attachment_id,
-					alt: audioData.alt,
-					align: audioData.align,
-					caption: audioData.caption,
-					audio_classes: audioData.extraClasses,
-					audio_title: audioData.title,
-					link_classes: audioData.linkClassName,
-					link_rel: audioData.linkRel,
-					link_target_blank: audioData.linkTargetBlank,
-					link_type: audioData.link,
-					link_url: audioData.linkUrl,
-					size: audioData.size,
-					url: audioData.url,
-					width: 'custom' === audioData.size ? audioData.customWidth : audioData.width,
-					height: 'custom' === audioData.size ? audioData.customHeight : audioData.height
-				} );
-
-				wp.mediaelement.initialize();
+				control.model.set( _.extend(
+					control.model.defaults(),
+					control.mapMediaToModelProps( mediaFrameProps ),
+					{ error: false }
+				) );
 			};
 
 			mediaFrame.state( 'audio-details' ).on( 'update', updateCallback );
@@ -192,18 +107,6 @@
 			});
 
 			mediaFrame.open();
-
-			/*
-			 * Make sure focus is set inside of modal so that hitting Esc will close
-			 * the modal and not inadvertently cause the widget to collapse in the
-			 * customizer.
-			 */
-			mediaFrameContentView = mediaFrame.views.get( '.media-frame-content' )[0];
-			mediaFrameContentView.model.dfd.done( function() {
-				_.defer( function() { // Next tick.
-					mediaFrameContentView.$el.find( '[data-setting="caption"]:first' ).focus();
-				} );
-			} );
 		}
 	} );
 

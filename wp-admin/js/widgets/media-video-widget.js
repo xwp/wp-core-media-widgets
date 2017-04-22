@@ -100,8 +100,6 @@
 				) );
 			};
 
-			// TODO: additional states. which do we track?
-			// add-video-source select-poster-image add-track
 			mediaFrame.state( 'video-details' ).on( 'update', updateCallback );
 			mediaFrame.state( 'replace-video' ).on( 'replace', updateCallback );
 			mediaFrame.on( 'close', function() {
