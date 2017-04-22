@@ -70,9 +70,6 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media_Audio::update
 	 */
 	function test_update() {
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
 		$widget = new WP_Widget_Media_Audio();
 		$instance = array();
 
@@ -91,7 +88,7 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 
 		// Should return valid attachment url.
 		$expected = array(
-			'url' => 'https://example.org',
+			'url' => 'https://chickenandribs.org',
 		);
 		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
@@ -103,202 +100,61 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 		$this->assertNotSame( $result, $instance );
 		$this->assertStringStartsWith( 'http://', $result['url'] );
 
+		// Should return autoplay setting.
+		$expected = array(
+			'autoplay' => false,
+		);
+		$result = $widget->update( $expected, $instance );
+		$this->assertSame( $result, $expected );
+
+		// Should filter invalid autoplay setting.
+		$result = $widget->update( array(
+			'autoplay' => 'not-boolean',
+		), $instance );
+		$this->assertSame( $result, $instance );
+
+		// Should return loop setting.
+		$expected = array(
+			'loop' => true,
+		);
+		$result = $widget->update( $expected, $instance );
+		$this->assertSame( $result, $expected );
+
+		// Should filter invalid loop setting.
+		$result = $widget->update( array(
+			'loop' => 'not-boolean',
+		), $instance );
+		$this->assertSame( $result, $instance );
+
 		// Should return valid attachment title.
 		$expected = array(
-			'title' => 'What a title',
+			'title' => 'An audio sample of parrots',
 		);
 		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
 		// Should filter invalid attachment title.
 		$result = $widget->update( array(
-			'title' => '<h1>W00t!</h1>',
+			'title' => '<h1>Cute Baby Goats</h1>',
 		), $instance );
 		$this->assertNotSame( $result, $instance );
 
-		// Should return valid audio size.
+		// Should return valid preload setting.
 		$expected = array(
-			'size' => 'thumbnail',
+			'preload' => 'none',
 		);
 		$result = $widget->update( $expected, $instance );
 		$this->assertSame( $result, $expected );
 
-		// Should filter invalid audio size.
+		// Should filter invalid preload setting.
 		$result = $widget->update( array(
-			'size' => 'big league',
+			'preload' => 'nope',
 		), $instance );
 		$this->assertSame( $result, $instance );
-
-		// Should return valid audio width.
-		$expected = array(
-			'width' => 300,
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid audio width.
-		$result = $widget->update( array(
-			'width' => 'wide',
-		), $instance );
-		$this->assertSame( $result, $instance );
-
-		// Should return valid audio height.
-		$expected = array(
-			'height' => 200,
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid audio height.
-		$result = $widget->update( array(
-			'height' => 'high',
-		), $instance );
-		$this->assertSame( $result, $instance );
-
-		// Should return valid audio alignment.
-		$expected = array(
-			'align' => 'right',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid audio alignment.
-		$result = $widget->update( array(
-			'align' => 'next to caption',
-		), $instance );
-		$this->assertSame( $result, $instance );
-
-		// Should return valid audio caption.
-		$expected = array(
-			'caption' => 'A caption with <a href="#">link</a>',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid audio caption.
-		$result = $widget->update( array(
-			'caption' => '"><i onload="alert(\'hello\')" />',
-		), $instance );
-		$this->assertSame( $result, array(
-			'caption' => '"&gt;<i />',
-		) );
-
-		// Should return valid alt text.
-		$expected = array(
-			'alt' => 'A water tower',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid alt text.
-		$result = $widget->update( array(
-			'alt' => '"><i onload="alert(\'hello\')" />',
-		), $instance );
-		$this->assertSame( $result, array(
-			'alt' => '">',
-		) );
-
-		// Should return valid link type.
-		$expected = array(
-			'link_type' => 'file',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid link type.
-		$result = $widget->update( array(
-			'link_type' => 'interesting',
-		), $instance );
-		$this->assertSame( $result, $instance );
-
-		// Should return valid link url.
-		$expected = array(
-			'link_url' => 'https://example.org',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid link url.
-		$result = $widget->update( array(
-			'link_url' => 'not_a_url',
-		), $instance );
-		$this->assertNotSame( $result, $instance );
-		$this->assertStringStartsWith( 'http://', $result['link_url'] );
-
-		// Should return valid audio classes.
-		$expected = array(
-			'audio_classes' => 'A water tower',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid audio classes.
-		$result = $widget->update( array(
-			'audio_classes' => '"><i onload="alert(\'hello\')" />',
-		), $instance );
-		$this->assertSame( $result, array(
-			'audio_classes' => 'i onloadalerthello',
-		) );
-
-		// Should return valid link classes.
-		$expected = array(
-			'link_classes' => 'A water tower',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid link classes.
-		$result = $widget->update( array(
-			'link_classes' => '"><i onload="alert(\'hello\')" />',
-		), $instance );
-		$this->assertSame( $result, array(
-			'link_classes' => 'i onloadalerthello',
-		) );
-
-		// Should return valid rel text.
-		$expected = array(
-			'link_rel' => 'previous',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid rel text.
-		$result = $widget->update( array(
-			'link_rel' => '"><i onload="alert(\'hello\')" />',
-		), $instance );
-		$this->assertSame( $result, array(
-			'link_rel' => 'i onloadalerthello',
-		) );
-
-		// Should return valid link target.
-		$expected = array(
-			'link_target_blank' => false,
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid  link target.
-		$result = $widget->update( array(
-			'link_target_blank' => 'top',
-		), $instance );
-		$this->assertSame( $result, $instance );
-
-		// Should return valid audio title.
-		$expected = array(
-			'audio_title' => 'What a title',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid audio title.
-		$result = $widget->update( array(
-			'audio_title' => '<h1>W00t!</h1>',
-		), $instance );
-		$this->assertNotSame( $result, $instance );
 
 		// Should filter invalid key.
 		$result = $widget->update( array(
-			'imaginary_key' => 'value',
+			'h4x' => 'value',
 		), $instance );
 		$this->assertSame( $result, $instance );
 	}
@@ -309,17 +165,15 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 	 * @covers WP_Widget_Media_Audio::render_media
 	 */
 	function test_render_media() {
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+		$test_audio_file = __FILE__ . '../data/small-audio.mp3';
 		$widget = new WP_Widget_Media_Audio();
 		$attachment_id = self::factory()->attachment->create_object( array(
-			'file' => DIR_TESTDATA . '/audios/canola.jpg',
+			'file' => $test_audio_file,
 			'post_parent' => 0,
-			'post_mime_type' => 'audio/jpeg',
-			'post_title' => 'Canola',
+			'post_mime_type' => 'audio/mp3',
+			'post_title' => 'Test Audio',
 		) );
-		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, DIR_TESTDATA . '/audios/canola.jpg' ) );
+		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $test_audio_file ) );
 
 		// Should be empty when there is no attachment_id.
 		ob_start();
@@ -330,112 +184,57 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 		// Should be empty when there is an invalid attachment_id.
 		ob_start();
 		$widget->render_media( array(
-			'attachment_id' => 666,
+			'attachment_id' => 777,
 		) );
 		$output = ob_get_clean();
 		$this->assertEmpty( $output );
 
+		// Tests with audio from library.
 		ob_start();
 		$widget->render_media( array(
 			'attachment_id' => $attachment_id,
 		) );
 		$output = ob_get_clean();
 
-		// Default title to audio title.
-		$this->assertContains( 'title="Canola"', $output );
-		// Default audio classes.
-		$this->assertContains( 'class="audio wp-audio-' . $attachment_id, $output );
-		$this->assertContains( 'style="max-width: 100%; height: auto;"', $output );
-		$this->assertContains( 'alt=""', $output );
+		// Check default outputs.
+		$this->assertContains( 'preload="none"', $output );
+		$this->assertContains( 'class="wp-audio-shortcode"', $output );
+		$this->assertContains( 'small-audio.mp3', $output );
 
 		ob_start();
 		$widget->render_media( array(
 			'attachment_id' => $attachment_id,
-			'audio_title' => 'Custom Title',
-			'audio_classes' => 'custom-class',
-			'alt' => 'A flower',
-			'size' => 'custom',
-			'width' => 100,
-			'height' => 100,
+			'title' => 'Funny',
+			'preload' => 'auto',
+			'loop' => true,
+			'autoplay' => true,
 		) );
 		$output = ob_get_clean();
 
-		// Custom audio title.
-		$this->assertContains( 'title="Custom Title"', $output );
-		// Custom audio class.
-		$this->assertContains( 'class="audio wp-audio-' . $attachment_id . ' custom-class', $output );
-		$this->assertContains( 'alt="A flower"', $output );
-		$this->assertContains( 'width="100"', $output );
-		$this->assertContains( 'height="100"', $output );
+		// Custom attributes.
+		$this->assertContains( 'preload="auto"', $output );
+		$this->assertContains( 'loop="1"', $output );
+		$this->assertContains( 'autoplay="1"', $output );
 
-		// Link settings.
+		$this->markTestIncomplete( 'Need to finish the external video handling.' );
+
+		// Externally hosted video.
 		ob_start();
+		$content = '<track srclang="en" label="English" kind="subtitles" src="http://example.com/wp-content/uploads/2017/04/subtitles-en.vtt">';
 		$widget->render_media( array(
-			'attachment_id' => $attachment_id,
-			'link_type' => 'file',
+			'attachment_id' => null,
+			'autoplay' => true,
+			'loop' => false,
+			'url' => 'https://soundcloud.com/westonruter/mr-rogers-is-batman',
+			'content' => $content,
 		) );
 		$output = ob_get_clean();
 
-		$link = '<a href="' . wp_get_attachment_url( $attachment_id ) . '"';
-		$this->assertContains( $link, $output );
-		$link .= ' class=""';
-		$this->assertContains( $link, $output );
-		$link .= ' rel=""';
-		$this->assertContains( $link, $output );
-		$link .= ' target=""';
-		$this->assertContains( $link, $output );
-
-		ob_start();
-		$widget->render_media( array(
-			'attachment_id' => $attachment_id,
-			'link_type' => 'post',
-			'link_classes' => 'custom-link-class',
-			'link_rel' => 'attachment',
-			'link_target_blank' => false,
-		) );
-		$output = ob_get_clean();
-
-		$this->assertContains( '<a href="' . get_attachment_link( $attachment_id ) . '"', $output );
-		$this->assertContains( 'class="custom-link-class"', $output );
-		$this->assertContains( 'rel="attachment"', $output );
-		$this->assertContains( 'target=""', $output );
-
-		ob_start();
-		$widget->render_media( array(
-			'attachment_id' => $attachment_id,
-			'link_type' => 'custom',
-			'link_url' => 'https://example.org',
-			'link_target_blank' => true,
-		) );
-		$output = ob_get_clean();
-
-		$this->assertContains( '<a href="https://example.org"', $output );
-		$this->assertContains( 'target="_blank"', $output );
-
-		// Caption settings.
-		wp_update_post( array(
-			'ID' => $attachment_id,
-			'post_excerpt' => 'Default caption',
-		) );
-
-		ob_start();
-		$widget->render_media( array(
-			'attachment_id' => $attachment_id,
-		) );
-		$output = ob_get_clean();
-
-		$this->assertContains( 'class="wp-caption alignnone"', $output );
-		$this->assertContains( '<p class="wp-caption-text">Default caption</p>', $output );
-
-		ob_start();
-		$widget->render_media( array(
-			'attachment_id' => $attachment_id,
-			'caption' => 'Custom caption',
-		) );
-		$output = ob_get_clean();
-
-		$this->assertContains( 'class="wp-caption alignnone"', $output );
-		$this->assertContains( '<p class="wp-caption-text">Custom caption</p>', $output );
+		// Custom attributes.
+		$this->assertContains( 'preload="none"', $output );
+		$this->assertContains( 'autoplay="1"', $output );
+		$this->assertContains( 'src="https://soundcloud.com/westonruter/mr-rogers-is-batman', $output );
+		$this->assertContains( $content, $output );
 	}
 
 	/**
