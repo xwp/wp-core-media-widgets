@@ -83,8 +83,8 @@
 
 			// Set up the media frame.
 			mediaFrame = wp.media({
-				frame: 'video',
-				state: 'video-details',
+				frame: 'audio',
+				state: 'audio-details',
 				metadata: metadata
 			} );
 
