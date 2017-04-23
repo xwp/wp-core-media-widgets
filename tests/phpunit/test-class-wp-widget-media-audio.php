@@ -214,26 +214,28 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 		$this->assertContains( 'preload="auto"', $output );
 		$this->assertContains( 'loop="1"', $output );
 		$this->assertContains( 'autoplay="1"', $output );
+	}
 
-		$this->markTestIncomplete( 'Need to finish the external video handling.' );
+	/**
+	 * Test enqueue_preview_scripts method.
+	 *
+	 * @global WP_Scripts $wp_scripts
+	 * @global WP_Styles $wp_styles
+	 * @covers WP_Widget_Media_Audio::enqueue_preview_scripts
+	 */
+	function test_enqueue_preview_scripts() {
+		global $wp_scripts, $wp_styles;
+		$wp_scripts = null;
+		$wp_styles = null;
+		$widget = new WP_Widget_Media_Audio();
 
-		// Externally hosted video.
-		ob_start();
-		$content = '<track srclang="en" label="English" kind="subtitles" src="http://example.com/wp-content/uploads/2017/04/subtitles-en.vtt">';
-		$widget->render_media( array(
-			'attachment_id' => null,
-			'autoplay' => true,
-			'loop' => false,
-			'url' => 'https://soundcloud.com/westonruter/mr-rogers-is-batman',
-			'content' => $content,
-		) );
-		$output = ob_get_clean();
+		$this->assertFalse( wp_script_is( 'wp-mediaelement' ) );
+		$this->assertFalse( wp_style_is( 'wp-mediaelement' ) );
 
-		// Custom attributes.
-		$this->assertContains( 'preload="none"', $output );
-		$this->assertContains( 'autoplay="1"', $output );
-		$this->assertContains( 'src="https://soundcloud.com/westonruter/mr-rogers-is-batman', $output );
-		$this->assertContains( $content, $output );
+		$widget->enqueue_preview_scripts();
+
+		$this->assertTrue( wp_script_is( 'wp-mediaelement' ) );
+		$this->assertTrue( wp_style_is( 'wp-mediaelement' ) );
 	}
 
 	/**
