@@ -156,10 +156,10 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 		) );
 
 		$attachment = null;
-		if ( $instance['attachment_id'] ) {
+		if ( $this->is_attachment_with_mime_type( $instance['attachment_id'], $this->widget_options['mime_type'] ) ) {
 			$attachment = get_post( $instance['attachment_id'] );
 		}
-		if ( $attachment && 'attachment' === $attachment->post_type ) {
+		if ( $attachment ) {
 			$caption = $attachment->post_excerpt;
 			if ( $instance['caption'] ) {
 				$caption = $instance['caption'];
@@ -241,7 +241,7 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 	}
 
 	/**
-	 * Loads the required media files for the media manager and scripts for .
+	 * Loads the required media files for the media manager and scripts for media widgets.
 	 *
 	 * @since 4.8.0
 	 * @access public

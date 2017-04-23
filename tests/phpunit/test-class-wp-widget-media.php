@@ -105,6 +105,30 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test is_attachment_with_mime_type method.
+	 *
+	 * @covers WP_Widget_Media::is_attachment_with_mime_type
+	 */
+	function test_is_attachment_with_mime_type() {
+		$attachment_id = self::factory()->attachment->create_object( array(
+			'file' => DIR_TESTDATA . '/images/canola.jpg',
+			'post_parent' => 0,
+			'post_mime_type' => 'image/jpeg',
+			'post_title' => 'Canola',
+		) );
+		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, DIR_TESTDATA . '/images/canola.jpg' ) );
+		$widget = $this->get_mocked_class_instance();
+
+		$this->assertFalse( $widget->is_attachment_with_mime_type( 0, 'image' ) );
+		$this->assertFalse( $widget->is_attachment_with_mime_type( -123, 'image' ) );
+
+		$post_id = $this->factory()->post->create();
+		$this->assertFalse( $widget->is_attachment_with_mime_type( $post_id, 'image' ) );
+		$this->assertFalse( $widget->is_attachment_with_mime_type( $attachment_id, 'video' ) );
+		$this->assertTrue( $widget->is_attachment_with_mime_type( $attachment_id, 'image' ) );
+	}
+
+	/**
 	 * Test sanitize_token_list method.
 	 *
 	 * @covers WP_Widget_Media::sanitize_token_list

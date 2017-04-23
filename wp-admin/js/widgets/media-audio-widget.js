@@ -2,27 +2,27 @@
 (function( component ) {
 	'use strict';
 
-	var VideoWidgetModel, VideoWidgetControl;
+	var AudioWidgetModel, AudioWidgetControl;
 
 	/**
-	 * Video widget model.
+	 * Audio widget model.
 	 *
-	 * See WP_Widget_Video::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 * See WP_Widget_Audio::enqueue_admin_scripts() for amending prototype from PHP exports.
 	 *
-	 * @class VideoWidgetModel
+	 * @class AudioWidgetModel
 	 * @constructor
 	 */
-	VideoWidgetModel = component.MediaWidgetModel.extend( {} );
+	AudioWidgetModel = component.MediaWidgetModel.extend( {} );
 
 	/**
-	 * Video widget control.
+	 * Audio widget control.
 	 *
-	 * See WP_Widget_Video::enqueue_admin_scripts() for amending prototype from PHP exports.
+	 * See WP_Widget_Audio::enqueue_admin_scripts() for amending prototype from PHP exports.
 	 *
-	 * @class VideoWidgetControl
+	 * @class AudioWidgetModel
 	 * @constructor
 	 */
-	VideoWidgetControl = component.MediaWidgetControl.extend( {
+	AudioWidgetControl = component.MediaWidgetControl.extend( {
 
 		/**
 		 * Show display settings.
@@ -59,20 +59,20 @@
 			}
 
 			previewContainer = control.$el.find( '.media-widget-preview' );
-			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
+			previewTemplate = wp.template( 'wp-media-widget-audio-preview' );
 
 			previewContainer.html( previewTemplate( {
 				model: {
 					attachment_id: control.model.get( 'attachment_id' ),
-					src: attachmentUrl,
-					poster: control.model.get( 'poster' )
+					src: attachmentUrl
 				},
 				error: control.model.get( 'error' )
 			} ) );
+			wp.mediaelement.initialize();
 		},
 
 		/**
-		 * Open the media image-edit frame to modify the selected item.
+		 * Open the media audio-edit frame to modify the selected item.
 		 *
 		 * @returns {void}
 		 */
@@ -83,8 +83,8 @@
 
 			// Set up the media frame.
 			mediaFrame = wp.media({
-				frame: 'video',
-				state: 'video-details',
+				frame: 'audio',
+				state: 'audio-details',
 				metadata: metadata
 			} );
 
@@ -100,8 +100,8 @@
 				) );
 			};
 
-			mediaFrame.state( 'video-details' ).on( 'update', updateCallback );
-			mediaFrame.state( 'replace-video' ).on( 'replace', updateCallback );
+			mediaFrame.state( 'audio-details' ).on( 'update', updateCallback );
+			mediaFrame.state( 'replace-audio' ).on( 'replace', updateCallback );
 			mediaFrame.on( 'close', function() {
 				mediaFrame.detach();
 			});
@@ -111,7 +111,7 @@
 	} );
 
 	// Exports.
-	component.controlConstructors.media_video = VideoWidgetControl;
-	component.modelConstructors.media_video = VideoWidgetModel;
+	component.controlConstructors.media_audio = AudioWidgetControl;
+	component.modelConstructors.media_audio = AudioWidgetModel;
 
 })( wp.mediaWidgets );

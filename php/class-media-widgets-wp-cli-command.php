@@ -44,6 +44,8 @@ class Media_Widgets_WP_CLI_Command extends WP_CLI_Command {
 	static $plugin_script_handles = array(
 		'media-widgets',
 		'media-image-widget',
+		'media-video-widget',
+		'media-audio-widget',
 	);
 
 	/**
