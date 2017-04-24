@@ -68,9 +68,8 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 			$text = wpautop( $text );
 		}
 
-		// @todo Figure out if we actually can do the_content or if we need to do a subset since there is no post global here.
-		/** This filter is documented in wp-includes/post-template.php */
-		$text = apply_filters( 'the_content', $text );
+		// @todo Figure out which of the_content filters can be applied since there is no post global here.
+		$text = wptexturize( $text );
 
 		?>
 			<div class="textwidget"><?php echo $text; ?></div>
