@@ -404,11 +404,13 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			}
 
+			// Track attributes needed to renderPreview in it's own model.
+			control.previewTemplateProps = new Backbone.Model( control.mapModelToPreviewTemplateProps() );
+
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment();
 			control.renderPreview = _.debounce( control.renderPreview );
-			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
-			control.listenTo( control.model, 'change', control.maybeRenderPreview );
+			control.listenTo( control.previewTemplateProps, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change:attachment_id', control.updateSelectedAttachment );
@@ -421,7 +423,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 			 */
 			control.listenTo( control.model, 'change', control.syncModelToInputs );
-
+			control.listenTo( control.model, 'change', control.syncModelToPreviewProps );
 			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
@@ -444,43 +446,6 @@ wp.mediaWidgets = ( function( $ ) {
 				),
 				_.keys( wp.media.view.settings.defaultProps )
 			) );
-		},
-
-		/**
-		 * Determine if attributes changed in model should result in a render of preview.
-		 *
-		 * @param {Object} changes - Attributes changed in control.model.
-		 * @returns {boolean} Should the preview re-render.
-		 */
-		shouldPreviewUpdate: function shouldPreviewUpdate( changes ) {
-			var control = this;
-			return _.some( changes, function( value, prop ) {
-				var propSchema = control.model.schema[ prop ];
-
-				// Error is not in the schema, but should trigger a re-render.
-				if ( ! propSchema && 'error' === prop ) {
-					return true;
-				}
-
-				// If propSchema for should_preview_update is missing, assume true.
-				if ( ! propSchema.hasOwnProperty( 'should_preview_update' ) ) {
-					return true;
-				}
-				return propSchema.should_preview_update;
-			});
-		},
-
-		/**
-		 * Maybe call renderPreview if necessary.
-		 *
-		 * @param {Object.<string, wp.mediaWidgets.MediaWidgetModel>} model - Media widget model.
-		 * @returns {void}
-		 */
-		maybeRenderPreview: function maybeRenderPreview( model ) {
-			var control = this;
-			if ( control.shouldPreviewUpdate( model.changed ) ) {
-				control.renderPreview();
-			}
 		},
 
 		/**
@@ -510,7 +475,17 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
-		 * Sync the model attributes to the hidden inputs.
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
+		 *
+		 * @returns {void}
+		 */
+		syncModelToPreviewProps: function syncModelToPreviewProps() {
+			var control = this;
+			control.previewTemplateProps.set( control.mapModelToPreviewTemplateProps() );
+		},
+
+		/**
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
 		 *
 		 * @returns {void}
 		 */
@@ -782,6 +757,23 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			return mediaFrameProps;
+		},
+
+		/**
+		 * Map model props to previewTemplateProps.
+		 *
+		 * @returns {Object} Preview Template Props.
+		 */
+		mapModelToPreviewTemplateProps: function mapModelToPreviewTemplateProps() {
+			var control = this, previewTemplateProps = {};
+			_.each( control.model.schema, function( value, prop ) {
+				if ( ! value.hasOwnProperty( 'should_preview_update' ) || value.should_preview_update ) {
+					previewTemplateProps[ prop ] = control.model.get( prop )
+				}
+			});
+			// Templates need to be aware of the error.
+			previewTemplateProps.error = control.model.get( 'error' );
+			return previewTemplateProps;
 		},
 
 		/**

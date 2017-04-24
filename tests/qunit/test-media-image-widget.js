@@ -8,7 +8,7 @@
 	module( 'Image Media Widget' );
 
 	test( 'image widget control', function() {
-		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, mappedProps, testImageUrl;
+		var ImageWidgetControl, imageWidgetControlInstance, imageWidgetModelInstance, mappedProps, testImageUrl, templateProps;
 		testImageUrl = 'http://s.w.org/style/images/wp-header-logo.png';
 		equal( typeof wp.mediaWidgets.controlConstructors.media_image, 'function', 'wp.mediaWidgets.controlConstructors.media_image is a function' );
 		ImageWidgetControl = wp.mediaWidgets.controlConstructors.media_image;
@@ -19,12 +19,28 @@
 			model: imageWidgetModelInstance
 		});
 
-		// Test shouldPreviewUpdate().
-		equal( imageWidgetControlInstance.shouldPreviewUpdate( { error: false } ), true, 'shouldPreviewUpdate is true when changes to error occur' );
-		equal( imageWidgetControlInstance.shouldPreviewUpdate( { title: 'Chicken and Ribs' } ), false, 'shouldPreviewUpdate is false when title is changed' );
-		equal( imageWidgetControlInstance.shouldPreviewUpdate( { url: 'http://s.w.org/style/images/wp-header-logo.png' } ), true, 'shouldPreviewUpdate is true when url is changed' );
-		equal( imageWidgetControlInstance.shouldPreviewUpdate( { title: 'babyback ribs', alt: 'some alt text' } ), true, 'shouldPreviewUpdate is true when alt is changed' );
-		equal( imageWidgetControlInstance.shouldPreviewUpdate( { caption: 'yummy bbq', link_type: 'none' } ), false, 'shouldPreviewUpdate is false when caption and link_type is changed' );
+		// Test mapModelToPreviewTemplateProps() when no data is set.
+		templateProps = imageWidgetControlInstance.mapModelToPreviewTemplateProps();
+		equal( templateProps.caption, undefined, 'mapModelToPreviewTemplateProps should not return attributes that are should_preview_update false' );
+		equal( templateProps.attachment_id, 0, 'mapModelToPreviewTemplateProps should return default values' );
+		equal( templateProps.currentFilename, '', 'mapModelToPreviewTemplateProps should return a currentFilename' );
+
+		// Test mapModelToPreviewTemplateProps() when data is set on model.
+		imageWidgetControlInstance.model.set( { url: testImageUrl, alt: 'some alt text', link_type: 'none' } );
+		templateProps = imageWidgetControlInstance.mapModelToPreviewTemplateProps();
+		equal( templateProps.currentFilename, 'wp-header-logo.png', 'mapModelToPreviewTemplateProps should set currentFilename based off of url' );
+		equal( templateProps.url, testImageUrl, 'mapModelToPreviewTemplateProps should return the proper url' );
+		equal( templateProps.alt, 'some alt text', 'mapModelToPreviewTemplateProps should return the proper alt text' );
+		equal( templateProps.link_type, undefined, 'mapModelToPreviewTemplateProps should ignore attributes that are not needed in the preview' );
+		equal( templateProps.error, false, 'mapModelToPreviewTemplateProps should return error state' );
+
+		// Test mapModelToPreviewTemplateProps() when error is set on model.
+		imageWidgetControlInstance.model.set( 'error', 'missing_attachment' );
+		templateProps = imageWidgetControlInstance.mapModelToPreviewTemplateProps();
+		equal( templateProps.error, 'missing_attachment', 'mapModelToPreviewTemplateProps should return error string' );
+
+		// Reset model.
+		imageWidgetControlInstance.model.set({ error: false, attachment_id: 0, url: null });
 
 		// Test isSelected().
 		equal( imageWidgetControlInstance.isSelected(), false, 'media_image.isSelected() should return false when no media is selected' );
