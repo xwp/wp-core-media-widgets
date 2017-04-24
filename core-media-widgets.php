@@ -94,6 +94,10 @@ function wp32417_widgets_init() {
 	register_widget( 'WP_Widget_Media_Image' );
 	register_widget( 'WP_Widget_Media_Video' );
 	register_widget( 'WP_Widget_Media_Audio' );
+
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-visual-text.php' );
+	unregister_widget( 'WP_Widget_Text' );
+	register_widget( 'WP_Widget_Visual_Text' );
 }
 add_action( 'widgets_init', 'wp32417_widgets_init' );
 
