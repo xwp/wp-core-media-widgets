@@ -768,9 +768,10 @@ wp.mediaWidgets = ( function( $ ) {
 			var control = this, previewTemplateProps = {};
 			_.each( control.model.schema, function( value, prop ) {
 				if ( ! value.hasOwnProperty( 'should_preview_update' ) || value.should_preview_update ) {
-					previewTemplateProps[ prop ] = control.model.get( prop )
+					previewTemplateProps[ prop ] = control.model.get( prop );
 				}
 			});
+
 			// Templates need to be aware of the error.
 			previewTemplateProps.error = control.model.get( 'error' );
 			return previewTemplateProps;
