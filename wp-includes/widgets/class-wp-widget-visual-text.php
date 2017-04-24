@@ -25,6 +25,9 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 	public function __construct() {
 		parent::__construct();
 		$this->name = __( 'Visual Text' );
+
+		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
 
 	/**
@@ -59,8 +62,18 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 		echo $args['before_widget'];
 		if ( ! empty( $title ) ) {
 			echo $args['before_title'] . $title . $args['after_title'];
-		} ?>
-			<div class="textwidget"><?php echo ! empty( $instance['filter'] ) ? wpautop( $text ) : $text; ?></div>
+		}
+
+		if ( ! isset( $instance['filter'] ) || true === $instance['filter'] ) {
+			$text = wpautop( $text );
+		}
+
+		// @todo Figure out if we actually can do the_content or if we need to do a subset since there is no post global here.
+		/** This filter is documented in wp-includes/post-template.php */
+		$text = apply_filters( 'the_content', $text );
+
+		?>
+			<div class="textwidget"><?php echo $text; ?></div>
 		<?php
 		echo $args['after_widget'];
 	}
@@ -84,8 +97,22 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 		} else {
 			$instance['text'] = wp_kses_post( $new_instance['text'] );
 		}
-		$instance['filter'] = ! empty( $new_instance['filter'] );
+
+		// Eliminate filter from here on.
+		unset( $instance['filter'] );
+
 		return $instance;
+	}
+
+	/**
+	 * Loads the required scripts and styles for the widget control.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function enqueue_admin_scripts() {
+		wp_enqueue_editor();
+		wp_enqueue_script( 'text-widgets' );
 	}
 
 	/**
@@ -103,11 +130,13 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 			array(
 				'title' => '',
 				'text' => '',
-				'filter' => true,
 			)
 		);
 
-		$filter = isset( $instance['filter'] ) ? $instance['filter'] : 0;
+		if ( ! empty( $instance['filter'] ) ) {
+			$instance['text'] = wpautop( $instance['text'] );
+		}
+
 		$title = sanitize_text_field( $instance['title'] );
 		?>
 		<p>
@@ -118,11 +147,6 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 		<p>
 			<label for="<?php echo $this->get_field_id( 'text' ); ?>"><?php _e( 'Content:' ); ?></label>
 			<textarea class="widefat" rows="16" cols="20" id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>"><?php echo esc_textarea( $instance['text'] ); ?></textarea>
-		</p>
-
-		<p>
-			<input id="<?php echo $this->get_field_id( 'filter' ); ?>" name="<?php echo $this->get_field_name( 'filter' ); ?>" type="checkbox" <?php checked( $filter ); ?> />&nbsp
-			<label for="<?php echo $this->get_field_id( 'filter' ); ?>"><?php _e( 'Automatically add paragraphs' ); ?></label>
 		</p>
 		<?php
 	}
