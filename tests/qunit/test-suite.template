@@ -19,5 +19,6 @@
 		<!-- Unit tests -->
 		<script src="./test-media-widgets.js"></script>
 		<script src="./test-media-image-widget.js"></script>
+		<script src="./test-media-video-widget.js"></script>
 	</body>
 </html>
