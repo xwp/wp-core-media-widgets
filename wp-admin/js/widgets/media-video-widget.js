@@ -137,6 +137,7 @@
 				metadata: metadata
 			});
 			wp.media.frame = mediaFrame;
+			mediaFrame.$el.addClass( 'media-widget' );
 
 			updateCallback = function( mediaFrameProps ) {
 
