@@ -596,7 +596,11 @@ wp.mediaWidgets = ( function( $ ) {
 				var attachment = {}, state = mediaFrame.state();
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				_.extend( attachment, state.get( 'selection' ).first().toJSON() );
+				if ( 'embed' === state.get( 'id' ) ) {
+					_.extend( attachment, { id: 0 }, state.props.toJSON() );
+				} else {
+					_.extend( attachment, state.get( 'selection' ).first().toJSON() );
+				}
 
 				control.selectedAttachment.set( attachment );
 				control.model.set( 'error', false );
