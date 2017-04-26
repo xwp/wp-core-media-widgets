@@ -2,7 +2,56 @@
 (function( component ) {
 	'use strict';
 
-	var VideoWidgetModel, VideoWidgetControl;
+	var VideoWidgetModel, VideoWidgetControl, VideoDetailsMediaFrame;
+
+	/**
+	 * Custom video details frame that removes the replace-video state.
+	 *
+	 * @class VideoDetailsMediaFrame
+	 * @constructor
+	 */
+	VideoDetailsMediaFrame = wp.media.view.MediaFrame.VideoDetails.extend({
+
+		/**
+		 * Create the default states.
+		 *
+		 * @returns {void}
+		 */
+		createStates: function createStates() {
+			this.states.add([
+				new wp.media.controller.VideoDetails({
+					media: this.media
+				}),
+
+				new wp.media.controller.MediaLibrary( {
+					type: 'video',
+					id: 'add-video-source',
+					title: wp.media.view.l10n.videoAddSourceTitle,
+					toolbar: 'add-video-source',
+					media: this.media,
+					menu: false
+				} ),
+
+				new wp.media.controller.MediaLibrary( {
+					type: 'image',
+					id: 'select-poster-image',
+					title: wp.media.view.l10n.videoSelectPosterImageTitle,
+					toolbar: 'select-poster-image',
+					media: this.media,
+					menu: 'video-details'
+				} ),
+
+				new wp.media.controller.MediaLibrary( {
+					type: 'text',
+					id: 'add-track',
+					title: wp.media.view.l10n.videoAddTrackTitle,
+					toolbar: 'add-track',
+					media: this.media,
+					menu: 'video-details'
+				} )
+			]);
+		}
+	});
 
 	/**
 	 * Video widget model.
@@ -82,11 +131,12 @@
 			metadata = control.mapModelToMediaFrameProps( control.model.toJSON() );
 
 			// Set up the media frame.
-			mediaFrame = wp.media({
+			mediaFrame = new VideoDetailsMediaFrame({
 				frame: 'video',
 				state: 'video-details',
 				metadata: metadata
-			} );
+			});
+			wp.media.frame = mediaFrame;
 
 			updateCallback = function( mediaFrameProps ) {
 

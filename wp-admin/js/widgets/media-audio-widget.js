@@ -2,7 +2,38 @@
 (function( component ) {
 	'use strict';
 
-	var AudioWidgetModel, AudioWidgetControl;
+	var AudioWidgetModel, AudioWidgetControl, AudioDetailsMediaFrame;
+
+	/**
+	 * Custom audio details frame that removes the replace-audio state.
+	 *
+	 * @class AudioDetailsMediaFrame
+	 * @constructor
+	 */
+	AudioDetailsMediaFrame = wp.media.view.MediaFrame.AudioDetails.extend({
+
+		/**
+		 * Create the default states.
+		 *
+		 * @returns {void}
+		 */
+		createStates: function createStates() {
+			this.states.add([
+				new wp.media.controller.AudioDetails( {
+					media: this.media
+				} ),
+
+				new wp.media.controller.MediaLibrary( {
+					type: 'audio',
+					id: 'add-audio-source',
+					title: wp.media.view.l10n.audioAddSourceTitle,
+					toolbar: 'add-audio-source',
+					media: this.media,
+					menu: false
+				} )
+			]);
+		}
+	});
 
 	/**
 	 * Audio widget model.
@@ -82,11 +113,12 @@
 			metadata = control.mapModelToMediaFrameProps( control.model.toJSON() );
 
 			// Set up the media frame.
-			mediaFrame = wp.media({
+			mediaFrame = new AudioDetailsMediaFrame({
 				frame: 'audio',
 				state: 'audio-details',
 				metadata: metadata
 			} );
+			wp.media.frame = mediaFrame;
 
 			updateCallback = function( mediaFrameProps ) {
 
