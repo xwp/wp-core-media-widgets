@@ -98,7 +98,7 @@ function wp32417_widgets_init() {
 add_action( 'widgets_init', 'wp32417_widgets_init' );
 
 /**
- * Add align classname to the alignment container in .attachment-display-settings.
+ * Add align class name to the alignment container in .attachment-display-settings.
  *
  * @see wp_print_media_templates()
  * @todo For Core merge, this should be patched in \wp_print_media_templates().
@@ -116,3 +116,26 @@ function wp32417_add_classname_to_display_settings() {
 	<?php
 }
 add_action( 'print_media_templates', 'wp32417_add_classname_to_display_settings' );
+
+/**
+ * Add autoplay class name to the checkbox container elements for audio/video details.
+ *
+ * @see wp_print_media_templates()
+ * @todo For Core merge, this should be patched in \wp_print_media_templates().
+ */
+function wp32417_add_classname_to_audio_video_details_frames() {
+	?>
+	<script>
+		(function( audioTemplateEl, videoTemplateEl ) {
+			var regex = /(<label class="setting checkbox-setting)(?=">\s*<input type="checkbox" data-setting="autoplay")/;
+			if ( audioTemplateEl ) {
+				audioTemplateEl.text = audioTemplateEl.text.replace( regex, '$1 autoplay' );
+			}
+			if ( videoTemplateEl ) {
+				videoTemplateEl.text = videoTemplateEl.text.replace( regex, '$1 autoplay' );
+			}
+		}( document.getElementById( 'tmpl-audio-details' ), document.getElementById( 'tmpl-video-details' ) ));
+	</script>
+	<?php
+}
+add_action( 'print_media_templates', 'wp32417_add_classname_to_audio_video_details_frames' );

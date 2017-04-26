@@ -48,7 +48,8 @@
 .media-frame.media-widget .attachment-display-settings .setting.align,
 .media-frame.media-widget .embed-media-settings .setting.align,
 .media-frame.media-widget .embed-link-settings .setting.link-text,
-.media-frame.media-widget .replace-attachment {
+.media-frame.media-widget .replace-attachment,
+.media-frame.media-widget .checkbox-setting.autoplay {
 	display: none;
 }
 

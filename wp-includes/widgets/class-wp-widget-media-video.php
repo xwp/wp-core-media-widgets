@@ -59,10 +59,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		$schema = array_merge(
 			parent::get_instance_schema(),
 			array(
-				'autoplay' => array(
-					'type' => 'boolean',
-					'default' => false,
-				),
 				'poster' => array(
 					'type' => 'string',
 					'default' => '',

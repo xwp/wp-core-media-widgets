@@ -20,11 +20,10 @@
 		});
 
 		// Test mapModelToMediaFrameProps().
-		videoWidgetControlInstance.model.set({ error: false, url: testVideoUrl, autoplay: true, loop: false, preload: 'meta' });
+		videoWidgetControlInstance.model.set({ error: false, url: testVideoUrl, loop: false, preload: 'meta' });
 		mappedProps = videoWidgetControlInstance.mapModelToMediaFrameProps( videoWidgetControlInstance.model.toJSON() );
 		equal( mappedProps.url, testVideoUrl, 'mapModelToMediaFrameProps should set url' );
 		equal( mappedProps.loop, false, 'mapModelToMediaFrameProps should set loop' );
-		equal( mappedProps.autoplay, true, 'mapModelToMediaFrameProps should set autoplay' );
 		equal( mappedProps.preload, 'meta', 'mapModelToMediaFrameProps should set preload' );
 	});
 
