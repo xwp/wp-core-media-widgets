@@ -44,6 +44,9 @@
 .media-widget-control .media-widget-preview img {
 	max-width: 100%;
 }
+.media-widget-control .media-widget-preview .wp-video-shortcode {
+	background: #000;
+}
 .media-frame.media-widget .image-details .embed-media-settings .setting.align,
 .media-frame.media-widget .attachment-display-settings .setting.align,
 .media-frame.media-widget .embed-media-settings .setting.align,
