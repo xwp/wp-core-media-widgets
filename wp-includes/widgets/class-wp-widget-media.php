@@ -147,7 +147,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		if ( 'attachment' !== $attachment->post_type ) {
 			return false;
 		}
-		return strtok( $attachment->post_mime_type, '/' ) === $mime_type;
+		return wp_attachment_is( $mime_type, $attachment ) || strtok( $attachment->post_mime_type, '/' ) === $mime_type;
 	}
 
 	/**
