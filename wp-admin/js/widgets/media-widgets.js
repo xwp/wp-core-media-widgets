@@ -717,7 +717,7 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 
 				if ( ! updatedProps[ modelProp ] ) {
-					resetProps[ modelProp ] = fieldSchema.default;
+					resetProps[ modelProp ] = fieldSchema[ 'default' ];
 				}
 			});
 
