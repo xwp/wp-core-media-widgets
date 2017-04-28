@@ -64,6 +64,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					'default' => '',
 					'format' => 'uri',
 					'description' => __( 'URL to the poster frame' ),
+					'reset_on_media_change' => true,
 				),
 				'preload' => array(
 					'type' => 'string',
@@ -176,7 +177,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop', 'should_preview_update', 'reset_on_media_change' ) );
 		}
 		wp_add_inline_script(
 			$handle,

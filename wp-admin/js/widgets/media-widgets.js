@@ -612,7 +612,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 			// Handle selection of a media item.
 			mediaFrame.on( 'insert', function onInsert() {
-				var attachment = {}, state = mediaFrame.state();
+				var attachment = {}, state = mediaFrame.state(), updatedProps, resetProps = {};
 
 				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
 				if ( 'embed' === state.get( 'id' ) ) {
@@ -625,7 +625,13 @@ wp.mediaWidgets = ( function( $ ) {
 				control.model.set( 'error', false );
 
 				// Update widget instance.
-				control.model.set( control.getModelPropsFromMediaFrame( mediaFrame ) );
+				updatedProps = control.getModelPropsFromMediaFrame( mediaFrame );
+
+				// If the url has changed, get any props that need to be reset.
+				if ( control.model.get( 'url' ) !== updatedProps.url ) {
+					resetProps = control.getResetProps( updatedProps );
+				}
+				control.model.set( _.extend( updatedProps, resetProps ) );
 			});
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
@@ -695,6 +701,27 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			return control.mapMediaToModelProps( mediaFrameProps );
+		},
+
+		/**
+		 * With given updatedProps, return an object of props that need to be reset to default values.
+		 *
+		 * @param {Object} updatedProps - Model props.
+		 * @returns {Object} Props to reset to default.
+		 */
+		getResetProps: function getResetProps( updatedProps ) {
+			var control = this, resetProps = {};
+			_.each( control.model.schema, function( fieldSchema, modelProp ) {
+				if ( ! fieldSchema.hasOwnProperty( 'reset_on_media_change' ) || ! fieldSchema.reset_on_media_change ) {
+					return;
+				}
+
+				if ( ! updatedProps[ modelProp ] ) {
+					resetProps[ modelProp ] = fieldSchema.default;
+				}
+			});
+
+			return resetProps;
 		},
 
 		/**

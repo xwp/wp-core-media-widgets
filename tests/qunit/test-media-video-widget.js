@@ -8,7 +8,7 @@
 	module( 'Video Media Widget' );
 
 	test( 'video widget control', function() {
-		var VideoWidgetControl, videoWidgetControlInstance, videoWidgetModelInstance, mappedProps, testVideoUrl;
+		var VideoWidgetControl, videoWidgetControlInstance, videoWidgetModelInstance, mappedProps, testVideoUrl, resetProps;
 		testVideoUrl = 'https://videos.files.wordpress.com/AHz0Ca46/wp4-7-vaughan-r8-mastered_hd.mp4';
 		equal( typeof wp.mediaWidgets.controlConstructors.media_video, 'function', 'wp.mediaWidgets.controlConstructors.media_video is a function' );
 		VideoWidgetControl = wp.mediaWidgets.controlConstructors.media_video;
@@ -25,6 +25,13 @@
 		equal( mappedProps.url, testVideoUrl, 'mapModelToMediaFrameProps should set url' );
 		equal( mappedProps.loop, false, 'mapModelToMediaFrameProps should set loop' );
 		equal( mappedProps.preload, 'meta', 'mapModelToMediaFrameProps should set preload' );
+
+		// Test getResetProps().
+		videoWidgetControlInstance.model.set({ poster: 'http://s.w.org/style/images/wp-header-logo.png' });
+		resetProps = videoWidgetControlInstance.getResetProps( { url: 'https://www.youtube.com/watch?v=ea2WoUtbzuw' } );
+		equal( resetProps.poster, '', 'getResetProps() should set field back to default when reset_on_media_change is true, and no new prop is set.' );
+		resetProps = videoWidgetControlInstance.getResetProps( { url: 'https://www.youtube.com/watch?v=ea2WoUtbzuw', poster: 'https://i0.wp.com/themes.svn.wordpress.org/twentyseventeen/1.2/screenshot.png' } );
+		equal( resetProps.poster, undefined, 'getResetProps() should not set field back to default when reset_on_media_change is true, and a new prop is set.' );
 	});
 
 	asyncTest( 'video widget control renderPreview', function() {
