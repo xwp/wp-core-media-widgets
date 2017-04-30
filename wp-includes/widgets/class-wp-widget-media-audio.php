@@ -62,7 +62,7 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 				'preload' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'auto', 'metadata' ),
-					'default' => 'none',
+					'default' => 'auto',
 				),
 				'loop' => array(
 					'type' => 'boolean',
