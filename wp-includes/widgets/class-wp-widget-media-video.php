@@ -59,12 +59,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		$schema = array_merge(
 			parent::get_instance_schema(),
 			array(
-				'poster' => array(
-					'type' => 'string',
-					'default' => '',
-					'format' => 'uri',
-					'description' => __( 'URL to the poster frame' ),
-				),
 				'preload' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'auto', 'metadata' ),
@@ -220,8 +214,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
 			<# } else if ( data.model && ! data.model.attachment_id ) { #>
-				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link{{ ! data.model.poster ? ' no-poster' : '' }}">
-					<img class="attachment-thumb" src="{{ data.model.poster }}" draggable="false" />
+				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link no-poster">
 					<span class="dashicons dashicons-format-video"></span>
 				</a>
 			<# } else if ( data.model && data.model.attachment_id ) { #>

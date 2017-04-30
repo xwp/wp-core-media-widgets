@@ -26,7 +26,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			array_merge(
 				array(
 					'attachment_id',
-					'poster',
 					'preload',
 					'loop',
 					'title',
@@ -99,20 +98,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		), $instance );
 		$this->assertNotSame( $result, $instance );
 		$this->assertStringStartsWith( 'http://', $result['url'] );
-
-		// Should return valid poster url.
-		$expected = array(
-			'poster' => 'https://chickenandribs.org/some-poster-image.jpg',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid poster url.
-		$result = $widget->update( array(
-			'poster' => 'not_a_url',
-		), $instance );
-		$this->assertNotSame( $result, $instance );
-		$this->assertStringStartsWith( 'http://', $result['poster'] );
 
 		// Should return loop setting.
 		$expected = array(
@@ -212,14 +197,12 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'title' => 'Open Source Cartoon',
 			'preload' => 'auto',
 			'loop' => true,
-			'poster' => 'http://chickenandribs.org/poster-image.jpg',
 		) );
 		$output = ob_get_clean();
 
 		// Custom attributes.
 		$this->assertContains( 'preload="auto"', $output );
 		$this->assertContains( 'loop="1"', $output );
-		$this->assertContains( 'poster="http://chickenandribs.org/poster-image.jpg"', $output );
 
 		// Externally hosted video.
 		ob_start();
@@ -228,14 +211,12 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'attachment_id' => null,
 			'loop' => false,
 			'url' => 'https://www.youtube.com/watch?v=OQSNhk5ICTI',
-			'poster' => 'https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg',
 			'content' => $content,
 		) );
 		$output = ob_get_clean();
 
 		// Custom attributes.
 		$this->assertContains( 'preload="none"', $output );
-		$this->assertContains( 'poster="https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg"', $output );
 		$this->assertContains( 'src="https://www.youtube.com/watch?v=OQSNhk5ICTI', $output );
 		$this->assertContains( $content, $output );
 	}

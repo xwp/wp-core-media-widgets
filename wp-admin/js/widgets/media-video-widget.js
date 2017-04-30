@@ -33,15 +33,6 @@
 				} ),
 
 				new wp.media.controller.MediaLibrary( {
-					type: 'image',
-					id: 'select-poster-image',
-					title: wp.media.view.l10n.videoSelectPosterImageTitle,
-					toolbar: 'select-poster-image',
-					media: this.media,
-					menu: 'video-details'
-				} ),
-
-				new wp.media.controller.MediaLibrary( {
 					type: 'text',
 					id: 'add-track',
 					title: wp.media.view.l10n.videoAddTrackTitle,
@@ -113,8 +104,7 @@
 			previewContainer.html( previewTemplate( {
 				model: {
 					attachment_id: control.model.get( 'attachment_id' ),
-					src: attachmentUrl,
-					poster: control.model.get( 'poster' )
+					src: attachmentUrl
 				},
 				error: control.model.get( 'error' )
 			} ) );
