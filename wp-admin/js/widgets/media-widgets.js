@@ -404,11 +404,13 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			}
 
+			// Track attributes needed to renderPreview in it's own model.
+			control.previewTemplateProps = new Backbone.Model( control.mapModelToPreviewTemplateProps() );
+
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment();
 			control.renderPreview = _.debounce( control.renderPreview );
-			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
-			control.listenTo( control.model, 'change', control.renderPreview );
+			control.listenTo( control.previewTemplateProps, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change:attachment_id', control.updateSelectedAttachment );
@@ -421,7 +423,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 			 */
 			control.listenTo( control.model, 'change', control.syncModelToInputs );
-
+			control.listenTo( control.model, 'change', control.syncModelToPreviewProps );
 			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
@@ -473,7 +475,17 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
-		 * Sync the model attributes to the hidden inputs.
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
+		 *
+		 * @returns {void}
+		 */
+		syncModelToPreviewProps: function syncModelToPreviewProps() {
+			var control = this;
+			control.previewTemplateProps.set( control.mapModelToPreviewTemplateProps() );
+		},
+
+		/**
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
 		 *
 		 * @returns {void}
 		 */
@@ -745,6 +757,24 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			return mediaFrameProps;
+		},
+
+		/**
+		 * Map model props to previewTemplateProps.
+		 *
+		 * @returns {Object} Preview Template Props.
+		 */
+		mapModelToPreviewTemplateProps: function mapModelToPreviewTemplateProps() {
+			var control = this, previewTemplateProps = {};
+			_.each( control.model.schema, function( value, prop ) {
+				if ( ! value.hasOwnProperty( 'should_preview_update' ) || value.should_preview_update ) {
+					previewTemplateProps[ prop ] = control.model.get( prop );
+				}
+			});
+
+			// Templates need to be aware of the error.
+			previewTemplateProps.error = control.model.get( 'error' );
+			return previewTemplateProps;
 		},
 
 		/**

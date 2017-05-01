@@ -78,6 +78,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 			$widget_opts,
 			$control_opts
 		);
+	}
+
+	/**
+	 * Add hooks while registering all widget instances of this widget class.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function _register() {
 
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
@@ -89,6 +98,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
 
 		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
+
+		parent::_register();
 	}
 
 	/**
@@ -122,6 +133,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				'default' => '',
 				'sanitize_callback' => 'sanitize_text_field',
 				'description' => __( 'Title for the widget' ),
+				'should_preview_update' => false,
 			),
 		);
 	}
