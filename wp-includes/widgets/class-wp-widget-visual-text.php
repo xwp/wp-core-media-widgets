@@ -155,10 +155,6 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 			)
 		);
 
-		if ( ! empty( $instance['filter'] ) ) {
-			$instance['text'] = wpautop( $instance['text'] );
-		}
-
 		$title = sanitize_text_field( $instance['title'] );
 		?>
 		<p>
