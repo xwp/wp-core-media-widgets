@@ -83,7 +83,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	/**
 	 * Add hooks while registering all widget instances of this widget class.
 	 *
-	 * @since 2.8.0
+	 * @since 4.8.0
 	 * @access public
 	 */
 	public function _register() {
