@@ -107,7 +107,10 @@ wp.textWidgets = ( function( $ ) {
 			el: widgetContent
 		});
 
-		widgetControl.render();
+		// Add delay as without this the iframe may not get contenteditable.
+		_.delay( function() {
+			widgetControl.render();
+		}, 100 ); // eslint-disable-line no-magic-numbers
 
 		component.widgetControls[ widgetId ] = widgetControl;
 	};
