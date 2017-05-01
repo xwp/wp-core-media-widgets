@@ -25,9 +25,19 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 	public function __construct() {
 		parent::__construct();
 		$this->name = __( 'Visual Text' );
+	}
 
+	/**
+	 * Add hoosk for enqueueing assets when registering all widget instances of this widget class.
+	 *
+	 * @since 2.8.0
+	 * @access public
+	 */
+	public function _register() {
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+
+		parent::_register();
 	}
 
 	/**
