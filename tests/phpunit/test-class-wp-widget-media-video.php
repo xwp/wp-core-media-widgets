@@ -183,7 +183,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$output = ob_get_clean();
 
 		// Check default outputs.
-		$this->assertContains( 'preload="auto"', $output );
+		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'class="wp-video"', $output );
 		$this->assertContains( 'small-video.m4v', $output );
 
@@ -195,13 +195,13 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$widget->render_media( array(
 			'attachment_id' => $attachment_id,
 			'title' => 'Open Source Cartoon',
-			'preload' => 'auto',
+			'preload' => 'metadata',
 			'loop' => true,
 		) );
 		$output = ob_get_clean();
 
 		// Custom attributes.
-		$this->assertContains( 'preload="auto"', $output );
+		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'loop="1"', $output );
 
 		// Externally hosted video.
@@ -216,7 +216,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$output = ob_get_clean();
 
 		// Custom attributes.
-		$this->assertContains( 'preload="auto"', $output );
+		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'src="https://www.youtube.com/watch?v=OQSNhk5ICTI', $output );
 		$this->assertContains( $content, $output );
 	}

@@ -62,7 +62,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				'preload' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'auto', 'metadata' ),
-					'default' => 'auto',
+					'default' => 'metadata',
 					'should_preview_update' => false,
 				),
 				'loop' => array(
