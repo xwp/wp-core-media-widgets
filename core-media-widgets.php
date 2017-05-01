@@ -54,6 +54,17 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
 
 /**
+ * Add filters that will eventually reside in default-filters.php
+ */
+function wp32417_add_default_filters() {
+	add_filter( 'widget_text_content', 'capital_P_dangit', 11 );
+	add_filter( 'widget_text_content', 'wptexturize' );
+	add_filter( 'widget_text_content', 'convert_smilies', 20 );
+	add_filter( 'widget_text_content', 'wpautop' );
+}
+add_action( 'plugins_loaded', 'wp32417_add_default_filters' );
+
+/**
  * Register widget styles.
  *
  * @codeCoverageIgnore

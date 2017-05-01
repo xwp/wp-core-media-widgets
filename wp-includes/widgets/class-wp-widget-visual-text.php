@@ -69,17 +69,30 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 		 */
 		$text = apply_filters( 'widget_text', $widget_text, $instance, $this );
 
+		// Apply visual text filters for widgets that have been created or updated since 4.8, wherein the 'filter' prop is removed.
+		if ( ! isset( $instance['filter'] ) ) {
+
+			/**
+			 * Filters the content of the Text widget to apply changes expected from the visual (TinyMCE) editor.
+			 *
+			 * By default a subset of the_content filters are applied, including wpautop and wptexturize.
+			 *
+			 * @since 4.8.0
+			 *
+			 * @param string         $widget_text The widget content.
+			 * @param array          $instance    Array of settings for the current widget.
+			 * @param WP_Widget_Text $this        Current Text widget instance.
+			 */
+			$text = apply_filters( 'widget_text_content', $widget_text, $instance, $this );
+
+		} elseif ( true === $instance['filter'] ) {
+			$text = wpautop( $text ); // Back-compat for instances prior to 4.8.
+		}
+
 		echo $args['before_widget'];
 		if ( ! empty( $title ) ) {
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
-
-		if ( ! isset( $instance['filter'] ) || true === $instance['filter'] ) {
-			$text = wpautop( $text );
-		}
-
-		// @todo Figure out which of the_content filters can be applied since there is no post global here.
-		$text = wptexturize( $text );
 
 		?>
 			<div class="textwidget"><?php echo $text; ?></div>
