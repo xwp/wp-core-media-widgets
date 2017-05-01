@@ -182,7 +182,7 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 		$output = ob_get_clean();
 
 		// Check default outputs.
-		$this->assertContains( 'preload="auto"', $output );
+		$this->assertContains( 'preload="none"', $output );
 		$this->assertContains( 'class="wp-audio-shortcode"', $output );
 		$this->assertContains( 'small-audio.mp3', $output );
 
