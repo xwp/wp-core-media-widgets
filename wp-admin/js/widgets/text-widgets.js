@@ -154,7 +154,7 @@ wp.textWidgets = ( function( $ ) {
 	component.init = function init() {
 		var $document = $( document );
 		$document.on( 'widget-added', component.handleWidgetAdded );
-		$document.on( 'widget-synced widget-updated', component.handleWidgetUpdated );
+		$document.on( 'widget-updated', component.handleWidgetUpdated );
 
 		/*
 		 * Manually trigger widget-added events for media widgets on the admin
