@@ -17,17 +17,6 @@
 class WP_Widget_Visual_Text extends WP_Widget_Text {
 
 	/**
-	 * Sets up a new Text widget instance.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 */
-	public function __construct() {
-		parent::__construct();
-		$this->name = __( 'Visual Text' );
-	}
-
-	/**
 	 * Add hoosk for enqueueing assets when registering all widget instances of this widget class.
 	 *
 	 * @since 2.8.0
