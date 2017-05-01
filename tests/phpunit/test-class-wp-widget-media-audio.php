@@ -26,7 +26,6 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 			array_merge(
 				array(
 					'attachment_id',
-					'autoplay',
 					'preload',
 					'loop',
 					'title',
@@ -98,19 +97,6 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 		), $instance );
 		$this->assertNotSame( $result, $instance );
 		$this->assertStringStartsWith( 'http://', $result['url'] );
-
-		// Should return autoplay setting.
-		$expected = array(
-			'autoplay' => false,
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid autoplay setting.
-		$result = $widget->update( array(
-			'autoplay' => 'not-boolean',
-		), $instance );
-		$this->assertSame( $result, $instance );
 
 		// Should return loop setting.
 		$expected = array(
@@ -206,14 +192,12 @@ class Test_WP_Widget_Media_Audio extends WP_UnitTestCase {
 			'title' => 'Funny',
 			'preload' => 'auto',
 			'loop' => true,
-			'autoplay' => true,
 		) );
 		$output = ob_get_clean();
 
 		// Custom attributes.
 		$this->assertContains( 'preload="auto"', $output );
 		$this->assertContains( 'loop="1"', $output );
-		$this->assertContains( 'autoplay="1"', $output );
 	}
 
 	/**

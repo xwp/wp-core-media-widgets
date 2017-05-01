@@ -59,10 +59,6 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		$schema = array_merge(
 			parent::get_instance_schema(),
 			array(
-				'autoplay' => array(
-					'type' => 'boolean',
-					'default' => false,
-				),
 				'poster' => array(
 					'type' => 'string',
 					'default' => '',
@@ -73,16 +69,19 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 					'type' => 'string',
 					'enum' => array( 'none', 'auto', 'metadata' ),
 					'default' => 'none',
+					'should_preview_update' => false,
 				),
 				'loop' => array(
 					'type' => 'boolean',
 					'default' => false,
+					'should_preview_update' => false,
 				),
 				'content' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => 'wp_kses_post',
 					'description' => __( 'Tracks (subtitles, captions, descriptions, chapters, or metadata)' ),
+					'should_preview_update' => false,
 				),
 			)
 		);

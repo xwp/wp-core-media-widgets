@@ -26,7 +26,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			array_merge(
 				array(
 					'attachment_id',
-					'autoplay',
 					'poster',
 					'preload',
 					'loop',
@@ -114,19 +113,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		), $instance );
 		$this->assertNotSame( $result, $instance );
 		$this->assertStringStartsWith( 'http://', $result['poster'] );
-
-		// Should return autoplay setting.
-		$expected = array(
-			'autoplay' => false,
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid autoplay setting.
-		$result = $widget->update( array(
-			'autoplay' => 'not-boolean',
-		), $instance );
-		$this->assertSame( $result, $instance );
 
 		// Should return loop setting.
 		$expected = array(
@@ -226,7 +212,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'title' => 'Open Source Cartoon',
 			'preload' => 'auto',
 			'loop' => true,
-			'autoplay' => true,
 			'poster' => 'http://chickenandribs.org/poster-image.jpg',
 		) );
 		$output = ob_get_clean();
@@ -234,7 +219,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		// Custom attributes.
 		$this->assertContains( 'preload="auto"', $output );
 		$this->assertContains( 'loop="1"', $output );
-		$this->assertContains( 'autoplay="1"', $output );
 		$this->assertContains( 'poster="http://chickenandribs.org/poster-image.jpg"', $output );
 
 		// Externally hosted video.
@@ -242,7 +226,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$content = '<track srclang="en" label="English" kind="subtitles" src="http://example.com/wp-content/uploads/2017/04/subtitles-en.vtt">';
 		$widget->render_media( array(
 			'attachment_id' => null,
-			'autoplay' => true,
 			'loop' => false,
 			'url' => 'https://www.youtube.com/watch?v=OQSNhk5ICTI',
 			'poster' => 'https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg',
@@ -252,7 +235,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 
 		// Custom attributes.
 		$this->assertContains( 'preload="none"', $output );
-		$this->assertContains( 'autoplay="1"', $output );
 		$this->assertContains( 'poster="https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg"', $output );
 		$this->assertContains( 'src="https://www.youtube.com/watch?v=OQSNhk5ICTI', $output );
 		$this->assertContains( $content, $output );

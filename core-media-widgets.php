@@ -45,9 +45,9 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 	$scripts->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js', array( 'jquery', 'media-models', 'media-views' ) );
 	$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
 
-	$scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js', array( 'media-widgets' ) );
+	$scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js', array( 'media-widgets', 'media-audiovideo' ) );
 	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
-	$scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js', array( 'media-widgets' ) );
+	$scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js', array( 'media-widgets', 'media-audiovideo' ) );
 
 	$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
 }
@@ -109,7 +109,7 @@ function wp32417_widgets_init() {
 add_action( 'widgets_init', 'wp32417_widgets_init' );
 
 /**
- * Add align classname to the alignment container in .attachment-display-settings.
+ * Add align class name to the alignment container in .attachment-display-settings.
  *
  * @see wp_print_media_templates()
  * @todo For Core merge, this should be patched in \wp_print_media_templates().
@@ -127,3 +127,26 @@ function wp32417_add_classname_to_display_settings() {
 	<?php
 }
 add_action( 'print_media_templates', 'wp32417_add_classname_to_display_settings' );
+
+/**
+ * Add autoplay class name to the checkbox container elements for audio/video details.
+ *
+ * @see wp_print_media_templates()
+ * @todo For Core merge, this should be patched in \wp_print_media_templates().
+ */
+function wp32417_add_classname_to_audio_video_details_frames() {
+	?>
+	<script>
+		(function( audioTemplateEl, videoTemplateEl ) {
+			var regex = /(<label class="setting checkbox-setting)(?=">\s*<input type="checkbox" data-setting="autoplay")/;
+			if ( audioTemplateEl ) {
+				audioTemplateEl.text = audioTemplateEl.text.replace( regex, '$1 autoplay' );
+			}
+			if ( videoTemplateEl ) {
+				videoTemplateEl.text = videoTemplateEl.text.replace( regex, '$1 autoplay' );
+			}
+		}( document.getElementById( 'tmpl-audio-details' ), document.getElementById( 'tmpl-video-details' ) ));
+	</script>
+	<?php
+}
+add_action( 'print_media_templates', 'wp32417_add_classname_to_audio_video_details_frames' );

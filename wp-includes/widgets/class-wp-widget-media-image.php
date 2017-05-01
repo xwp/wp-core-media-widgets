@@ -79,6 +79,7 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => 'wp_kses_post',
+					'should_preview_update' => false,
 				),
 				'alt' => array(
 					'type' => 'string',
@@ -90,41 +91,48 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 					'enum' => array( 'none', 'file', 'post', 'custom' ),
 					'default' => 'none',
 					'media_prop' => 'link',
+					'should_preview_update' => false,
 				),
 				'link_url' => array(
 					'type' => 'string',
 					'default' => '',
 					'format' => 'uri',
 					'media_prop' => 'linkUrl',
+					'should_preview_update' => false,
 				),
 				'image_classes' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
 					'media_prop' => 'extraClasses',
+					'should_preview_update' => false,
 				),
 				'link_classes' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
 					'media_prop' => 'linkClassName',
+					'should_preview_update' => false,
 				),
 				'link_rel' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => array( $this, 'sanitize_token_list' ),
 					'media_prop' => 'linkRel',
+					'should_preview_update' => false,
 				),
 				'link_target_blank' => array( // Via 'linkTargetBlank' property.
 					'type' => 'boolean',
 					'default' => false,
 					'media_prop' => 'linkTargetBlank',
+					'should_preview_update' => false,
 				),
 				'image_title' => array(
 					'type' => 'string',
 					'default' => '',
 					'sanitize_callback' => 'sanitize_text_field',
 					'media_prop' => 'title',
+					'should_preview_update' => false,
 				),
 
 				/*
@@ -254,7 +262,7 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop', 'should_preview_update' ) );
 		}
 		wp_add_inline_script(
 			$handle,
