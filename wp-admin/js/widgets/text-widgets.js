@@ -44,7 +44,7 @@ wp.textWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		render: function render() {
-			var control = this, delay = 1000, id, editor, textarea;
+			var control = this, changeDebounceDelay = 1000, id, editor, textarea;
 			textarea = control.$el.find( 'textarea:first' );
 			id = textarea.attr( 'id' );
 			wp.editor.initialize( id, {
@@ -58,7 +58,7 @@ wp.textWidgets = ( function( $ ) {
 			editor.on( 'change', _.debounce( function() {
 				editor.save();
 				textarea.trigger( 'change' );
-			}, delay ) );
+			}, changeDebounceDelay ) );
 		}
 	});
 

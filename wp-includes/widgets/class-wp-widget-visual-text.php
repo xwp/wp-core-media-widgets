@@ -164,7 +164,7 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 
 		<p>
 			<label for="<?php echo $this->get_field_id( 'text' ); ?>" class="screen-reader-text"><?php _e( 'Content:' ); ?></label>
-			<textarea class="widefat" rows="16" cols="20" id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>"><?php echo esc_textarea( $instance['text'] ); ?></textarea>
+			<textarea class="widefat" style="height: 200px" rows="16" cols="20" id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>"><?php echo esc_textarea( $instance['text'] ); ?></textarea>
 		</p>
 		<?php
 	}
