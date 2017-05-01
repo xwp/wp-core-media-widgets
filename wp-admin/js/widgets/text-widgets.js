@@ -1,3 +1,4 @@
+/* global tinymce */
 /* eslint consistent-this: [ "error", "control" ] */
 wp.textWidgets = ( function( $ ) {
 	'use strict';
@@ -47,6 +48,13 @@ wp.textWidgets = ( function( $ ) {
 			var control = this, changeDebounceDelay = 1000, id, editor, textarea;
 			textarea = control.$el.find( 'textarea:first' );
 			id = textarea.attr( 'id' );
+
+			// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
+			if ( tinymce.get( id ) ) {
+				delete tinymce.editors[ id ];
+				tinymce.remove( '#' + id );
+			}
+
 			wp.editor.initialize( id, {
 				tinymce: {
 					wpautop: true
@@ -99,7 +107,6 @@ wp.textWidgets = ( function( $ ) {
 			el: widgetContent
 		});
 
-		// @todo Inject TinyMCE... if visual is true.
 		widgetControl.render();
 
 		component.widgetControls[ widgetId ] = widgetControl;
@@ -126,14 +133,13 @@ wp.textWidgets = ( function( $ ) {
 		}
 
 		widgetId = widgetForm.find( '> .widget-id' ).val();
-
 		widgetControl = component.widgetControls[ widgetId ];
 		if ( ! widgetControl ) {
 			return;
 		}
 
-		// @todo Restore/Re-initialize TinyMCE.
-		// @todo Sync textarea back into TinyMCE?
+		// @todo Try to re-use previous TinyMCE editor that got destroyed with the update? Sync updated textarea?
+		widgetControl.render();
 	};
 
 	/**
