@@ -163,7 +163,8 @@ wp.mediaWidgets = ( function( $ ) {
 					 * Fetch media.
 					 *
 					 * Wrap the fetch method to capture the oEmbed fetch request promise
-					 * to obtain the thumbnail_id for poster frame.
+					 * to obtain the thumbnail_id for poster frame, along with the width
+					 * and height.
 					 *
 					 * @returns {void}
 					 */
@@ -175,6 +176,12 @@ wp.mediaWidgets = ( function( $ ) {
 							view.dfd.done( function( response ) {
 								if ( response.thumbnail_url ) {
 									view.model.set( 'poster', response.thumbnail_url );
+								}
+								if ( response.width ) {
+									view.model.set( 'width', response.width );
+								}
+								if ( response.height ) {
+									view.model.set( 'height', response.height );
 								}
 							});
 						}

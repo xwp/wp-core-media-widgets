@@ -32,6 +32,8 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 					'title',
 					'url',
 					'content',
+					'width',
+					'height',
 				),
 				wp_get_video_extensions()
 			),
@@ -158,6 +160,30 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'h4x' => 'value',
 		), $instance );
 		$this->assertSame( $result, $instance );
+
+		// Width and height are handled.
+		$result = $widget->update(
+			array(
+				'width' => -1,
+				'height' => 'bad',
+			),
+			array()
+		);
+		$this->assertEmpty( $result );
+		$result = $widget->update(
+			array(
+				'width' => 3,
+				'height' => '4',
+			),
+			array()
+		);
+		$this->assertSame(
+			$result,
+			array(
+				'width' => 3,
+				'height' => 4,
+			)
+		);
 	}
 
 	/**
@@ -213,6 +239,8 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'preload' => 'auto',
 			'loop' => true,
 			'poster' => 'http://chickenandribs.org/poster-image.jpg',
+			'width' => 1000,
+			'height' => 500,
 		) );
 		$output = ob_get_clean();
 
@@ -220,6 +248,8 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$this->assertContains( 'preload="auto"', $output );
 		$this->assertContains( 'loop="1"', $output );
 		$this->assertContains( 'poster="http://chickenandribs.org/poster-image.jpg"', $output );
+		$this->assertContains( 'width="1000"', $output );
+		$this->assertContains( 'height="500"', $output );
 
 		// Externally hosted video.
 		ob_start();
