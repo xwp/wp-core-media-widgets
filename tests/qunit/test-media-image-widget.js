@@ -59,6 +59,14 @@
 		imageWidgetControlInstance.$el.find( '.title' ).val( 'Chicken and Ribs' ).trigger( 'input' );
 		equal( imageWidgetModelInstance.get( 'title' ), 'Chicken and Ribs', 'Changing title should update model title attribute' );
 
+		// Test mapMediaToModelProps
+		mappedProps = imageWidgetControlInstance.mapMediaToModelProps( { link: 'file', url: testImageUrl } );
+		equal( mappedProps.link_url, testImageUrl, 'mapMediaToModelProps should set file link_url according to mediaFrameProps.link' );
+		mappedProps = imageWidgetControlInstance.mapMediaToModelProps( { link: 'post', postUrl: 'https://wordpress.org/image-2/' } );
+		equal( mappedProps.link_url, 'https://wordpress.org/image-2/', 'mapMediaToModelProps should set file link_url according to mediaFrameProps.link' );
+		mappedProps = imageWidgetControlInstance.mapMediaToModelProps( { link: 'custom', linkUrl: 'https://wordpress.org' } );
+		equal( mappedProps.link_url, 'https://wordpress.org', 'mapMediaToModelProps should set custom link_url according to mediaFrameProps.linkUrl' );
+
 		// Test mapModelToMediaFrameProps().
 		imageWidgetControlInstance.model.set({ error: false, url: testImageUrl, 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150, 'title': 'widget title', 'image_title': 'title of image' });
 		mappedProps = imageWidgetControlInstance.mapModelToMediaFrameProps( imageWidgetControlInstance.model.toJSON() );
