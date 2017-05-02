@@ -726,6 +726,12 @@ wp.mediaWidgets = ( function( $ ) {
 				modelProps.height = mediaFrameProps.customHeight;
 			}
 
+			if ( 'post' === mediaFrameProps.link ) {
+				modelProps.link_url = control.selectedAttachment.get( 'link' );
+			} else if ( 'file' === mediaFrameProps.link ) {
+				modelProps.link_url = mediaFrameProps.url;
+			}
+
 			// Because some media frames use `id` instead of `attachment_id`.
 			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
 				modelProps.attachment_id = mediaFrameProps.id;
