@@ -739,7 +739,8 @@ wp.mediaWidgets = ( function( $ ) {
 				modelProps.attachment_id = mediaFrameProps.id;
 			}
 
-			return modelProps;
+			// Always omit the titles derived from mediaFrameProps.
+			return _.omit( modelProps, 'title' );
 		},
 
 		/**

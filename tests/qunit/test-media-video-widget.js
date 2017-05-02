@@ -25,6 +25,12 @@
 		equal( mappedProps.url, testVideoUrl, 'mapModelToMediaFrameProps should set url' );
 		equal( mappedProps.loop, false, 'mapModelToMediaFrameProps should set loop' );
 		equal( mappedProps.preload, 'meta', 'mapModelToMediaFrameProps should set preload' );
+
+		// Test mapMediaToModelProps().
+		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( { loop: false, preload: 'meta', url: testVideoUrl, title: 'random movie file title' } );
+		equal( mappedProps.title, undefined, 'mapMediaToModelProps should ignore title inputs' );
+		equal( mappedProps.loop, false, 'mapMediaToModelProps should set loop' );
+		equal( mappedProps.preload, 'meta', 'mapMediaToModelProps should set preload' );
 	});
 
 	asyncTest( 'video widget control renderPreview', function() {
