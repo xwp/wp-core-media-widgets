@@ -671,6 +671,8 @@ wp.mediaWidgets = ( function( $ ) {
 			state = mediaFrame.state();
 			if ( 'insert' === state.get( 'id' ) ) {
 				mediaFrameProps = state.get( 'selection' ).first().toJSON();
+				mediaFrameProps.postUrl = mediaFrameProps.link;
+
 				if ( control.showDisplaySettings ) {
 					_.extend(
 						mediaFrameProps,
@@ -727,7 +729,7 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			if ( 'post' === mediaFrameProps.link ) {
-				modelProps.link_url = control.selectedAttachment.get( 'link' );
+				modelProps.link_url = mediaFrameProps.postUrl;
 			} else if ( 'file' === mediaFrameProps.link ) {
 				modelProps.link_url = mediaFrameProps.url;
 			}
