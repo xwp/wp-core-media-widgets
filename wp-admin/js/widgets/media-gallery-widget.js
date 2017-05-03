@@ -1,5 +1,5 @@
 /* eslint consistent-this: [ "error", "control" ] */
-(function( component ) {
+(function( component, $ ) {
 	'use strict';
 
 	var GalleryWidgetModel, GalleryWidgetControl, GalleryDetailsMediaFrame;
@@ -64,8 +64,6 @@
 	 * @constructor
 	 */
 	GalleryWidgetControl = component.MediaWidgetControl.extend( {
-
-
 		/**
 		 * Render preview.
 		 *
@@ -75,7 +73,7 @@
 			var control = this, previewContainer, previewTemplate;
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-gallery-preview' );
-			previewContainer.html( previewTemplate( _.extend( control.previewTemplateProps.toJSON() ) ) );
+			previewContainer.html( previewTemplate( control.previewTemplateProps.toJSON() ) );
 		},
 
 		/**
@@ -109,21 +107,22 @@
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
-
 			// Handle selection of a media item.
-			mediaFrame.on( 'update', function onUpdate( selection ) {
-				var state = mediaFrame.state();
+			mediaFrame.on( 'update', function onUpdate( selections ) {
+				var state = mediaFrame.state(), selectedImages;
 
-				selection = selection || state.get( 'selection' );
+				selectedImages = selections || state.get( 'selection' );
 
-				if ( ! selection ) {
+				if ( ! selectedImages ) {
 					return;
 				}
 
 				// Update widget instance.
 				control.model.set( {
-					ids: _.pluck( selection.models, 'id' ).join( ',' ),
-					attachments: selection.models.map( function( model ) { return model.toJSON(); } )
+					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ),
+					attachments: selectedImages.models.map( function( model ) {
+						return model.toJSON();
+					} )
 				} );
 			} );
 
@@ -163,4 +162,4 @@
 	component.controlConstructors.media_gallery = GalleryWidgetControl;
 	component.modelConstructors.media_gallery = GalleryWidgetModel;
 
-})( wp.mediaWidgets );
+})( wp.mediaWidgets, jQuery );

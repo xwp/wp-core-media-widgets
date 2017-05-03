@@ -34,7 +34,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			'change_media' => _x( 'Add Image', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Gallery', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
 			'missing_attachment' => sprintf(
-			/* translators: placeholder is URL to media library */
+				/* translators: placeholder is URL to media library */
 				__( 'We can&#8217;t find that gallery. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
 				esc_url( admin_url( 'upload.php' ) )
 			),
@@ -107,9 +107,11 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			'ids' => $instance['ids'],
 		);
 
+		// @codingStandardsIgnoreStart
 		if ( $instance['orderby_random'] ) {
 			$shortcode_atts['orderby'] = 'rand';
 		}
+		// @codingStandardsIgnoreEnd
 
 		echo gallery_shortcode( $shortcode_atts );
 	}
@@ -170,7 +172,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
-			<# } else if ( data.attachments.length ) { #>
+			<# } else if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
 				<div class="gallery gallery-columns-{{ data.columns }}">
 					<# _.each( data.attachments, function( attachment, index ) { #>
 						<dl class="gallery-item">
