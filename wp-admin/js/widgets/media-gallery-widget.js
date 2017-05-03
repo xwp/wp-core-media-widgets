@@ -109,11 +109,23 @@
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
+
 			// Handle selection of a media item.
-			mediaFrame.on( 'reset', function onInsert() {
+			mediaFrame.on( 'update', function onUpdate( selection ) {
 				var state = mediaFrame.state();
-console.log(wp.media.controller.state().get('selection'));
-			});
+
+				selection = selection || state.get( 'selection' );
+
+				if ( ! selection ) {
+					return;
+				}
+
+				// Update widget instance.
+				control.model.set( {
+					ids: _.pluck( selection.models, 'id' ).join( ',' ),
+					attachments: selection.models.map( function( model ) { return model.toJSON(); } )
+				} );
+			} );
 
 			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
 			defaultSync = wp.media.model.Attachment.prototype.sync;

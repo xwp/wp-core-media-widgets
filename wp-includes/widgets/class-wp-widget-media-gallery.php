@@ -59,8 +59,8 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			parent::get_instance_schema(),
 			array(
 				'ids' => array(
-					'type' => 'array',
-					'default' => array(),
+					'type' => 'string',
+					'default' => '',
 				),
 				'columns' => array(
 					'type' => 'integer',
@@ -71,12 +71,22 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 					'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
 					'default' => 'thumbnail',
 				),
-				'link' => array(
+				'link_type' => array(
 					'type' => 'string',
-					'default' => '',
-					'format' => 'uri',
-					'sanitize_callback' => 'esc_url',
+					'enum' => array( 'none', 'file', 'post' ),
+					'default' => 'none',
+					'media_prop' => 'link',
 					'should_preview_update' => false,
+				),
+				'orderby_random' => array(
+					'type'                  => 'boolean',
+					'default'               => false,
+					'media_prop'            => '_orderbyRandom',
+					'should_preview_update' => false,
+				),
+				'attachments' => array(
+					'type'                  => 'array',
+					'default' => array(),
 				),
 			)
 		);
@@ -93,10 +103,15 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 */
 	public function render_media( $instance ) {
 		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
-
-		echo gallery_shortcode( array(
+		$shortcode_atts = array(
 			'ids' => $instance['ids'],
-		) );
+		);
+
+		if ( $instance['orderby_random'] ) {
+			$shortcode_atts['orderby'] = 'rand';
+		}
+
+		echo gallery_shortcode( $shortcode_atts );
 	}
 
 	/**
@@ -154,6 +169,28 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			<# if ( data.error && 'missing_attachment' === data.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
+				</div>
+			<# } else if ( data.attachments.length ) { #>
+				<div class="gallery gallery-columns-{{ data.columns }}">
+					<# _.each( data.attachments, function( attachment, index ) { #>
+						<dl class="gallery-item">
+							<dt class="gallery-icon">
+							<# if ( attachment.sizes.thumbnail ) { #>
+								<img src="{{ attachment.sizes.thumbnail.url }}" width="{{ attachment.sizes.thumbnail.width }}" height="{{ attachment.sizes.thumbnail.height }}" alt="" />
+							<# } else { #>
+								<img src="{{ attachment.url }}" alt="" />
+							<# } #>
+							</dt>
+							<# if ( attachment.caption ) { #>
+								<dd class="wp-caption-text gallery-caption">
+									{{{ data.verifyHTML( attachment.caption ) }}}
+								</dd>
+							<# } #>
+						</dl>
+						<# if ( index % data.columns === data.columns - 1 ) { #>
+							<br style="clear: both;">
+						<# } #>
+					<# } ); #>
 				</div>
 			<# } else { #>
 				<div class="attachment-media-view">
