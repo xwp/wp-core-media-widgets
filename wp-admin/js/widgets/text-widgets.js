@@ -45,34 +45,76 @@ wp.textWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		render: function render() {
-			var control = this, changeDebounceDelay = 1000, id, editor, textarea;
+			var control = this, changeDebounceDelay = 1000, iframeKeepAliveInterval = 1000, id, textarea;
 			textarea = control.$el.find( 'textarea:first' );
 			id = textarea.attr( 'id' );
 
-			// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
-			if ( tinymce.get( id ) ) {
-				delete tinymce.editors[ id ];
-				tinymce.remove( '#' + id );
+			/**
+			 * Build (or re-build) an the visual editor.
+			 *
+			 * @returns {void}
+			 */
+			function buildEditor() {
+				var editor, wrap;
+
+				// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
+				if ( tinymce.get( id ) ) {
+					delete tinymce.editors[ id ];
+					tinymce.remove( '#' + id );
+				}
+
+				// Unwrap the textarea to its original location in the DOM.
+				wrap = $( '#wp-' + id + '-wrap' );
+				if ( wrap.length ) {
+					textarea.show();
+					wrap.replaceWith( textarea );
+				}
+
+				wp.editor.initialize( id, {
+					tinymce: {
+						wpautop: true
+					},
+					quicktags: true
+				} );
+
+				editor = window.tinymce.get( id );
+				if ( editor.initialized ) {
+					watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
+				} else {
+					editor.on( 'init', function() {
+						watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
+					} );
+				}
+				editor.on( 'change', _.debounce( function() {
+					editor.save();
+					textarea.trigger( 'change' );
+				}, changeDebounceDelay ) );
+				editor.on( 'blur', function() {
+
+					// @todo Only do this if there actually was a change.
+					editor.save();
+					textarea.trigger( 'change' );
+				} );
 			}
 
-			wp.editor.initialize( id, {
-				tinymce: {
-					wpautop: true
-				},
-				quicktags: true
-			} );
+			/**
+			 * Watch an iframe for the destruction of its TinyMCE contenteditable contents.
+			 *
+			 * @todo There may be a better way to listen for an iframe being destroyed.
+			 * @param {HTMLIFrameElement} iframe - TinyMCE iframe.
+			 * @returns {void}
+			 */
+			function watchForDestroyedBody( iframe ) {
+				var timeoutId = setInterval( function() {
+					if ( ! iframe.contentWindow || iframe.contentWindow.document.body.id ) {
+						return;
+					}
+					clearInterval( timeoutId );
+					buildEditor();
+				}, iframeKeepAliveInterval );
+			}
 
-			editor = window.tinymce.get( id );
-			editor.on( 'change', _.debounce( function() {
-				editor.save();
-				textarea.trigger( 'change' );
-			}, changeDebounceDelay ) );
-			editor.on( 'blur', function() {
-
-				// @todo Only do this if there actually was a change.
-				editor.save();
-				textarea.trigger( 'change' );
-			} );
+			buildEditor();
 		}
 	});
 
