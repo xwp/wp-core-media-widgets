@@ -79,3 +79,8 @@
 .media-widget-video-link.no-poster .dashicons {
 	top: 30px;
 }
+
+.wp-customizer div.mce-inline-toolbar-grp,
+.wp-customizer div.mce-tooltip {
+	z-index: 500100 !important;
+}
