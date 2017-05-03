@@ -72,6 +72,13 @@
 		showDisplaySettings: false,
 
 		/**
+		 * Cache of oembed responses.
+		 *
+		 * @type {Object}
+		 */
+		oembedResponses: {},
+
+		/**
 		 * Map model props to media frame props.
 		 *
 		 * @param {Object} modelProps - Model props.
@@ -85,17 +92,63 @@
 		},
 
 		/**
+		 * Fetches embed data for external videos.
+		 *
+		 * @returns {void}
+		 */
+		fetchEmbed: function fetchEmbed() {
+			var control = this, url;
+			url = control.model.get( 'url' );
+
+			// If we already have a local cache of the embed response, return.
+			if ( control.oembedResponses[ url ] ) {
+				return;
+			}
+
+			// If there is an in-flight embed request, abort it.
+			if ( control.fetchEmbedDfd && 'pending' === control.fetchEmbedDfd.state() ) {
+				control.fetchEmbedDfd.abort();
+			}
+
+			control.fetchEmbedDfd = jQuery.ajax({
+				url: 'https://noembed.com/embed',
+				data: {
+					url: control.model.get( 'url' ),
+					maxwidth: control.model.get( 'width' ),
+					maxheight: control.model.get( 'height' )
+				},
+				type: 'GET',
+				crossDomain: true,
+				dataType: 'json'
+			});
+
+			control.fetchEmbedDfd.done( function( response ) {
+				control.oembedResponses[ url ] = response;
+				control.renderPreview();
+			});
+
+			control.fetchEmbedDfd.fail( function() {
+				control.oembedResponses[ url ] = null;
+			});
+		},
+
+		/**
 		 * Render preview.
 		 *
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl;
+			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster;
 			attachmentId = control.model.get( 'attachment_id' );
 			attachmentUrl = control.model.get( 'url' );
 
 			if ( ! attachmentId && ! attachmentUrl ) {
 				return;
+			}
+
+			if ( ! attachmentId ) {
+				control.fetchEmbed();
+				poster = control.oembedResponses[ attachmentUrl ] ? control.oembedResponses[ attachmentUrl ].thumbnail_url : null;
 			}
 
 			previewContainer = control.$el.find( '.media-widget-preview' );
@@ -104,7 +157,8 @@
 			previewContainer.html( previewTemplate( {
 				model: {
 					attachment_id: control.model.get( 'attachment_id' ),
-					src: attachmentUrl
+					src: attachmentUrl,
+					poster: poster
 				},
 				error: control.model.get( 'error' )
 			} ) );

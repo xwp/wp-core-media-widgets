@@ -213,6 +213,10 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
+			<# } else if ( data.model && ! data.model.attachment_id && data.model.poster ) { #>
+				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link no-poster">
+					<img src="{{ data.model.poster }}" />
+				</a>
 			<# } else if ( data.model && ! data.model.attachment_id ) { #>
 				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link no-poster">
 					<span class="dashicons dashicons-format-video"></span>
