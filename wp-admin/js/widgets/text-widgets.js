@@ -85,7 +85,7 @@ wp.textWidgets = ( function( $ ) {
 	 * @returns {void}
 	 */
 	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
-		var widgetContent, widgetForm, idBase, widgetControl, widgetId;
+		var widgetContent, widgetForm, idBase, widgetControl, widgetId, animatedCheckDelay = 50, widgetInside, renderWhenAnimationDone;
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' ); // Note: '.form' appears in the customizer, whereas 'form' on the widgets admin screen.
 		widgetContent = widgetForm.find( '> .widget-content' );
 
@@ -107,12 +107,23 @@ wp.textWidgets = ( function( $ ) {
 			el: widgetContent
 		});
 
-		// Add delay as without this the iframe may not get contenteditable.
-		_.delay( function() {
-			widgetControl.render();
-		}, 100 ); // eslint-disable-line no-magic-numbers
-
 		component.widgetControls[ widgetId ] = widgetControl;
+
+		/*
+		 * Render the widget once the widget parent's container finishes animating,
+		 * as the widget-added event fires with a slideDown of the container.
+		 * This ensures that the textarea is visible and an iframe can be embedded
+		 * with TinyMCE being able to set contenteditable on it.
+		 */
+		widgetInside = widgetContainer.parent();
+		renderWhenAnimationDone = function() {
+			if ( widgetInside.is( ':animated' ) ) {
+				setTimeout( renderWhenAnimationDone, animatedCheckDelay );
+			} else {
+				widgetControl.render();
+			}
+		};
+		renderWhenAnimationDone();
 	};
 
 	/**
