@@ -1,4 +1,4 @@
-/* global tinymce */
+/* global tinymce, QTags */
 /* eslint consistent-this: [ "error", "control" ] */
 wp.textWidgets = ( function( $ ) {
 	'use strict';
@@ -63,6 +63,11 @@ wp.textWidgets = ( function( $ ) {
 					tinymce.remove( '#' + id );
 				}
 
+				// Remove any previous QuickTags created in the previous render.
+				if ( QTags.instances[ id ] ) {
+					delete QTags.instances[ id ];
+				}
+
 				// Unwrap the textarea to its original location in the DOM.
 				wrap = $( '#wp-' + id + '-wrap' );
 				if ( wrap.length ) {
@@ -76,6 +81,7 @@ wp.textWidgets = ( function( $ ) {
 					},
 					quicktags: true
 				} );
+				QTags._buttonsInit(); // @todo Remove once <https://core.trac.wordpress.org/ticket/35760#comment:28> is resolved.
 
 				editor = window.tinymce.get( id );
 				if ( editor.initialized ) {
