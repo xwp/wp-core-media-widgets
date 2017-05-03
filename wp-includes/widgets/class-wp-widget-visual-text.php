@@ -58,24 +58,25 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 		 */
 		$text = apply_filters( 'widget_text', $widget_text, $instance, $this );
 
-		// Apply visual text filters for widgets that have been created or updated since 4.8, wherein the 'filter' prop is removed.
-		if ( ! isset( $instance['filter'] ) ) {
+		if ( isset( $instance['filter'] ) ) {
+			if ( 'content' === $instance['filter'] ) {
 
-			/**
-			 * Filters the content of the Text widget to apply changes expected from the visual (TinyMCE) editor.
-			 *
-			 * By default a subset of the_content filters are applied, including wpautop and wptexturize.
-			 *
-			 * @since 4.8.0
-			 *
-			 * @param string         $widget_text The widget content.
-			 * @param array          $instance    Array of settings for the current widget.
-			 * @param WP_Widget_Text $this        Current Text widget instance.
-			 */
-			$text = apply_filters( 'widget_text_content', $widget_text, $instance, $this );
+				/**
+				 * Filters the content of the Text widget to apply changes expected from the visual (TinyMCE) editor.
+				 *
+				 * By default a subset of the_content filters are applied, including wpautop and wptexturize.
+				 *
+				 * @since 4.8.0
+				 *
+				 * @param string         $widget_text The widget content.
+				 * @param array          $instance    Array of settings for the current widget.
+				 * @param WP_Widget_Text $this        Current Text widget instance.
+				 */
+				$text = apply_filters( 'widget_text_content', $widget_text, $instance, $this );
 
-		} elseif ( true === $instance['filter'] ) {
-			$text = wpautop( $text ); // Back-compat for instances prior to 4.8.
+			} elseif ( $instance['filter'] ) {
+				$text = wpautop( $text ); // Back-compat for instances prior to 4.8.
+			}
 		}
 
 		echo $args['before_widget'];
@@ -109,8 +110,13 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 			$instance['text'] = wp_kses_post( $new_instance['text'] );
 		}
 
-		// Eliminate filter from here on.
-		unset( $instance['filter'] );
+		/*
+		 * Re-use legacy 'filter' (wpautop) property to now indicate content filters will always apply.
+		 * Prior to 4.8, this is a boolean value used to indicate whether or not wpautop should be
+		 * applied. By re-using this property, downgrading WordPress from 4.8 to 4.7 will ensure
+		 * that the content for Text widgets created with TinyMCE will continue to get wpautop.
+		 */
+		$instance['filter'] = 'content';
 
 		return $instance;
 	}
