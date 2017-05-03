@@ -67,6 +67,12 @@ wp.textWidgets = ( function( $ ) {
 				editor.save();
 				textarea.trigger( 'change' );
 			}, changeDebounceDelay ) );
+			editor.on( 'blur', function() {
+
+				// @todo Only do this if there actually was a change.
+				editor.save();
+				textarea.trigger( 'change' );
+			} );
 		}
 	});
 
