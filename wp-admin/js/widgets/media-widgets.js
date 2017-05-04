@@ -680,7 +680,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {Object} Model props.
 		 */
 		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
-			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {};
+			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {}, extension, isEmbed;
 			_.each( control.model.schema, function( fieldSchema, modelProp ) {
 
 				// Ignore widget title attribute.
@@ -712,6 +712,20 @@ wp.mediaWidgets = ( function( $ ) {
 			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
 				modelProps.attachment_id = mediaFrameProps.id;
 			}
+
+			isEmbed = 0 === modelProps.attachment_id;
+
+			// Reset all video/audio sources.
+			wp.media.view.settings.embedExts.map( function( ext ) {
+
+				// Only reset when the main source changes.
+				if ( ! ( ext in modelProps ) || isEmbed ) {
+					modelProps[ ext ] = '';
+				}
+			} );
+
+			extension = mediaFrameProps.url.split( '.' ).pop();
+			modelProps[ extension ] = mediaFrameProps.url;
 
 			// Always omit the titles derived from mediaFrameProps.
 			return _.omit( modelProps, 'title' );
