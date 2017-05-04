@@ -141,12 +141,15 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	/**
 	 * Inject max-width and remove height for videos to constrained to fit inside sidebars on frontend.
 	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
 	 * @param string $html Video shortcode HTML output.
-	 * @returns string HTML Output.
+	 * @return string HTML Output.
 	 */
 	public function inject_video_max_width_style( $html ) {
-		$html = preg_replace( '/\bheight="\d+"/', '', $html );
-		$html = str_replace( 'style="', 'style="max-width:100%;', $html );
+		$html = preg_replace( '/\sheight="\d+"/', '', $html );
+		$html = preg_replace( '/(?<=\sstyle=")/', 'max-width:100%; ', $html, 1 );
 		return $html;
 	}
 

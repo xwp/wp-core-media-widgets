@@ -149,6 +149,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	 * Test render_media method.
 	 *
 	 * @covers WP_Widget_Media_Video::render_media()
+	 * @covers WP_Widget_Media_Video::inject_video_max_width_style()
 	 */
 	function test_render_media() {
 		$test_movie_file = __FILE__ . '../data/small-video.m4v';
