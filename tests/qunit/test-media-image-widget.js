@@ -66,6 +66,7 @@
 		equal( mappedProps.link_url, 'https://wordpress.org/image-2/', 'mapMediaToModelProps should set file link_url according to mediaFrameProps.link' );
 		mappedProps = imageWidgetControlInstance.mapMediaToModelProps( { link: 'custom', linkUrl: 'https://wordpress.org', url: testImageUrl } );
 		equal( mappedProps.link_url, 'https://wordpress.org', 'mapMediaToModelProps should set custom link_url according to mediaFrameProps.linkUrl' );
+		equal( mappedProps.png, undefined, 'mapMediaToModelProps should not set the extension on an image' );
 
 		// Test mapModelToMediaFrameProps().
 		imageWidgetControlInstance.model.set({ error: false, url: testImageUrl, 'link_type': 'custom', 'link_url': 'https://wordpress.org', 'size': 'custom', 'width': 100, 'height': 150, 'title': 'widget title', 'image_title': 'title of image' });

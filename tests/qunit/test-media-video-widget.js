@@ -41,13 +41,20 @@
 		equal( mappedProps.mp4, testVideoUrl, 'mapMediaToModelProps should set whitelisted video extensions' );
 		equal( mappedProps.flv, '', 'mapMediaToModelProps should reset old extension information' );
 
+		// Test to make sure mapMediaToModelProps can operate without a url.
+		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( {} );
+
 		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( {
 			attachment_id: 1,
 			ogv: 'http://example.com/video.ogv',
 			url: testVideoUrl
 		} );
 		equal( mappedProps.ogv, 'http://example.com/video.ogv', 'mapMediaToModelProps should maintain preset extension for attached videos' );
-
+		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( {
+			attachment_id: 1,
+			url: 'https://videos.files.wordpress.com/AHz0Ca46/wp4-7-vaughan-r8-mastered_hd.MP4?queryString'
+		} );
+		equal( mappedProps.mp4, 'https://videos.files.wordpress.com/AHz0Ca46/wp4-7-vaughan-r8-mastered_hd.MP4?queryString', 'mapMediaToModelProps should handle query strings in url' );
 	});
 
 	asyncTest( 'video widget control renderPreview', function() {

@@ -724,8 +724,13 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			} );
 
-			extension = mediaFrameProps.url.split( '.' ).pop().toLowerCase();
-			modelProps[ extension ] = mediaFrameProps.url;
+			if ( mediaFrameProps.url ) {
+				extension = mediaFrameProps.url.replace( /#.*$/, '' ).replace( /\?.*$/, '' ).split( '.' ).pop().toLowerCase();
+			}
+
+			if ( extension in control.model.schema ) {
+				modelProps[ extension ] = mediaFrameProps.url;
+			}
 
 			// Always omit the titles derived from mediaFrameProps.
 			return _.omit( modelProps, 'title' );
