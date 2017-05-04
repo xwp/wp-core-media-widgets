@@ -27,10 +27,27 @@
 		equal( mappedProps.preload, 'meta', 'mapModelToMediaFrameProps should set preload' );
 
 		// Test mapMediaToModelProps().
-		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( { loop: false, preload: 'meta', url: testVideoUrl, title: 'random movie file title' } );
+		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( {
+			attachment_id: 0,
+			loop: false,
+			flv: 'http://example.com/video.flv',
+			preload: 'meta',
+			title: 'random movie file title',
+			url: testVideoUrl
+		} );
 		equal( mappedProps.title, undefined, 'mapMediaToModelProps should ignore title inputs' );
 		equal( mappedProps.loop, false, 'mapMediaToModelProps should set loop' );
 		equal( mappedProps.preload, 'meta', 'mapMediaToModelProps should set preload' );
+		equal( mappedProps.mp4, testVideoUrl, 'mapMediaToModelProps should set whitelisted video extensions' );
+		equal( mappedProps.flv, '', 'mapMediaToModelProps should reset old extension information' );
+
+		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( {
+			attachment_id: 1,
+			ogv: 'http://example.com/video.ogv',
+			url: testVideoUrl
+		} );
+		equal( mappedProps.ogv, 'http://example.com/video.ogv', 'mapMediaToModelProps should maintain preset extension for attached videos' );
+
 	});
 
 	asyncTest( 'video widget control renderPreview', function() {
