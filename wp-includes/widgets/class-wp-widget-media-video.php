@@ -125,6 +125,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			return;
 		}
 
+		add_filter( 'wp_video_shortcode', array( $this, 'inject_video_max_width_style' ) );
+
 		echo wp_video_shortcode(
 			array_merge(
 				$instance,
@@ -132,6 +134,20 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			),
 			$instance['content']
 		);
+
+		remove_filter( 'wp_video_shortcode', array( $this, 'inject_video_max_width_style' ) );
+	}
+
+	/**
+	 * Inject max-width and remove height for videos to constrained to fit inside sidebars on frontend.
+	 *
+	 * @param string $html Video shortcode HTML output.
+	 * @returns string HTML Output.
+	 */
+	public function inject_video_max_width_style( $html ) {
+		$html = preg_replace( '/\bheight="\d+"/', '', $html );
+		$html = str_replace( 'style="', 'style="max-width:100%;', $html );
+		return $html;
 	}
 
 	/**
