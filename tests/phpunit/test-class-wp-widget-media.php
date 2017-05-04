@@ -404,4 +404,42 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 
 		$this->assertContains( '<script type="text/html" id="tmpl-widget-media-mocked-control">', $output );
 	}
+
+	/**
+	 * Test has_content method.
+	 *
+	 * @covers WP_Widget_Media::has_content()
+	 */
+	function test_has_content() {
+		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+			return;
+		}
+		$args = array(
+			'attachment_id' => 0,
+			'url' => '',
+		);
+		$attachment_id = self::factory()->attachment->create_object( array(
+			'file' => DIR_TESTDATA . '/images/canola.jpg',
+			'post_parent' => 0,
+			'post_mime_type' => 'image/jpeg',
+		) );
+
+		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
+		$has_content = $wp_widget_media->getMethod( 'has_content' );
+		$has_content->setAccessible( true );
+
+		$result = $has_content->invokeArgs( $this->get_mocked_class_instance(), array( $args ) );
+		$this->assertFalse( $result );
+
+		$result = $has_content->invokeArgs( $this->get_mocked_class_instance(), array(
+			array_merge( $args, array( 'attachment_id' => $attachment_id ) ),
+		) );
+		$this->assertTrue( $result );
+
+		$result = $has_content->invokeArgs( $this->get_mocked_class_instance(), array(
+			array_merge( $args, array( 'url' => 'http://example.com/image.jpg' ) ),
+		) );
+		$this->assertTrue( $result );
+	}
 }

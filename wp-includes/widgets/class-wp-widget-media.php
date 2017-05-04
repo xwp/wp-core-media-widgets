@@ -413,6 +413,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @return bool
 	 */
 	protected function has_content( $instance ) {
-		return ( $instance['attachment_id'] && 'attachment' !== get_post_type( $instance['attachment_id'] ) ) || $instance['url'];
+		return ( $instance['attachment_id'] && 'attachment' === get_post_type( $instance['attachment_id'] ) ) || $instance['url'];
 	}
 }
