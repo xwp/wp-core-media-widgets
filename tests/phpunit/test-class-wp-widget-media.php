@@ -250,50 +250,6 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test create_link_for method.
-	 *
-	 * @covers WP_Widget_Media::create_link_for()
-	 */
-	function test_create_link_for() {
-		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
-			return;
-		}
-
-		$attachment_id = self::factory()->attachment->create_object( array(
-			'file' => DIR_TESTDATA . '/images/canola.jpg',
-			'post_parent' => 0,
-			'post_mime_type' => 'image/jpeg',
-		) );
-
-		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
-		$create_link_for = $wp_widget_media->getMethod( 'create_link_for' );
-		$create_link_for->setAccessible( true );
-
-		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
-			get_post( $attachment_id ),
-		) );
-		$this->assertSame( '<a href="#"></a>', $result );
-
-		wp_update_post( array(
-			'ID' => $attachment_id,
-			'post_title' => 'Attachment Title',
-		) );
-
-		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
-			get_post( $attachment_id ),
-			'file',
-		) );
-		$this->assertSame( '<a href="' . esc_url( wp_get_attachment_url( $attachment_id ) ) . '">Attachment Title</a>', $result );
-
-		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
-			get_post( $attachment_id ),
-			'post',
-		) );
-		$this->assertSame( '<a href="' . esc_url( get_permalink( $attachment_id ) ) . '">Attachment Title</a>', $result );
-	}
-
-	/**
 	 * Test widget method.
 	 *
 	 * @covers WP_Widget_Media::widget()

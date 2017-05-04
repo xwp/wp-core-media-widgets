@@ -404,27 +404,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	}
 
 	/**
-	 * Creates and returns a link for an attachment.
-	 *
-	 * @since 4.8.0
-	 * @access protected
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $type       link type.
-	 * @return string
-	 */
-	protected function create_link_for( $attachment, $type = '' ) {
-		$url = '#';
-		if ( 'file' === $type ) {
-			$url = wp_get_attachment_url( $attachment->ID );
-		} elseif ( 'post' === $type ) {
-			$url = get_attachment_link( $attachment->ID );
-		}
-
-		return '<a href="' . esc_url( $url ) . '">' . get_the_title( $attachment->ID ) . '</a>';
-	}
-
-	/**
 	 * Whether the widget has content to show.
 	 *
 	 * @since 4.8.0
