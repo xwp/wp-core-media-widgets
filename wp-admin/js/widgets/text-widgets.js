@@ -151,7 +151,6 @@ wp.textWidgets = ( function( $ ) {
 	component.handleWidgetAdded = function handleWidgetAdded( event, widgetContainer ) {
 		var widgetContent, widgetForm, idBase, widgetControl, widgetId, animatedCheckDelay = 50, widgetInside, renderWhenAnimationDone;
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' ); // Note: '.form' appears in the customizer, whereas 'form' on the widgets admin screen.
-		widgetContent = widgetForm.find( '> .widget-content' );
 
 		idBase = widgetForm.find( '> .id_base' ).val();
 		if ( 'text' !== idBase ) {
@@ -160,13 +159,12 @@ wp.textWidgets = ( function( $ ) {
 
 		widgetId = widgetForm.find( '> .widget-id' ).val();
 
-		// @todo Obtain the Save/Apply button and detatch the TinyMCE container element upon clicking, to then restore upon widgetUpdated.
-
 		// Prevent initializing already-added widgets.
 		if ( component.widgetControls[ widgetId ] ) {
 			return;
 		}
 
+		widgetContent = widgetForm.find( '> .widget-content' );
 		widgetControl = new component.TextWidgetControl({
 			el: widgetContent
 		});
