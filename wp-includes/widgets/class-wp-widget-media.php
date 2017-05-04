@@ -410,7 +410,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @access protected
 	 *
 	 * @param array $instance Widget instance props.
-	 * @return bool
+	 * @return bool Whether widget has content.
 	 */
 	protected function has_content( $instance ) {
 		return ( $instance['attachment_id'] && 'attachment' === get_post_type( $instance['attachment_id'] ) ) || $instance['url'];
