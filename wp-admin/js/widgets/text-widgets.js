@@ -55,7 +55,7 @@ wp.textWidgets = ( function( $ ) {
 			 * @returns {void}
 			 */
 			function buildEditor() {
-				var editor, wrap;
+				var editor, wrap, onChanged, dirty, triggerChangeIfDirty;
 
 				// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
 				if ( tinymce.get( id ) ) {
@@ -91,15 +91,25 @@ wp.textWidgets = ( function( $ ) {
 						watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
 					} );
 				}
-				editor.on( 'change', _.debounce( function() {
-					editor.save();
-					textarea.trigger( 'change' );
-				}, changeDebounceDelay ) );
-				editor.on( 'blur', function() {
 
-					// @todo Only do this if there actually was a change.
-					editor.save();
-					textarea.trigger( 'change' );
+				dirty = false;
+				onChanged = function() {
+					dirty = true;
+				};
+				triggerChangeIfDirty = function() {
+					if ( dirty ) {
+						editor.save();
+						textarea.trigger( 'change' );
+						dirty = false;
+					}
+				};
+				editor.on( 'focus', function() {
+					editor.on( 'change', onChanged );
+				} );
+				editor.on( 'change', _.debounce( triggerChangeIfDirty, changeDebounceDelay ) );
+				editor.on( 'blur', function() {
+					editor.off( 'change', onChanged );
+					triggerChangeIfDirty();
 				} );
 			}
 
