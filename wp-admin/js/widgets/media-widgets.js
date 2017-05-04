@@ -724,7 +724,7 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			} );
 
-			extension = mediaFrameProps.url.split( '.' ).pop();
+			extension = mediaFrameProps.url.split( '.' ).pop().toLowerCase();
 			modelProps[ extension ] = mediaFrameProps.url;
 
 			// Always omit the titles derived from mediaFrameProps.
