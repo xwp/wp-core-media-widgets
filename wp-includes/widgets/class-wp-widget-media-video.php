@@ -139,7 +139,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	}
 
 	/**
-	 * Inject max-width and remove height for videos to constrained to fit inside sidebars on frontend.
+	 * Inject max-width and remove height for videos too constrained to fit inside sidebars on frontend.
 	 *
 	 * @since 4.8.0
 	 * @access public
