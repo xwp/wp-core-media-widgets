@@ -95,11 +95,8 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 	 */
 	public function render_media( $instance ) {
 		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
-		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
-			return;
-		}
-
 		$attachment = null;
+
 		if ( $this->is_attachment_with_mime_type( $instance['attachment_id'], $this->widget_options['mime_type'] ) ) {
 			$attachment = get_post( $instance['attachment_id'] );
 		}
