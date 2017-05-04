@@ -87,20 +87,19 @@ wp.mediaWidgets = ( function( $ ) {
 		/**
 		 * Refresh embed view.
 		 *
-		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field
-		 * and so that the thumbnail_id for oEmbeds can be captured for use as the poster frame.
+		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field.
 		 *
 		 * @returns {void}
 		 */
 		refresh: function refresh() {
-			var type = this.model.get( 'type' ), PatchedConstructor, Constructor;
+			var type = this.model.get( 'type' ), Constructor;
 
 			if ( 'image' === type ) {
 				Constructor = wp.media.view.EmbedImage;
 			} else if ( 'link' === type ) {
 
 				// This should be eliminated once #40450 lands of when this is merged into core.
-				PatchedConstructor = wp.media.view.EmbedLink.extend({
+				Constructor = wp.media.view.EmbedLink.extend({
 
 					/**
 					 * Fetch media.
@@ -154,31 +153,6 @@ wp.mediaWidgets = ( function( $ ) {
 					 * @returns {void}
 					 */
 					renderFail: function() {}
-				});
-
-				// After #40450 lands, PatchedConstructor would be replaced with wp.media.view.EmbedLink; the following would stay while the previous would go.
-				Constructor = PatchedConstructor.extend({
-
-					/**
-					 * Fetch media.
-					 *
-					 * Wrap the fetch method to capture the oEmbed fetch request promise
-					 * to obtain the thumbnail_id for poster frame.
-					 *
-					 * @returns {void}
-					 */
-					fetch: function fetch() {
-						var view = this; // eslint-disable-line consistent-this
-						PatchedConstructor.prototype.fetch.call( view );
-
-						if ( view.dfd ) {
-							view.dfd.done( function( response ) {
-								if ( response.thumbnail_url ) {
-									view.model.set( 'poster', response.thumbnail_url );
-								}
-							});
-						}
-					}
 				});
 			} else {
 				return;
@@ -671,6 +645,8 @@ wp.mediaWidgets = ( function( $ ) {
 			state = mediaFrame.state();
 			if ( 'insert' === state.get( 'id' ) ) {
 				mediaFrameProps = state.get( 'selection' ).first().toJSON();
+				mediaFrameProps.postUrl = mediaFrameProps.link;
+
 				if ( control.showDisplaySettings ) {
 					_.extend(
 						mediaFrameProps,
@@ -726,12 +702,19 @@ wp.mediaWidgets = ( function( $ ) {
 				modelProps.height = mediaFrameProps.customHeight;
 			}
 
+			if ( 'post' === mediaFrameProps.link ) {
+				modelProps.link_url = mediaFrameProps.postUrl;
+			} else if ( 'file' === mediaFrameProps.link ) {
+				modelProps.link_url = mediaFrameProps.url;
+			}
+
 			// Because some media frames use `id` instead of `attachment_id`.
 			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
 				modelProps.attachment_id = mediaFrameProps.id;
 			}
 
-			return modelProps;
+			// Always omit the titles derived from mediaFrameProps.
+			return _.omit( modelProps, 'title' );
 		},
 
 		/**

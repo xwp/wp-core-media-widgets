@@ -36,9 +36,11 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 * Test constructor.
 	 *
 	 * @covers WP_Widget_Media::__construct()
+	 * @covers WP_Widget_Media::_register()
 	 */
 	function test_constructor() {
 		$widget = $this->get_mocked_class_instance();
+		$widget->_register();
 
 		$this->assertArrayHasKey( 'mime_type', $widget->widget_options );
 		$this->assertArrayHasKey( 'customize_selective_refresh', $widget->widget_options );
@@ -88,6 +90,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	 *
 	 * @global WP_Customize_Manager $wp_customize
 	 * @covers WP_Widget_Media::__construct()
+	 * @covers WP_Widget_Media::_register()
 	 */
 	function test_constructor_in_customize_preview() {
 		global $wp_customize;
@@ -101,6 +104,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$wp_customize->start_previewing_theme();
 
 		$widget = $this->get_mocked_class_instance();
+		$widget->_register();
 		$this->assertEquals( 10, has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ) );
 	}
 
