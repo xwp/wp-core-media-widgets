@@ -50,7 +50,7 @@ wp.textWidgets = ( function( $ ) {
 			id = textarea.attr( 'id' );
 
 			/**
-			 * Build (or re-build) an the visual editor.
+			 * Build (or re-build) the visual editor.
 			 *
 			 * @returns {void}
 			 */
