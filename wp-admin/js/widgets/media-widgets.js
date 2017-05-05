@@ -640,7 +640,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {Object} Props.
 		 */
 		getModelPropsFromMediaFrame: function getModelPropsFromMediaFrame( mediaFrame ) {
-			var control = this, state, mediaFrameProps;
+			var control = this, state, mediaFrameProps, modelProps;
 
 			state = mediaFrame.state();
 			if ( 'insert' === state.get( 'id' ) ) {
@@ -670,7 +670,16 @@ wp.mediaWidgets = ( function( $ ) {
 				mediaFrameProps.attachment_id = mediaFrameProps.id;
 			}
 
-			return control.mapMediaToModelProps( mediaFrameProps );
+			modelProps = control.mapMediaToModelProps( mediaFrameProps );
+
+			// Clear the extension prop so sources will be reset for video and audio media.
+			_.each( wp.media.view.settings.embedExts, function( ext ) {
+				if ( ext in control.model.schema && modelProps.url !== modelProps[ ext ] ) {
+					modelProps[ ext ] = '';
+				}
+			} );
+
+			return modelProps;
 		},
 
 		/**
@@ -680,7 +689,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {Object} Model props.
 		 */
 		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
-			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {}, extension, isEmbed;
+			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {}, extension;
 			_.each( control.model.schema, function( fieldSchema, modelProp ) {
 
 				// Ignore widget title attribute.
@@ -712,17 +721,6 @@ wp.mediaWidgets = ( function( $ ) {
 			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
 				modelProps.attachment_id = mediaFrameProps.id;
 			}
-
-			isEmbed = 0 === modelProps.attachment_id;
-
-			// Reset all video/audio sources.
-			_.each( wp.media.view.settings.embedExts, function( ext ) {
-
-				// Only reset when the main source changes.
-				if ( ! ( ext in modelProps ) || isEmbed ) {
-					modelProps[ ext ] = '';
-				}
-			} );
 
 			if ( mediaFrameProps.url ) {
 				extension = mediaFrameProps.url.replace( /#.*$/, '' ).replace( /\?.*$/, '' ).split( '.' ).pop().toLowerCase();
