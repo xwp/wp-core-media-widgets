@@ -716,7 +716,7 @@ wp.mediaWidgets = ( function( $ ) {
 			isEmbed = 0 === modelProps.attachment_id;
 
 			// Reset all video/audio sources.
-			wp.media.view.settings.embedExts.map( function( ext ) {
+			_.each( wp.media.view.settings.embedExts, function( ext ) {
 
 				// Only reset when the main source changes.
 				if ( ! ( ext in modelProps ) || isEmbed ) {
@@ -726,10 +726,9 @@ wp.mediaWidgets = ( function( $ ) {
 
 			if ( mediaFrameProps.url ) {
 				extension = mediaFrameProps.url.replace( /#.*$/, '' ).replace( /\?.*$/, '' ).split( '.' ).pop().toLowerCase();
-			}
-
-			if ( extension in control.model.schema ) {
-				modelProps[ extension ] = mediaFrameProps.url;
+				if ( extension in control.model.schema ) {
+					modelProps[ extension ] = mediaFrameProps.url;
+				}
 			}
 
 			// Always omit the titles derived from mediaFrameProps.
