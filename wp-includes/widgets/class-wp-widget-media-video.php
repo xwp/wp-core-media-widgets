@@ -146,7 +146,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 */
 	public function inject_video_max_width_style( $html ) {
 		$html = preg_replace( '/\sheight="\d+"/', '', $html );
-		$html = preg_replace( '/(?<=\sstyle=")/', 'max-width:100%; ', $html, 1 );
+		$html = preg_replace( '/\swidth="\d+"/', '', $html );
+		$html = preg_replace( '/(?<=width:)\s*\d+px(?=;?)/', '100%', $html );
 		return $html;
 	}
 
