@@ -186,12 +186,10 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		// Check default outputs.
 		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'class="wp-video"', $output );
-		$this->assertContains( 'max-width:100%', $output );
+		$this->assertContains( 'width:100%', $output );
 		$this->assertNotContains( 'height=', $output );
-		$this->assertContains( 'small-video.m4v', $output );
-
-		// Auto parses dimensions.
-		$this->assertContains( 'width="640"', $output );
+		$this->assertNotContains( 'width="', $output );
+		$this->assertContains( 'small-video.m4v', $output );// Auto parses dimensions.
 
 		ob_start();
 		$widget->render_media( array(
