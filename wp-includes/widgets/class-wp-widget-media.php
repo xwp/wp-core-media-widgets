@@ -173,7 +173,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param string|array $tokens List of tokens separated by spaces, or an array of tokens.
 	 * @return string Sanitized token string list.
 	 */
-	function sanitize_token_list( $tokens ) {
+	public function sanitize_token_list( $tokens ) {
 		if ( is_string( $tokens ) ) {
 			$tokens = preg_split( '/\s+/', trim( $tokens ) );
 		}
@@ -197,7 +197,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
 		// Short-circuit if no media is selected.
-		if ( ( ! $instance['attachment_id'] || 'attachment' !== get_post_type( $instance['attachment_id'] ) ) && ! $instance['url'] ) {
+		if ( ! $this->has_content( $instance ) ) {
 			return;
 		}
 
@@ -284,24 +284,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	abstract public function render_media( $instance );
 
 	/**
-	 * Creates and returns a link for an attachment.
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $type       link type.
-	 * @return string
-	 */
-	protected function create_link_for( $attachment, $type = '' ) {
-		$url = '#';
-		if ( 'file' === $type ) {
-			$url = wp_get_attachment_url( $attachment->ID );
-		} elseif ( 'post' === $type ) {
-			$url = get_attachment_link( $attachment->ID );
-		}
-
-		return '<a href="' . esc_url( $url ) . '">' . get_the_title( $attachment->ID ) . '</a>';
-	}
-
-	/**
 	 * Outputs the settings update form.
 	 *
 	 * Note that the widget UI itself is rendered with JavaScript via `MediaWidgetControl#render()`.
@@ -319,8 +301,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
 			array_keys( $instance_schema )
 		);
-		?>
-		<?php foreach ( $instance as $name => $value ) : ?>
+
+		foreach ( $instance as $name => $value ) : ?>
 			<input
 				type="hidden"
 				data-property="<?php echo esc_attr( $name ); ?>"
@@ -329,8 +311,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 				id="<?php echo esc_attr( $this->get_field_id( $name ) ); // Needed specifically by wpWidgets.appendTitle(). ?>"
 				value="<?php echo esc_attr( strval( $value ) ); ?>"
 			/>
-		<?php endforeach; ?>
 		<?php
+		endforeach;
 	}
 
 	/**
@@ -419,5 +401,18 @@ abstract class WP_Widget_Media extends WP_Widget {
 			</div>
 		</script>
 		<?php
+	}
+
+	/**
+	 * Whether the widget has content to show.
+	 *
+	 * @since 4.8.0
+	 * @access protected
+	 *
+	 * @param array $instance Widget instance props.
+	 * @return bool Whether widget has content.
+	 */
+	protected function has_content( $instance ) {
+		return ( $instance['attachment_id'] && 'attachment' === get_post_type( $instance['attachment_id'] ) ) || $instance['url'];
 	}
 }
