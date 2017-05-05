@@ -229,15 +229,15 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.model && ! data.model.attachment_id && data.model.poster ) { #>
-				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link no-poster">
+			<# } else if ( data.is_hosted_embed && data.model.poster ) { #>
+				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link">
 					<img src="{{ data.model.poster }}" />
 				</a>
-			<# } else if ( data.model && ! data.model.attachment_id ) { #>
+			<# } else if ( data.is_hosted_embed ) { #>
 				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link no-poster">
 					<span class="dashicons dashicons-format-video"></span>
 				</a>
-			<# } else if ( data.model && data.model.attachment_id ) { #>
+			<# } else if ( data.model.src ) { #>
 				<?php wp_underscore_video_template() ?>
 			<# } #>
 		</script>

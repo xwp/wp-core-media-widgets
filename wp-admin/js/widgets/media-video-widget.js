@@ -138,7 +138,7 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster;
+			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster, isHostedEmbed = false, parsedUrl;
 			attachmentId = control.model.get( 'attachment_id' );
 			attachmentUrl = control.model.get( 'url' );
 
@@ -146,7 +146,13 @@
 				return;
 			}
 
-			if ( ! attachmentId ) {
+			if ( ! attachmentId && attachmentUrl ) {
+				parsedUrl = document.createElement( 'a' );
+				parsedUrl.href = attachmentUrl;
+				isHostedEmbed = /vimeo|youtu\.?be/.test( parsedUrl.host );
+			}
+
+			if ( isHostedEmbed ) {
 				control.fetchEmbed();
 				poster = control.oembedResponses[ attachmentUrl ] ? control.oembedResponses[ attachmentUrl ].thumbnail_url : null;
 			}
@@ -160,6 +166,7 @@
 					src: attachmentUrl,
 					poster: poster
 				},
+				is_hosted_embed: isHostedEmbed,
 				error: control.model.get( 'error' )
 			} ) );
 		},
