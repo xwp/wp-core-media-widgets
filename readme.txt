@@ -1,6 +1,6 @@
 === Core Media Widgets ===
 Contributors:      wordpressdotorg
-Tags:              sidebar, widget, images, video, audio
+Tags:              sidebar, widget, images, video, audio, tinymce
 Requires at least: 4.7.0
 Tested up to:      4.8.0-alpha
 Stable tag:        master
@@ -17,6 +17,7 @@ See Trac tickets:
 * [#39993](https://core.trac.wordpress.org/ticket/39993): Introduce Core Widget: Image
 * [#39994](https://core.trac.wordpress.org/ticket/39994): Introduce Core Widget: Video
 * [#39995](https://core.trac.wordpress.org/ticket/39995): Introduce Core Widget: Audio
+* [#35243](https://core.trac.wordpress.org/ticket/35243): Extending the text widget to also allow visual mode
 
 Media widgets from this plugin are planned to be copied into core and deactivated in this
 plugin in future releases.
