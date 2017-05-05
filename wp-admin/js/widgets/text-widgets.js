@@ -1,4 +1,4 @@
-/* global tinymce, QTags */
+/* global tinymce, QTags, switchEditors */
 /* eslint consistent-this: [ "error", "control" ] */
 wp.textWidgets = ( function( $ ) {
 	'use strict';
@@ -107,7 +107,7 @@ wp.textWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		initializeEditor: function initializeEditor() {
-			var control = this, changeDebounceDelay = 1000, iframeKeepAliveInterval = 1000, id, textarea;
+			var control = this, changeDebounceDelay = 1000, iframeKeepAliveInterval = 1000, id, textarea, restoreTextMode = false;
 			textarea = control.fields.text;
 			id = textarea.attr( 'id' );
 
@@ -121,6 +121,9 @@ wp.textWidgets = ( function( $ ) {
 
 				// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
 				if ( tinymce.get( id ) ) {
+					if ( tinymce.get( id ).isHidden() ) {
+						restoreTextMode = true;
+					}
 					delete tinymce.editors[ id ];
 					tinymce.remove( '#' + id );
 				}
@@ -151,6 +154,11 @@ wp.textWidgets = ( function( $ ) {
 				}
 				if ( editor.initialized ) {
 					watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
+
+					// If a prior mce instance was replaced, and it was in text mode, toggle to text mode.
+					if ( restoreTextMode ) {
+						switchEditors.go( id, 'toggle' );
+					}
 				} else {
 					editor.on( 'init', function() {
 						watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
