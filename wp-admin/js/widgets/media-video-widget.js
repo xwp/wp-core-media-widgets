@@ -196,7 +196,7 @@
 				control.selectedAttachment.set( mediaFrameProps );
 
 				control.model.set( _.extend(
-					control.model.defaults(),
+					_.omit( control.model.defaults(), 'title' ),
 					control.mapMediaToModelProps( mediaFrameProps ),
 					{ error: false }
 				) );
