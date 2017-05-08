@@ -1,4 +1,4 @@
 CHECK_SCOPE=changed-files
 PHPCS_RULESET_FILE=phpcs.xml.dist
 WPCS_BRANCH=develop
-PHPCS_PHAR_URL=https://github.com/squizlabs/PHP_CodeSniffer/blob/700168ede59d6a7d45fc4a2feefde1d156eb4573/phpcs.phar?raw=true
+PHPCS_PHAR_URL=https://github.com/squizlabs/PHP_CodeSniffer/releases/download/2.9.0/phpcs.phar
