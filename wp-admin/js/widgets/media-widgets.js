@@ -940,7 +940,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 		/*
 		 * Create a container element for the widget control (Backbone.View).
-		 * This is inserted into the DOM immediately before the the .widget-control
+		 * This is inserted into the DOM immediately before the the .widget-content
 		 * element because the contents of this element are essentially "managed"
 		 * by PHP, where each widget update cause the entire element to be emptied
 		 * and replaced with the rendered output of WP_Widget::form() which is
@@ -994,7 +994,6 @@ wp.mediaWidgets = ( function( $ ) {
 	component.handleWidgetUpdated = function handleWidgetUpdated( event, widgetContainer ) {
 		var widgetForm, widgetContent, widgetId, widgetControl, attributes = {};
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' );
-		widgetContent = widgetForm.find( '> .widget-content' );
 		widgetId = widgetForm.find( '> .widget-id' ).val();
 
 		widgetControl = component.widgetControls[ widgetId ];
@@ -1003,6 +1002,7 @@ wp.mediaWidgets = ( function( $ ) {
 		}
 
 		// Make sure the server-sanitized values get synced back into the model.
+		widgetContent = widgetForm.find( '> .widget-content' );
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var property = $( this ).data( 'property' );
 			attributes[ property ] = $( this ).val();
