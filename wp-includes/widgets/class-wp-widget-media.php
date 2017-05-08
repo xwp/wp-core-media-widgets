@@ -385,10 +385,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 			</p>
 			<div class="media-widget-preview">
 				<div class="attachment-media-view">
-					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
+					<div class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></div>
 				</div>
 			</div>
-			<div class="media-widget-buttons">
+			<p class="media-widget-buttons">
 				<button type="button" class="button edit-media selected">
 					<?php echo esc_html( $this->l10n['edit_media'] ); ?>
 				</button>
@@ -398,7 +398,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 				<button type="button" class="button select-media not-selected">
 					<?php echo esc_html( $this->l10n['select_media'] ); ?>
 				</button>
-			</div>
+			</p>
 		</script>
 		<?php
 	}
