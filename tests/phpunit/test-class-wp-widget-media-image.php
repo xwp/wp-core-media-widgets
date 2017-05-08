@@ -324,8 +324,9 @@ class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 		) );
 		$output = ob_get_clean();
 
-		// Default title to image title.
-		$this->assertContains( 'title="Canola"', $output );
+		// No default title.
+		$this->assertNotContains( 'title="', $output );
+
 		// Default image classes.
 		$this->assertContains( 'class="image wp-image-' . $attachment_id, $output );
 		$this->assertContains( 'style="max-width: 100%; height: auto;"', $output );
