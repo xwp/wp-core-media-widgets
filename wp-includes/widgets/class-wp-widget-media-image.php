@@ -31,7 +31,7 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No image selected' ),
 			'select_media' => _x( 'Select Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
-			'change_media' => _x( 'Change Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'replace_media' => _x( 'Replace Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 			'missing_attachment' => sprintf(
 				/* translators: placeholder is URL to media library */
