@@ -17,7 +17,7 @@
 class WP_Widget_Visual_Text extends WP_Widget_Text {
 
 	/**
-	 * Add hoosk for enqueueing assets when registering all widget instances of this widget class.
+	 * Add hooks for enqueueing assets when registering all widget instances of this widget class.
 	 *
 	 * @since 2.8.0
 	 * @access public
@@ -26,13 +26,16 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
 
+		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
+		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
+
 		parent::_register();
 	}
 
 	/**
 	 * Outputs the content for the current Text widget instance.
 	 *
-	 * @since 4.8.0
+	 * @since 2.8.0
 	 * @access public
 	 *
 	 * @param array $args     Display arguments including 'before_title', 'after_title',
@@ -93,7 +96,7 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 	/**
 	 * Handles updating settings for the current Text widget instance.
 	 *
-	 * @since 4.8.0
+	 * @since 2.8.0
 	 * @access public
 	 *
 	 * @param array $new_instance New settings for this instance as input by the user via
@@ -135,8 +138,10 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 	/**
 	 * Outputs the Text widget settings form.
 	 *
-	 * @since 4.8.0
+	 * @since 2.8.0
+	 * @since 4.8.0 Form only contains hidden inputs which are synced with JS template.
 	 * @access public
+	 * @see WP_Widget_Visual_Text::render_control_template_scripts()
 	 *
 	 * @param array $instance Current settings.
 	 * @return void
@@ -149,18 +154,31 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 				'text' => '',
 			)
 		);
-
-		$title = sanitize_text_field( $instance['title'] );
 		?>
-		<p>
-			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
-			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
-		</p>
+		<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" class="title" type="hidden" value="<?php echo esc_attr( $instance['title'] ); ?>">
+		<input id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>" class="text" type="hidden" value="<?php echo esc_attr( $instance['text'] ); ?>">
+		<?php
+	}
 
-		<p>
-			<label for="<?php echo $this->get_field_id( 'text' ); ?>" class="screen-reader-text"><?php _e( 'Content:' ); ?></label>
-			<textarea class="widefat" style="height: 200px" rows="16" cols="20" id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>"><?php echo esc_textarea( $instance['text'] ); ?></textarea>
-		</p>
+	/**
+	 * Render form template scripts.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 */
+	public function render_control_template_scripts() {
+		?>
+		<script type="text/html" id="tmpl-widget-text-control-fields">
+			<# var elementIdPrefix = 'el' + String( Math.random() ).replace( /\D/g, '' ) + '_' #>
+			<p>
+				<label for="{{ elementIdPrefix }}title"><?php esc_html_e( 'Title:' ); ?></label>
+				<input id="{{ elementIdPrefix }}title" type="text" class="widefat title">
+			</p>
+			<p>
+				<label for="{{ elementIdPrefix }}text" class="screen-reader-text"><?php esc_html_e( 'Content:' ); ?></label>
+				<textarea id="{{ elementIdPrefix }}text" class="widefat text" style="height: 200px" rows="16" cols="20"></textarea>
+			</p>
+		</script>
 		<?php
 	}
 }
