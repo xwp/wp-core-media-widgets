@@ -112,11 +112,11 @@ wp.textWidgets = ( function( $ ) {
 					}
 				};
 				editor.on( 'focus', function() {
-					editor.on( 'change', onChanged );
+					editor.on( 'NodeChange', onChanged );
 				} );
-				editor.on( 'change', _.debounce( triggerChangeIfDirty, changeDebounceDelay ) );
+				editor.on( 'NodeChange', _.debounce( triggerChangeIfDirty, changeDebounceDelay ) );
 				editor.on( 'blur', function() {
-					editor.off( 'change', onChanged );
+					editor.off( 'NodeChange', onChanged );
 					triggerChangeIfDirty();
 				} );
 			}
