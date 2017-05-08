@@ -174,10 +174,12 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 			}
 
 			$image_attributes = array(
-				'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
 				'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
 				'style' => 'max-width: 100%; height: auto;',
 			);
+			if ( ! empty( $instance['image_title'] ) ) {
+				$image_attributes['title'] = $instance['image_title'];
+			}
 
 			if ( $instance['alt'] ) {
 				$image_attributes['alt'] = $instance['alt'];
