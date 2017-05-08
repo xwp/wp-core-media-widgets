@@ -1,6 +1,6 @@
-.media-widget-control.selected .placeholder,
-.media-widget-control.selected .not-selected,
-.media-widget-control .selected {
+.wp-core-ui .media-widget-control.selected .placeholder,
+.wp-core-ui .media-widget-control.selected .not-selected,
+.wp-core-ui .media-widget-control .selected {
 	display: none;
 }
 
