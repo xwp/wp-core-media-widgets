@@ -31,6 +31,10 @@
 		 */
 		renderPreview: function renderPreview() {
 			var control = this, previewContainer, previewTemplate;
+			if ( ! control.model.get( 'attachment_id' ) && ! control.model.get( 'url' ) ) {
+				return;
+			}
+
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
 			previewContainer.html( previewTemplate( _.extend( control.previewTemplateProps.toJSON() ) ) );
