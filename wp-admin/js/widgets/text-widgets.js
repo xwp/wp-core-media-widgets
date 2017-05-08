@@ -55,7 +55,7 @@ wp.textWidgets = ( function( $ ) {
 			 * @returns {void}
 			 */
 			function buildEditor() {
-				var editor, wrap, onChanged, dirty, triggerChangeIfDirty;
+				var editor, wrap, triggerChangeIfDirty;
 
 				// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
 				if ( tinymce.get( id ) ) {
@@ -100,23 +100,14 @@ wp.textWidgets = ( function( $ ) {
 					} );
 				}
 
-				dirty = false;
-				onChanged = function() {
-					dirty = true;
-				};
 				triggerChangeIfDirty = function() {
-					if ( dirty ) {
+					if ( editor.isDirty() ) {
 						editor.save();
 						textarea.trigger( 'change' );
-						dirty = false;
 					}
 				};
-				editor.on( 'focus', function() {
-					editor.on( 'NodeChange', onChanged );
-				} );
 				editor.on( 'NodeChange', _.debounce( triggerChangeIfDirty, changeDebounceDelay ) );
 				editor.on( 'blur', function() {
-					editor.off( 'NodeChange', onChanged );
 					triggerChangeIfDirty();
 				} );
 			}
