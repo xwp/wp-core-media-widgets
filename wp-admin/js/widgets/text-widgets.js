@@ -117,27 +117,12 @@ wp.textWidgets = ( function( $ ) {
 			 * @returns {void}
 			 */
 			function buildEditor() {
-				var editor, wrap, triggerChangeIfDirty;
+				var editor, triggerChangeIfDirty, onInit;
 
 				// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
-				if ( tinymce.get( id ) ) {
-					if ( tinymce.get( id ).isHidden() ) {
-						restoreTextMode = true;
-					}
-					delete tinymce.editors[ id ];
-					tinymce.remove( '#' + id );
-				}
-
-				// Remove any previous QuickTags created in the previous render.
-				if ( QTags.instances[ id ] ) {
-					delete QTags.instances[ id ];
-				}
-
-				// Unwrap the textarea to its original location in the DOM.
-				wrap = $( '#wp-' + id + '-wrap' );
-				if ( wrap.length ) {
-					textarea.show();
-					wrap.replaceWith( textarea );
+				if ( tinymce.get( id ) )    {
+					restoreTextMode = tinymce.get( id ).isHidden();
+					wp.editor.remove( id );
 				}
 
 				wp.editor.initialize( id, {
@@ -152,17 +137,19 @@ wp.textWidgets = ( function( $ ) {
 				if ( ! editor ) {
 					throw new Error( 'Failed to initialize editor' );
 				}
-				if ( editor.initialized ) {
+				onInit = function() {
 					watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
 
 					// If a prior mce instance was replaced, and it was in text mode, toggle to text mode.
 					if ( restoreTextMode ) {
 						switchEditors.go( id, 'toggle' );
 					}
+				};
+
+				if ( editor.initialized ) {
+					onInit();
 				} else {
-					editor.on( 'init', function() {
-						watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
-					} );
+					editor.on( 'init', onInit );
 				}
 
 				control.editorFocused = false;
