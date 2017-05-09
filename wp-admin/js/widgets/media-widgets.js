@@ -110,7 +110,7 @@ wp.mediaWidgets = ( function( $ ) {
 					 * @returns {void}
 					 */
 					fetch: function() {
-						var embedLinkView = this; // eslint-disable-line consistent-this
+						var embedLinkView = this, fetchSuccess, matches, fileExt, urlParser; // eslint-disable-line consistent-this
 
 						// Check if they haven't typed in 500ms.
 						if ( $( '#embed-url-field' ).val() !== embedLinkView.model.get( 'url' ) ) {
@@ -121,8 +121,34 @@ wp.mediaWidgets = ( function( $ ) {
 							embedLinkView.dfd.abort();
 						}
 
+						fetchSuccess = function( response ) {
+							embedLinkView.renderoEmbed({
+								data: {
+									body: response
+								}
+							});
+
+							$( '#embed-url-field' ).removeClass( 'invalid' );
+							embedLinkView.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', false );
+						};
+
+						urlParser = document.createElement( 'a' );
+						urlParser.href = embedLinkView.model.get( 'url' );
+						matches = urlParser.pathname.toLowerCase().match( /\.(\w+)$/ );
+						if ( matches ) {
+							fileExt = matches[1];
+							if ( ! wp.media.view.settings.embedMimes[ fileExt ] ) {
+								embedLinkView.renderFail();
+							} else if ( 0 !== wp.media.view.settings.embedMimes[ fileExt ].indexOf( embedLinkView.controller.options.mimeType ) ) {
+								embedLinkView.renderFail();
+							} else {
+								fetchSuccess();
+							}
+							return;
+						}
+
 						embedLinkView.dfd = $.ajax({
-							url: 'https://noembed.com/embed',
+							url: 'https://noembed.com/embed', // @todo Replace with core proxy endpoint once committed.
 							data: {
 								url: embedLinkView.model.get( 'url' ),
 								maxwidth: embedLinkView.model.get( 'width' ),
@@ -134,13 +160,13 @@ wp.mediaWidgets = ( function( $ ) {
 						});
 
 						embedLinkView.dfd.done( function( response ) {
-							embedLinkView.renderoEmbed( {
-								data: {
-									body: response.html
-								}
-							});
+							if ( embedLinkView.controller.options.mimeType !== response.type ) {
+								embedLinkView.renderFail();
+								return;
+							}
+							fetchSuccess( response.html );
 						});
-						embedLinkView.dfd.fail( embedLinkView.renderFail );
+						embedLinkView.dfd.fail( _.bind( embedLinkView.renderFail, embedLinkView ) );
 					},
 
 					/**
@@ -152,7 +178,13 @@ wp.mediaWidgets = ( function( $ ) {
 					 *
 					 * @returns {void}
 					 */
-					renderFail: function() {}
+					renderFail: function renderFail() {
+						var embedLinkView = this; // eslint-disable-line consistent-this
+						$( '#embed-url-field' ).addClass( 'invalid' );
+
+						// Disable the Add to Widget button.
+						embedLinkView.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', true );
+					}
 				});
 			}
 
