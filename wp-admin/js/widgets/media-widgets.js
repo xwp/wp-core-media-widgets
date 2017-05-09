@@ -298,7 +298,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 */
 		l10n: {
 			add_to_widget: '{{add_to_widget}}',
-			select_media: '{{select_media}}'
+			add_media: '{{add_media}}'
 		},
 
 		/**
@@ -572,7 +572,7 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			mediaFrame = new component.MediaFrameSelect({
-				title: control.l10n.select_media,
+				title: control.l10n.add_media,
 				frame: 'post',
 				text: control.l10n.add_to_widget,
 				selection: selection,

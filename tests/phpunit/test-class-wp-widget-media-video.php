@@ -59,7 +59,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
-			'select_media',
+			'add_media',
 		), array_keys( $widget->l10n ) );
 	}
 

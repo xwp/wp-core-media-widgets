@@ -30,7 +30,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		'media_library_state_single' => '',
 		'missing_attachment' => '',
 		'no_media_selected' => '',
-		'select_media' => '',
+		'add_media' => '',
 	);
 
 	/**
@@ -57,7 +57,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$l10n_defaults = array(
 			'no_media_selected' => __( 'No media selected' ),
-			'select_media' => _x( 'Select Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'add_media' => _x( 'Add Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'replace_media' => _x( 'Replace Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'add_to_widget' => __( 'Add to Widget' ),
@@ -399,7 +399,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 					<?php echo esc_html( $this->l10n['replace_media'] ); ?>
 				</button>
 				<button type="button" class="button select-media not-selected">
-					<?php echo esc_html( $this->l10n['select_media'] ); ?>
+					<?php echo esc_html( $this->l10n['add_media'] ); ?>
 				</button>
 			</p>
 		</script>
