@@ -325,7 +325,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param WP_Post $post   The current attachment object.
 	 * @return array
 	 */
-	public function display_media_state( $states, $post ) {
+	public function display_media_state( $states, $post = null ) {
+		if ( ! $post ) {
+			$post = get_post();
+		}
 
 		// Count how many times this attachment is used in widgets.
 		$use_count = 0;
