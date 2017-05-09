@@ -102,6 +102,16 @@ wp.mediaWidgets = ( function( $ ) {
 				Constructor = wp.media.view.EmbedLink.extend({
 
 					/**
+					 * Set the disabled state on the Add to Widget button.
+					 *
+					 * @param {boolean} disabled - Disabled.
+					 * @returns {void}
+					 */
+					setAddToWidgetButtonDisabled: function setAddToWidgetButtonDisabled( disabled ) {
+						this.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', disabled );
+					},
+
+					/**
 					 * Fetch media.
 					 *
 					 * This is a TEMPORARY measure until the WP API supports an oEmbed proxy endpoint. See #40450.
@@ -129,7 +139,7 @@ wp.mediaWidgets = ( function( $ ) {
 							});
 
 							$( '#embed-url-field' ).removeClass( 'invalid' );
-							embedLinkView.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', false );
+							embedLinkView.setAddToWidgetButtonDisabled( false );
 						};
 
 						urlParser = document.createElement( 'a' );
@@ -181,9 +191,7 @@ wp.mediaWidgets = ( function( $ ) {
 					renderFail: function renderFail() {
 						var embedLinkView = this; // eslint-disable-line consistent-this
 						$( '#embed-url-field' ).addClass( 'invalid' );
-
-						// Disable the Add to Widget button.
-						embedLinkView.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', true );
+						embedLinkView.setAddToWidgetButtonDisabled( true );
 					}
 				});
 			}
