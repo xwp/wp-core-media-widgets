@@ -94,7 +94,7 @@ wp.mediaWidgets = ( function( $ ) {
 		refresh: function refresh() {
 			var type = this.model.get( 'type' ), Constructor;
 
-			if ( 'image' === type ) {
+			if ( 'image' === type || 'image' === this.controller.options.mimeType ) {
 				Constructor = wp.media.view.EmbedImage;
 			} else if ( 'link' === type ) {
 
@@ -204,7 +204,10 @@ wp.mediaWidgets = ( function( $ ) {
 				new wp.media.controller.EditImage({ model: this.options.editImage }),
 
 				// Embed states.
-				new wp.media.controller.Embed({ metadata: this.options.metadata })
+				new wp.media.controller.Embed({
+					metadata: this.options.metadata,
+					type: 'image' === this.options.mimeType ? 'image' : 'link'
+				})
 			] );
 		},
 
