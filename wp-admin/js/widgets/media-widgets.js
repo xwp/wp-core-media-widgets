@@ -558,29 +558,22 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
+			var control = this, selection, mediaFrame, defaultSync;
 
 			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
 				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
-			} else {
-				selection = null;
-			}
-
-			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
-			if ( mediaFrameProps.size ) {
-				control.displaySettings.set( 'size', mediaFrameProps.size );
 			}
 
 			mediaFrame = new component.MediaFrameSelect({
 				title: control.l10n.select_media,
 				frame: 'post',
 				text: control.l10n.add_to_widget,
-				selection: selection,
+				selection: null,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
 				showDisplaySettings: control.showDisplaySettings,
-				metadata: mediaFrameProps,
-				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
+				metadata: {},
+				state: 'insert'
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
