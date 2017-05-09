@@ -92,11 +92,11 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		refresh: function refresh() {
-			var type = this.model.get( 'type' ), Constructor;
+			var Constructor;
 
-			if ( 'image' === type || 'image' === this.controller.options.mimeType ) {
+			if ( 'image' === this.controller.options.mimeType ) {
 				Constructor = wp.media.view.EmbedImage;
-			} else if ( 'link' === type ) {
+			} else {
 
 				// This should be eliminated once #40450 lands of when this is merged into core.
 				Constructor = wp.media.view.EmbedLink.extend({
@@ -154,8 +154,6 @@ wp.mediaWidgets = ( function( $ ) {
 					 */
 					renderFail: function() {}
 				});
-			} else {
-				return;
 			}
 
 			this.settings( new Constructor({
