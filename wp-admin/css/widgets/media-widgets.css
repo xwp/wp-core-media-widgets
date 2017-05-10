@@ -98,3 +98,8 @@
 .wp-customizer #wp-link-wrap {
 	z-index: 500105; /* originally 100105, but z-index of .wp-full-overlay is 500000 */
 }
+
+.wp-customizer .mejs-controls a:focus > .mejs-offscreen,
+.widgets-php .mejs-controls a:focus > .mejs-offscreen {
+	z-index: 2;
+}
