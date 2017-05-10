@@ -42,7 +42,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			'media_library_state_multi' => _n_noop( 'Video Widget (%d)', 'Video Widget (%d)' ),
 			'media_library_state_single' => __( 'Video Widget' ),
 			/* translators: placeholder is a list of valid video file extensions */
-			'unsupported_file_type' => sprintf( __( 'Sorry, we can\'t display the video file type selected. Please upload a file with one of these extensions instead: %1$s' ), '<code>.' . implode( '</code>, <code>.', wp_get_video_extensions() ) . '</code>' ),
+			'unsupported_file_type' => sprintf( __( 'Sorry, we can&#8217;t display the video file type selected. Please upload a file with one of these extensions instead: %1$s' ), '<code>.' . implode( '</code>, <code>.', wp_get_video_extensions() ) . '</code>' ),
 		) );
 	}
 
