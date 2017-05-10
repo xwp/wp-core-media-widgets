@@ -150,11 +150,6 @@ wp.mediaWidgets = ( function( $ ) {
 					fetch: function() {
 						var embedLinkView = this, fetchSuccess, matches, fileExt, urlParser; // eslint-disable-line consistent-this
 
-						// Check if they haven't typed in 500ms.
-						if ( $( '#embed-url-field' ).val() !== embedLinkView.model.get( 'url' ) ) {
-							return;
-						}
-
 						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
 							embedLinkView.dfd.abort();
 						}
