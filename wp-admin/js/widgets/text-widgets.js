@@ -1,4 +1,4 @@
-/* global tinymce, QTags, switchEditors */
+/* global tinymce, switchEditors */
 /* eslint consistent-this: [ "error", "control" ] */
 wp.textWidgets = ( function( $ ) {
 	'use strict';
@@ -131,7 +131,6 @@ wp.textWidgets = ( function( $ ) {
 					},
 					quicktags: true
 				} );
-				QTags._buttonsInit(); // @todo Remove once <https://core.trac.wordpress.org/ticket/35760#comment:28> is resolved.
 
 				editor = window.tinymce.get( id );
 				if ( ! editor ) {
