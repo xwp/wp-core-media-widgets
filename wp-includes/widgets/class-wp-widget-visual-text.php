@@ -23,11 +23,12 @@ class WP_Widget_Visual_Text extends WP_Widget_Text {
 	 * @access public
 	 */
 	public function _register() {
-		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
-		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
 
+		// Note that the widgets component in the customizer will also do the 'admin_print_scripts-widgets.php' action in WP_Customize_Widgets::print_scripts().
+		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
+
+		// Note that the widgets component in the customizer will also do the 'admin_footer-widgets.php' action in WP_Customize_Widgets::print_footer_scripts().
 		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
-		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
 
 		parent::_register();
 	}
