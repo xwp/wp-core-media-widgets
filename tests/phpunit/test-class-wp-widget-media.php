@@ -56,6 +56,7 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 			'missing_attachment',
 			'no_media_selected',
 			'add_media',
+			'unsupported_file_type',
 		), array_keys( $widget->l10n ) );
 		$this->assertEquals( count( $widget->l10n ), count( array_filter( $widget->l10n ) ), 'Expected all translation strings to be defined.' );
 		$this->assertEquals( 10, has_action( 'admin_print_scripts-widgets.php', array( $widget, 'enqueue_admin_scripts' ) ) );

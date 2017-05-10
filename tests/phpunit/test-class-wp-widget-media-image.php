@@ -63,6 +63,7 @@ class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 			'missing_attachment',
 			'no_media_selected',
 			'add_media',
+			'unsupported_file_type',
 		), array_keys( $widget->l10n ) );
 	}
 

@@ -88,6 +88,13 @@
 	top: 30px;
 }
 
+.media-frame .media-widget-embed-notice {
+	margin-top: 16px;
+}
+.media-frame #embed-url-field.invalid {
+	border: 1px solid #f00;
+}
+
 .wp-customizer div.mce-inline-toolbar-grp,
 .wp-customizer div.mce-tooltip {
 	z-index: 500100 !important;

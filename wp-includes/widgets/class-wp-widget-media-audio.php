@@ -41,6 +41,7 @@ class WP_Widget_Media_Audio extends WP_Widget_Media {
 			/* translators: %d is widget count */
 			'media_library_state_multi' => _n_noop( 'Audio Widget (%d)', 'Audio Widget (%d)' ),
 			'media_library_state_single' => __( 'Audio Widget' ),
+			'unsupported_file_type' => __( 'Looks like this isn&#8217;t the correct kind of file. Please link to an audio file instead.' ),
 		) );
 	}
 

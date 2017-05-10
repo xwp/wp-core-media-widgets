@@ -92,14 +92,52 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		refresh: function refresh() {
-			var type = this.model.get( 'type' ), Constructor;
+			var Constructor;
 
-			if ( 'image' === type ) {
+			if ( 'image' === this.controller.options.mimeType ) {
 				Constructor = wp.media.view.EmbedImage;
-			} else if ( 'link' === type ) {
+			} else {
 
 				// This should be eliminated once #40450 lands of when this is merged into core.
 				Constructor = wp.media.view.EmbedLink.extend({
+
+					/**
+					 * Set the disabled state on the Add to Widget button.
+					 *
+					 * @param {boolean} disabled - Disabled.
+					 * @returns {void}
+					 */
+					setAddToWidgetButtonDisabled: function setAddToWidgetButtonDisabled( disabled ) {
+						this.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', disabled );
+					},
+
+					/**
+					 * Set or clear an error notice.
+					 *
+					 * @param {string} notice - Notice.
+					 * @returns {void}
+					 */
+					setErrorNotice: function setErrorNotice( notice ) {
+						var embedLinkView = this, noticeContainer; // eslint-disable-line consistent-this
+
+						noticeContainer = embedLinkView.views.parent.$el.find( '> .notice:first-child' );
+						if ( ! notice ) {
+							if ( noticeContainer.length ) {
+								noticeContainer.slideUp( 'fast' );
+							}
+						} else {
+							if ( ! noticeContainer.length ) {
+								noticeContainer = $( '<div class="media-widget-embed-notice notice notice-error notice-alt"></div>' );
+								noticeContainer.hide();
+								embedLinkView.views.parent.$el.prepend( noticeContainer );
+							}
+							noticeContainer.empty();
+							noticeContainer.append( $( '<p>', {
+								html: notice
+							} ) );
+							noticeContainer.slideDown( 'fast' );
+						}
+					},
 
 					/**
 					 * Fetch media.
@@ -110,19 +148,41 @@ wp.mediaWidgets = ( function( $ ) {
 					 * @returns {void}
 					 */
 					fetch: function() {
-						var embedLinkView = this; // eslint-disable-line consistent-this
-
-						// Check if they haven't typed in 500ms.
-						if ( $( '#embed-url-field' ).val() !== embedLinkView.model.get( 'url' ) ) {
-							return;
-						}
+						var embedLinkView = this, fetchSuccess, matches, fileExt, urlParser; // eslint-disable-line consistent-this
 
 						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
 							embedLinkView.dfd.abort();
 						}
 
+						fetchSuccess = function( response ) {
+							embedLinkView.renderoEmbed({
+								data: {
+									body: response
+								}
+							});
+
+							$( '#embed-url-field' ).removeClass( 'invalid' );
+							embedLinkView.setErrorNotice( '' );
+							embedLinkView.setAddToWidgetButtonDisabled( false );
+						};
+
+						urlParser = document.createElement( 'a' );
+						urlParser.href = embedLinkView.model.get( 'url' );
+						matches = urlParser.pathname.toLowerCase().match( /\.(\w+)$/ );
+						if ( matches ) {
+							fileExt = matches[1];
+							if ( ! wp.media.view.settings.embedMimes[ fileExt ] ) {
+								embedLinkView.renderFail();
+							} else if ( 0 !== wp.media.view.settings.embedMimes[ fileExt ].indexOf( embedLinkView.controller.options.mimeType ) ) {
+								embedLinkView.renderFail();
+							} else {
+								fetchSuccess( '<!--success-->' );
+							}
+							return;
+						}
+
 						embedLinkView.dfd = $.ajax({
-							url: 'https://noembed.com/embed',
+							url: 'https://noembed.com/embed', // @todo Replace with core proxy endpoint once committed.
 							data: {
 								url: embedLinkView.model.get( 'url' ),
 								maxwidth: embedLinkView.model.get( 'width' ),
@@ -134,13 +194,13 @@ wp.mediaWidgets = ( function( $ ) {
 						});
 
 						embedLinkView.dfd.done( function( response ) {
-							embedLinkView.renderoEmbed( {
-								data: {
-									body: response.html
-								}
-							});
+							if ( embedLinkView.controller.options.mimeType !== response.type ) {
+								embedLinkView.renderFail();
+								return;
+							}
+							fetchSuccess( response.html );
 						});
-						embedLinkView.dfd.fail( embedLinkView.renderFail );
+						embedLinkView.dfd.fail( _.bind( embedLinkView.renderFail, embedLinkView ) );
 					},
 
 					/**
@@ -152,10 +212,13 @@ wp.mediaWidgets = ( function( $ ) {
 					 *
 					 * @returns {void}
 					 */
-					renderFail: function() {}
+					renderFail: function renderFail(  ) {
+						var embedLinkView = this; // eslint-disable-line consistent-this
+						$( '#embed-url-field' ).addClass( 'invalid' );
+						embedLinkView.setErrorNotice( embedLinkView.controller.options.invalidEmbedTypeError || 'ERROR' );
+						embedLinkView.setAddToWidgetButtonDisabled( true );
+					}
 				});
-			} else {
-				return;
 			}
 
 			this.settings( new Constructor({
@@ -204,7 +267,11 @@ wp.mediaWidgets = ( function( $ ) {
 				new wp.media.controller.EditImage({ model: this.options.editImage }),
 
 				// Embed states.
-				new wp.media.controller.Embed({ metadata: this.options.metadata })
+				new wp.media.controller.Embed({
+					metadata: this.options.metadata,
+					type: 'image' === this.options.mimeType ? 'image' : 'link',
+					invalidEmbedTypeError: this.options.invalidEmbedTypeError
+				})
 			] );
 		},
 
@@ -580,7 +647,8 @@ wp.mediaWidgets = ( function( $ ) {
 				selectedDisplaySettings: control.displaySettings,
 				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
-				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
+				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert',
+				invalidEmbedTypeError: control.l10n.unsupported_file_type
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
