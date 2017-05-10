@@ -133,7 +133,7 @@ wp.mediaWidgets = ( function( $ ) {
 							}
 							noticeContainer.empty();
 							noticeContainer.append( $( '<p>', {
-								text: notice
+								html: notice
 							} ) );
 							noticeContainer.slideDown( 'fast' );
 						}
