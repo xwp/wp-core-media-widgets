@@ -206,7 +206,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			sprintf(
 				'
 					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
-					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n = _.extend( {}, wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
 				',
 				wp_json_encode( $this->id_base ),
 				wp_json_encode( $this->widget_options['mime_type'] ),
