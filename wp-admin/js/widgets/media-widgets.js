@@ -653,7 +653,7 @@ wp.mediaWidgets = ( function( $ ) {
 				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
 				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert',
-				invalidEmbedTypeError: control.l10n.incorrect_file_type
+				invalidEmbedTypeError: control.l10n.unsupported_file_type
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 

@@ -54,6 +54,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$this->assertEqualSets( array(
 			'add_to_widget',
 			'replace_media',
+			'unsupported_file_type',
 			'edit_media',
 			'media_library_state_multi',
 			'media_library_state_single',

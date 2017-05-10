@@ -41,7 +41,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			/* translators: %d is widget count */
 			'media_library_state_multi' => _n_noop( 'Video Widget (%d)', 'Video Widget (%d)' ),
 			'media_library_state_single' => __( 'Video Widget' ),
-			'incorrect_file_type' => __( 'Looks like this isn\'t the correct kind of file. Please link to a video file or link to YouTube or Vimeo instead.' ),
+			/* translators: placeholder is a list of valid video file extensions */
+			'unsupported_file_type' => sprintf( __( 'Sorry, we can&#8217;t display the video file type selected. Please select a supported video file (%1$s) or stream (YouTube or Vimeo) instead.' ), '<code>.' . implode( '</code>, <code>.', wp_get_video_extensions() ) . '</code>' ),
 		) );
 	}
 
@@ -229,6 +230,10 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			<# if ( data.error && 'missing_attachment' === data.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
+				</div>
+			<# } else if ( data.error && 'unsupported_file_type' === data.error ) { #>
+				<div class="notice notice-error notice-alt notice-missing-attachment">
+					<p><?php echo $this->l10n['unsupported_file_type']; ?></p>
 				</div>
 			<# } else if ( data.error ) { #>
 				<div class="notice notice-error notice-alt">

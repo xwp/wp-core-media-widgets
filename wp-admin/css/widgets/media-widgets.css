@@ -41,6 +41,9 @@
 .media-widget-control .media-widget-preview .notice {
 	text-align: initial;
 }
+.media-widget-control .notice p {
+	padding: 0 3px 0 0;
+}
 .media-widget-control .media-widget-preview img {
 	max-width: 100%;
 }
@@ -104,4 +107,9 @@
 }
 .wp-customizer #wp-link-wrap {
 	z-index: 500105; /* originally 100105, but z-index of .wp-full-overlay is 500000 */
+}
+
+.wp-customizer .mejs-controls a:focus > .mejs-offscreen,
+.widgets-php .mejs-controls a:focus > .mejs-offscreen {
+	z-index: 2;
 }
