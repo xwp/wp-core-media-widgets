@@ -41,6 +41,9 @@
 .media-widget-control .media-widget-preview .notice {
 	text-align: initial;
 }
+.media-widget-control .notice p {
+	padding: 0 3px 0 0;
+}
 .media-widget-control .media-widget-preview img {
 	max-width: 100%;
 }
