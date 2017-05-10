@@ -138,9 +138,10 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster, isHostedEmbed = false, parsedUrl;
+			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl, poster, isHostedEmbed = false, parsedUrl, mime, error;
 			attachmentId = control.model.get( 'attachment_id' );
 			attachmentUrl = control.model.get( 'url' );
+			error = control.model.get( 'error' );
 
 			if ( ! attachmentId && ! attachmentUrl ) {
 				return;
@@ -157,6 +158,14 @@
 				poster = control.oembedResponses[ attachmentUrl ] ? control.oembedResponses[ attachmentUrl ].thumbnail_url : null;
 			}
 
+			// Verify the selected attachment mime is supported.
+			mime = control.selectedAttachment.get( 'mime' );
+			if ( mime && attachmentId ) {
+				if ( ! _.contains( _.values( wp.media.view.settings.embedMimes ), mime ) ) {
+					error = 'unsupported_file_type';
+				}
+			}
+
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-video-preview' );
 
@@ -167,7 +176,7 @@
 					poster: poster
 				},
 				is_hosted_embed: isHostedEmbed,
-				error: control.model.get( 'error' )
+				error: error
 			} ) );
 		},
 
