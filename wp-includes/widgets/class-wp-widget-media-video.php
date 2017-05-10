@@ -41,6 +41,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			/* translators: %d is widget count */
 			'media_library_state_multi' => _n_noop( 'Video Widget (%d)', 'Video Widget (%d)' ),
 			'media_library_state_single' => __( 'Video Widget' ),
+			'incorrect_file_type' => __( 'Looks like this isn\'t the correct kind of file. Please link to a video file or link to YouTube or Vimeo instead.' ),
 		) );
 	}
 

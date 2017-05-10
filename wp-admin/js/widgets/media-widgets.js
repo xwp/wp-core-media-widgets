@@ -112,6 +112,34 @@ wp.mediaWidgets = ( function( $ ) {
 					},
 
 					/**
+					 * Set or clear an error notice.
+					 *
+					 * @param {string} notice - Notice.
+					 * @returns {void}
+					 */
+					setErrorNotice: function setErrorNotice( notice ) {
+						var embedLinkView = this, noticeContainer;
+
+						noticeContainer = embedLinkView.views.parent.$el.find( '> .notice:first-child' );
+						if ( ! notice ) {
+							if ( noticeContainer.length ) {
+								noticeContainer.slideUp( 'fast' );
+							}
+						} else {
+							if ( ! noticeContainer.length ) {
+								noticeContainer = $( '<div class="media-widget-embed-notice notice notice-error notice-alt"></div>' );
+								noticeContainer.hide();
+								embedLinkView.views.parent.$el.prepend( noticeContainer );
+							}
+							noticeContainer.empty();
+							noticeContainer.append( $( '<p>', {
+								text: notice
+						} ) );
+							noticeContainer.slideDown( 'fast' );
+						}
+					},
+
+					/**
 					 * Fetch media.
 					 *
 					 * This is a TEMPORARY measure until the WP API supports an oEmbed proxy endpoint. See #40450.
@@ -139,6 +167,7 @@ wp.mediaWidgets = ( function( $ ) {
 							});
 
 							$( '#embed-url-field' ).removeClass( 'invalid' );
+							embedLinkView.setErrorNotice( '' );
 							embedLinkView.setAddToWidgetButtonDisabled( false );
 						};
 
@@ -152,7 +181,7 @@ wp.mediaWidgets = ( function( $ ) {
 							} else if ( 0 !== wp.media.view.settings.embedMimes[ fileExt ].indexOf( embedLinkView.controller.options.mimeType ) ) {
 								embedLinkView.renderFail();
 							} else {
-								fetchSuccess();
+								fetchSuccess( '<!--success-->' );
 							}
 							return;
 						}
@@ -188,9 +217,10 @@ wp.mediaWidgets = ( function( $ ) {
 					 *
 					 * @returns {void}
 					 */
-					renderFail: function renderFail() {
+					renderFail: function renderFail(  ) {
 						var embedLinkView = this; // eslint-disable-line consistent-this
 						$( '#embed-url-field' ).addClass( 'invalid' );
+						embedLinkView.setErrorNotice( embedLinkView.controller.options.invalidEmbedTypeError || 'ERROR' );
 						embedLinkView.setAddToWidgetButtonDisabled( true );
 					}
 				});
@@ -244,7 +274,8 @@ wp.mediaWidgets = ( function( $ ) {
 				// Embed states.
 				new wp.media.controller.Embed({
 					metadata: this.options.metadata,
-					type: 'image' === this.options.mimeType ? 'image' : 'link'
+					type: 'image' === this.options.mimeType ? 'image' : 'link',
+					invalidEmbedTypeError: this.options.invalidEmbedTypeError
 				})
 			] );
 		},
@@ -621,7 +652,8 @@ wp.mediaWidgets = ( function( $ ) {
 				selectedDisplaySettings: control.displaySettings,
 				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
-				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
+				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert',
+				invalidEmbedTypeError: control.l10n.incorrect_file_type
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 

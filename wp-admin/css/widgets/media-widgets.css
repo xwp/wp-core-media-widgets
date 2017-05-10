@@ -85,6 +85,9 @@
 	top: 30px;
 }
 
+.media-frame .media-widget-embed-notice {
+	margin-top: 16px;
+}
 .media-frame #embed-url-field.invalid {
 	border: 1px solid #f00;
 }

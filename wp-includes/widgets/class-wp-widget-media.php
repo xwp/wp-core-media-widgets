@@ -69,6 +69,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			/* translators: %d is widget count */
 			'media_library_state_multi' => _n_noop( 'Media Widget (%d)', 'Media Widget (%d)' ),
 			'media_library_state_single' => __( 'Media Widget' ),
+			'incorrect_file_type' => __( 'Looks like this isn\'t the correct kind of file. Please link to an appropriate file instead.' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
