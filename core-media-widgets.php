@@ -25,14 +25,13 @@
  */
 
 define( 'WP_CORE_MEDIA_WIDGETS_MERGED', file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
 
 // Register WP-CLI command for generating QUnit test suite.
 if ( defined( 'WP_CLI' ) ) {
 	require_once dirname( __FILE__ ) . '/php/class-media-widgets-wp-cli-command.php';
 	WP_CLI::add_command( 'media-widgets', new Media_Widgets_WP_CLI_Command() );
 }
-
-define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
 
 /**
  * Register widget scripts.
@@ -48,34 +47,26 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 
 	$handle = 'media-widgets';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js';
-	if ( $scripts->query( $handle, 'registered' ) ) {
-		$scripts->registered[ $handle ]->src = $src;
-	} else {
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
 		$scripts->add( $handle, $src, array( 'jquery', 'media-models', 'media-views' ) );
 		$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
 	}
 
 	$handle = 'media-image-widget';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js';
-	if ( $scripts->query( $handle, 'registered' ) ) {
-		$scripts->registered[ $handle ]->src = $src;
-	} else {
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
 		$scripts->add( $handle, $src, array( 'media-widgets' ) );
 	}
 
 	$handle = 'media-video-widget';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js';
-	if ( $scripts->query( $handle, 'registered' ) ) {
-		$scripts->registered[ $handle ]->src = $src;
-	} else {
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
 		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
 	}
 
 	$handle = 'media-audio-widget';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js';
-	if ( $scripts->query( $handle, 'registered' ) ) {
-		$scripts->registered[ $handle ]->src = $src;
-	} else {
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
 		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
 	}
 
@@ -144,9 +135,22 @@ function wp32417_twentyten_styles() {
  * @codeCoverageIgnore
  */
 function wp32417_widgets_init() {
-	register_widget( 'WP_Widget_Media_Image' );
-	register_widget( 'WP_Widget_Media_Video' );
-	register_widget( 'WP_Widget_Media_Audio' );
+
+	$class_files = array(
+		'WP_Widget_Media' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php',
+		'WP_Widget_Media_Image' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php',
+		'WP_Widget_Media_Video' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php',
+		'WP_Widget_Media_Audio' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php',
+	);
+	foreach ( $class_files as $class => $file ) {
+		if ( ! class_exists( $class ) ) {
+			require_once( $file );
+
+			if ( 'WP_Widget_Media' !== $class ) {
+				register_widget( $class );
+			}
+		}
+	}
 
 	if ( function_exists( 'wp_enqueue_editor' ) && ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
 		require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-visual-text.php' );
@@ -155,35 +159,6 @@ function wp32417_widgets_init() {
 	}
 }
 add_action( 'widgets_init', 'wp32417_widgets_init', 0 );
-
-/**
- * Determines if Widgets library should be loaded.
- *
- * This is a forked override of the core function `wp_maybe_load_widgets()` to
- * load our copy of default-widgets.php
- *
- * @see wp_maybe_load_widgets()
- */
-function wp32417_maybe_load_widgets() {
-
-	/** This filter is documented in wp-includes/functions.php */
-	if ( ! apply_filters( 'load_default_widgets', true ) ) {
-		return;
-	}
-
-	// Require version of file forked from from 4.7.3 that does not include media widgets.
-	require_once dirname( __FILE__ ) . '/wp-includes/default-widgets.php';
-
-	// Require media widgets from plugin instead of core.
-	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php';
-	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php';
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php' );
-
-	add_action( '_admin_menu', 'wp_widgets_add_menu' );
-}
-remove_action( 'plugins_loaded', 'wp_maybe_load_widgets', 0 );
-add_action( 'plugins_loaded', 'wp32417_maybe_load_widgets', 0 );
 
 /**
  * Add align class name to the alignment container in .attachment-display-settings.
