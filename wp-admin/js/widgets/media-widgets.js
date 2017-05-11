@@ -243,6 +243,16 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		createStates: function createStates() {
+			var mime = this.options.mimeType, specificMimes = [];
+			_.each( wp.media.view.settings.embedMimes, function( embedMime ) {
+				if ( 0 === embedMime.indexOf( mime ) ) {
+					specificMimes.push( embedMime );
+				}
+			});
+			if ( specificMimes.length > 0 ) {
+				mime = specificMimes.join( ',' );
+			}
+
 			this.states.add( [
 
 				// Main states.
@@ -254,7 +264,7 @@ wp.mediaWidgets = ( function( $ ) {
 					toolbar:    'main-insert',
 					filterable: 'dates',
 					library:    wp.media.query({
-						type: this.options.mimeType
+						type: mime
 					}),
 					multiple:   false,
 					editable:   true,
