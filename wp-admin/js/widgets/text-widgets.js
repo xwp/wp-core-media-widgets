@@ -119,6 +119,11 @@ wp.textWidgets = ( function( $ ) {
 			function buildEditor() {
 				var editor, triggerChangeIfDirty, onInit;
 
+				// Abort building if the textarea is gone, likely due to the widget having been deleted entirely.
+				if ( ! document.getElementById( id ) ) {
+					return;
+				}
+
 				// Destroy any existing editor so that it can be re-initialized after a widget-updated event.
 				if ( tinymce.get( id ) )    {
 					restoreTextMode = tinymce.get( id ).isHidden();
@@ -137,6 +142,8 @@ wp.textWidgets = ( function( $ ) {
 					throw new Error( 'Failed to initialize editor' );
 				}
 				onInit = function() {
+
+					// When a widget is moved in the DOM the dynamically-created TinyMCE iframe will be destroyed and has to be re-built.
 					$( editor.getWin() ).on( 'unload', function() {
 						_.defer( buildEditor );
 					});
