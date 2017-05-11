@@ -31,12 +31,13 @@
 		 */
 		renderPreview: function renderPreview() {
 			var control = this, previewContainer, previewTemplate;
+			if ( ! control.model.get( 'attachment_id' ) && ! control.model.get( 'url' ) ) {
+				return;
+			}
+
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-image-preview' );
-			previewContainer.html( previewTemplate( _.extend(
-				control.model.toJSON(),
-				{ attachment: control.selectedAttachment.toJSON() }
-			) ) );
+			previewContainer.html( previewTemplate( _.extend( control.previewTemplateProps.toJSON() ) ) );
 		},
 
 		/**
@@ -105,6 +106,19 @@
 					height: 0
 				}
 			);
+		},
+
+		/**
+		 * Map model props to preview template props.
+		 *
+		 * @returns {Object} Preview template props.
+		 */
+		mapModelToPreviewTemplateProps: function mapModelToPreviewTemplateProps() {
+			var control = this, mediaFrameProps, url;
+			url = control.model.get( 'url' );
+			mediaFrameProps = component.MediaWidgetControl.prototype.mapModelToPreviewTemplateProps.call( control );
+			mediaFrameProps.currentFilename = url ? url.replace( /\?.*$/, '' ).replace( /^.+\//, '' ) : '';
+			return mediaFrameProps;
 		}
 	});
 

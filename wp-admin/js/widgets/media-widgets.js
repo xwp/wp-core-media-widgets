@@ -77,6 +77,159 @@ wp.mediaWidgets = ( function( $ ) {
 	});
 
 	/**
+	 * Extended view for managing the embed UI.
+	 *
+	 * @class MediaEmbedView
+	 * @constructor
+	 */
+	component.MediaEmbedView = wp.media.view.Embed.extend({
+
+		/**
+		 * Refresh embed view.
+		 *
+		 * Forked override of {wp.media.view.Embed#refresh()} to suppress irrelevant "link text" field.
+		 *
+		 * @returns {void}
+		 */
+		refresh: function refresh() {
+			var Constructor;
+
+			if ( 'image' === this.controller.options.mimeType ) {
+				Constructor = wp.media.view.EmbedImage;
+			} else {
+
+				// This should be eliminated once #40450 lands of when this is merged into core.
+				Constructor = wp.media.view.EmbedLink.extend({
+
+					/**
+					 * Set the disabled state on the Add to Widget button.
+					 *
+					 * @param {boolean} disabled - Disabled.
+					 * @returns {void}
+					 */
+					setAddToWidgetButtonDisabled: function setAddToWidgetButtonDisabled( disabled ) {
+						this.views.parent.views.parent.views.get( '.media-frame-toolbar' )[0].$el.find( '.media-button-select' ).prop( 'disabled', disabled );
+					},
+
+					/**
+					 * Set or clear an error notice.
+					 *
+					 * @param {string} notice - Notice.
+					 * @returns {void}
+					 */
+					setErrorNotice: function setErrorNotice( notice ) {
+						var embedLinkView = this, noticeContainer; // eslint-disable-line consistent-this
+
+						noticeContainer = embedLinkView.views.parent.$el.find( '> .notice:first-child' );
+						if ( ! notice ) {
+							if ( noticeContainer.length ) {
+								noticeContainer.slideUp( 'fast' );
+							}
+						} else {
+							if ( ! noticeContainer.length ) {
+								noticeContainer = $( '<div class="media-widget-embed-notice notice notice-error notice-alt"></div>' );
+								noticeContainer.hide();
+								embedLinkView.views.parent.$el.prepend( noticeContainer );
+							}
+							noticeContainer.empty();
+							noticeContainer.append( $( '<p>', {
+								html: notice
+							} ) );
+							noticeContainer.slideDown( 'fast' );
+						}
+					},
+
+					/**
+					 * Fetch media.
+					 *
+					 * This is a TEMPORARY measure until the WP API supports an oEmbed proxy endpoint. See #40450.
+					 *
+					 * @see https://core.trac.wordpress.org/ticket/40450
+					 * @returns {void}
+					 */
+					fetch: function() {
+						var embedLinkView = this, fetchSuccess, matches, fileExt, urlParser; // eslint-disable-line consistent-this
+
+						if ( embedLinkView.dfd && 'pending' === embedLinkView.dfd.state() ) {
+							embedLinkView.dfd.abort();
+						}
+
+						fetchSuccess = function( response ) {
+							embedLinkView.renderoEmbed({
+								data: {
+									body: response
+								}
+							});
+
+							$( '#embed-url-field' ).removeClass( 'invalid' );
+							embedLinkView.setErrorNotice( '' );
+							embedLinkView.setAddToWidgetButtonDisabled( false );
+						};
+
+						urlParser = document.createElement( 'a' );
+						urlParser.href = embedLinkView.model.get( 'url' );
+						matches = urlParser.pathname.toLowerCase().match( /\.(\w+)$/ );
+						if ( matches ) {
+							fileExt = matches[1];
+							if ( ! wp.media.view.settings.embedMimes[ fileExt ] ) {
+								embedLinkView.renderFail();
+							} else if ( 0 !== wp.media.view.settings.embedMimes[ fileExt ].indexOf( embedLinkView.controller.options.mimeType ) ) {
+								embedLinkView.renderFail();
+							} else {
+								fetchSuccess( '<!--success-->' );
+							}
+							return;
+						}
+
+						embedLinkView.dfd = $.ajax({
+							url: 'https://noembed.com/embed', // @todo Replace with core proxy endpoint once committed.
+							data: {
+								url: embedLinkView.model.get( 'url' ),
+								maxwidth: embedLinkView.model.get( 'width' ),
+								maxheight: embedLinkView.model.get( 'height' )
+							},
+							type: 'GET',
+							crossDomain: true,
+							dataType: 'json'
+						});
+
+						embedLinkView.dfd.done( function( response ) {
+							if ( embedLinkView.controller.options.mimeType !== response.type ) {
+								embedLinkView.renderFail();
+								return;
+							}
+							fetchSuccess( response.html );
+						});
+						embedLinkView.dfd.fail( _.bind( embedLinkView.renderFail, embedLinkView ) );
+					},
+
+					/**
+					 * Handle render failure.
+					 *
+					 * Overrides the {EmbedLink#renderFail()} method to prevent showing the "Link Text" field.
+					 * The element is getting display:none in the stylesheet, but the underlying method uses
+					 * uses {jQuery.fn.show()} which adds an inline style. This avoids the need for !important.
+					 *
+					 * @returns {void}
+					 */
+					renderFail: function renderFail(  ) {
+						var embedLinkView = this; // eslint-disable-line consistent-this
+						$( '#embed-url-field' ).addClass( 'invalid' );
+						embedLinkView.setErrorNotice( embedLinkView.controller.options.invalidEmbedTypeError || 'ERROR' );
+						embedLinkView.setAddToWidgetButtonDisabled( true );
+					}
+				});
+			}
+
+			this.settings( new Constructor({
+				controller: this.controller,
+				model:      this.model.props,
+				priority:   40
+			}) );
+		}
+	});
+
+	/**
 	 * Custom media frame for selecting uploaded media or providing media by URL.
 	 *
 	 * @class MediaFrameSelect
@@ -90,6 +243,16 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		createStates: function createStates() {
+			var mime = this.options.mimeType, specificMimes = [];
+			_.each( wp.media.view.settings.embedMimes, function( embedMime ) {
+				if ( 0 === embedMime.indexOf( mime ) ) {
+					specificMimes.push( embedMime );
+				}
+			});
+			if ( specificMimes.length > 0 ) {
+				mime = specificMimes.join( ',' );
+			}
+
 			this.states.add( [
 
 				// Main states.
@@ -101,20 +264,24 @@ wp.mediaWidgets = ( function( $ ) {
 					toolbar:    'main-insert',
 					filterable: 'dates',
 					library:    wp.media.query({
-						type: this.options.mimeType
+						type: mime
 					}),
 					multiple:   false,
 					editable:   true,
 
 					selectedDisplaySettings: this.options.selectedDisplaySettings,
-					displaySettings: true,
+					displaySettings: _.isUndefined( this.options.showDisplaySettings ) ? true : this.options.showDisplaySettings,
 					displayUserSettings: false // We use the display settings from the current/default widget instance props.
 				}),
 
 				new wp.media.controller.EditImage({ model: this.options.editImage }),
 
 				// Embed states.
-				new wp.media.controller.Embed({ metadata: this.options.metadata })
+				new wp.media.controller.Embed({
+					metadata: this.options.metadata,
+					type: 'image' === this.options.mimeType ? 'image' : 'link',
+					invalidEmbedTypeError: this.options.invalidEmbedTypeError
+				})
 			] );
 		},
 
@@ -166,6 +333,26 @@ wp.mediaWidgets = ( function( $ ) {
 				text: this.options.text,
 				event: 'insert'
 			});
+		},
+
+		/**
+		 * Embed content.
+		 *
+		 * Forked override of {wp.media.view.MediaFrame.Post#embedContent()} to suppress irrelevant "link text" field.
+		 *
+		 * @returns {void}
+		 */
+		embedContent: function embedContent() {
+			var view = new component.MediaEmbedView({
+				controller: this,
+				model:      this.state()
+			}).render();
+
+			this.content.set( view );
+
+			if ( ! wp.media.isTouchDevice ) {
+				view.url.focus();
+			}
 		}
 	});
 
@@ -188,7 +375,7 @@ wp.mediaWidgets = ( function( $ ) {
 		 */
 		l10n: {
 			add_to_widget: '{{add_to_widget}}',
-			select_media: '{{select_media}}'
+			add_media: '{{add_media}}'
 		},
 
 		/**
@@ -226,6 +413,13 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
+		 * Show display settings.
+		 *
+		 * @type {boolean}
+		 */
+		showDisplaySettings: true,
+
+		/**
 		 * Initialize.
 		 *
 		 * @param {Object}         options - Options.
@@ -261,11 +455,13 @@ wp.mediaWidgets = ( function( $ ) {
 				}
 			}
 
+			// Track attributes needed to renderPreview in it's own model.
+			control.previewTemplateProps = new Backbone.Model( control.mapModelToPreviewTemplateProps() );
+
 			// Re-render the preview when the attachment changes.
 			control.selectedAttachment = new wp.media.model.Attachment();
 			control.renderPreview = _.debounce( control.renderPreview );
-			control.listenTo( control.selectedAttachment, 'change', control.renderPreview );
-			control.listenTo( control.model, 'change', control.renderPreview );
+			control.listenTo( control.previewTemplateProps, 'change', control.renderPreview );
 
 			// Make sure a copy of the selected attachment is always fetched.
 			control.model.on( 'change:attachment_id', control.updateSelectedAttachment );
@@ -278,7 +474,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 * from the start, without having to sync with hidden fields. See <https://core.trac.wordpress.org/ticket/33507>.
 			 */
 			control.listenTo( control.model, 'change', control.syncModelToInputs );
-
+			control.listenTo( control.model, 'change', control.syncModelToPreviewProps );
 			control.listenTo( control.model, 'change', control.render );
 
 			// Update the title.
@@ -295,7 +491,12 @@ wp.mediaWidgets = ( function( $ ) {
 			 * when a new selection is made, the settings from this will be synced
 			 * into that AttachmentDisplay's model to persist the setting changes.
 			 */
-			control.displaySettings = new Backbone.Model( control.mapMediaToModelProps( control.model.attributes ) );
+			control.displaySettings = new Backbone.Model( _.pick(
+				control.mapModelToMediaFrameProps(
+					_.extend( control.model.defaults(), control.model.toJSON() )
+				),
+				_.keys( wp.media.view.settings.defaultProps )
+			) );
 		},
 
 		/**
@@ -325,7 +526,17 @@ wp.mediaWidgets = ( function( $ ) {
 		},
 
 		/**
-		 * Sync the model attributes to the hidden inputs.
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
+		 *
+		 * @returns {void}
+		 */
+		syncModelToPreviewProps: function syncModelToPreviewProps() {
+			var control = this;
+			control.previewTemplateProps.set( control.mapModelToPreviewTemplateProps() );
+		},
+
+		/**
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
 		 *
 		 * @returns {void}
 		 */
@@ -438,14 +649,16 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			mediaFrame = new component.MediaFrameSelect({
-				title: control.l10n.select_media,
+				title: control.l10n.add_media,
 				frame: 'post',
 				text: control.l10n.add_to_widget,
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
+				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
-				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert'
+				state: control.isSelected() && 0 === control.model.get( 'attachment_id' ) ? 'embed' : 'insert',
+				invalidEmbedTypeError: control.l10n.unsupported_file_type
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
@@ -495,7 +708,7 @@ wp.mediaWidgets = ( function( $ ) {
 			 * Make sure focus is set inside of modal so that hitting Esc will close
 			 * the modal and not inadvertently cause the widget to collapse in the customizer.
 			 */
-			mediaFrame.$el.find( ':focusable:first' ).focus();
+			mediaFrame.$el.find( '.media-frame-menu .media-menu-item.active' ).focus();
 		},
 
 		/**
@@ -505,14 +718,19 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {Object} Props.
 		 */
 		getModelPropsFromMediaFrame: function getModelPropsFromMediaFrame( mediaFrame ) {
-			var control = this, state, mediaFrameProps;
+			var control = this, state, mediaFrameProps, modelProps;
 
 			state = mediaFrame.state();
 			if ( 'insert' === state.get( 'id' ) ) {
-				mediaFrameProps = _.extend(
-					state.get( 'selection' ).first().toJSON(),
-					mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
-				);
+				mediaFrameProps = state.get( 'selection' ).first().toJSON();
+				mediaFrameProps.postUrl = mediaFrameProps.link;
+
+				if ( control.showDisplaySettings ) {
+					_.extend(
+						mediaFrameProps,
+						mediaFrame.content.get( '.attachments-browser' ).sidebar.get( 'display' ).model.toJSON()
+					);
+				}
 				if ( mediaFrameProps.sizes && mediaFrameProps.size && mediaFrameProps.sizes[ mediaFrameProps.size ] ) {
 					mediaFrameProps.url = mediaFrameProps.sizes[ mediaFrameProps.size ].url;
 				}
@@ -530,7 +748,16 @@ wp.mediaWidgets = ( function( $ ) {
 				mediaFrameProps.attachment_id = mediaFrameProps.id;
 			}
 
-			return control.mapMediaToModelProps( mediaFrameProps );
+			modelProps = control.mapMediaToModelProps( mediaFrameProps );
+
+			// Clear the extension prop so sources will be reset for video and audio media.
+			_.each( wp.media.view.settings.embedExts, function( ext ) {
+				if ( ext in control.model.schema && modelProps.url !== modelProps[ ext ] ) {
+					modelProps[ ext ] = '';
+				}
+			} );
+
+			return modelProps;
 		},
 
 		/**
@@ -540,8 +767,13 @@ wp.mediaWidgets = ( function( $ ) {
 		 * @returns {Object} Model props.
 		 */
 		mapMediaToModelProps: function mapMediaToModelProps( mediaFrameProps ) {
-			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {};
+			var control = this, mediaFramePropToModelPropMap = {}, modelProps = {}, extension;
 			_.each( control.model.schema, function( fieldSchema, modelProp ) {
+
+				// Ignore widget title attribute.
+				if ( 'title' === modelProp ) {
+					return;
+				}
 				mediaFramePropToModelPropMap[ fieldSchema.media_prop || modelProp ] = modelProp;
 			});
 
@@ -557,12 +789,26 @@ wp.mediaWidgets = ( function( $ ) {
 				modelProps.height = mediaFrameProps.customHeight;
 			}
 
+			if ( 'post' === mediaFrameProps.link ) {
+				modelProps.link_url = mediaFrameProps.postUrl;
+			} else if ( 'file' === mediaFrameProps.link ) {
+				modelProps.link_url = mediaFrameProps.url;
+			}
+
 			// Because some media frames use `id` instead of `attachment_id`.
 			if ( ! mediaFrameProps.attachment_id && mediaFrameProps.id ) {
 				modelProps.attachment_id = mediaFrameProps.id;
 			}
 
-			return modelProps;
+			if ( mediaFrameProps.url ) {
+				extension = mediaFrameProps.url.replace( /#.*$/, '' ).replace( /\?.*$/, '' ).split( '.' ).pop().toLowerCase();
+				if ( extension in control.model.schema ) {
+					modelProps[ extension ] = mediaFrameProps.url;
+				}
+			}
+
+			// Always omit the titles derived from mediaFrameProps.
+			return _.omit( modelProps, 'title' );
 		},
 
 		/**
@@ -588,6 +834,24 @@ wp.mediaWidgets = ( function( $ ) {
 			}
 
 			return mediaFrameProps;
+		},
+
+		/**
+		 * Map model props to previewTemplateProps.
+		 *
+		 * @returns {Object} Preview Template Props.
+		 */
+		mapModelToPreviewTemplateProps: function mapModelToPreviewTemplateProps() {
+			var control = this, previewTemplateProps = {};
+			_.each( control.model.schema, function( value, prop ) {
+				if ( ! value.hasOwnProperty( 'should_preview_update' ) || value.should_preview_update ) {
+					previewTemplateProps[ prop ] = control.model.get( prop );
+				}
+			});
+
+			// Templates need to be aware of the error.
+			previewTemplateProps.error = control.model.get( 'error' );
+			return previewTemplateProps;
 		},
 
 		/**
@@ -754,7 +1018,7 @@ wp.mediaWidgets = ( function( $ ) {
 
 		/*
 		 * Create a container element for the widget control (Backbone.View).
-		 * This is inserted into the DOM immediately before the the .widget-control
+		 * This is inserted into the DOM immediately before the the .widget-content
 		 * element because the contents of this element are essentially "managed"
 		 * by PHP, where each widget update cause the entire element to be emptied
 		 * and replaced with the rendered output of WP_Widget::form() which is
@@ -808,7 +1072,6 @@ wp.mediaWidgets = ( function( $ ) {
 	component.handleWidgetUpdated = function handleWidgetUpdated( event, widgetContainer ) {
 		var widgetForm, widgetContent, widgetId, widgetControl, attributes = {};
 		widgetForm = widgetContainer.find( '> .widget-inside > .form, > .widget-inside > form' );
-		widgetContent = widgetForm.find( '> .widget-content' );
 		widgetId = widgetForm.find( '> .widget-id' ).val();
 
 		widgetControl = component.widgetControls[ widgetId ];
@@ -817,6 +1080,7 @@ wp.mediaWidgets = ( function( $ ) {
 		}
 
 		// Make sure the server-sanitized values get synced back into the model.
+		widgetContent = widgetForm.find( '> .widget-content' );
 		widgetContent.find( '.media-widget-instance-property' ).each( function() {
 			var property = $( this ).data( 'property' );
 			attributes[ property ] = $( this ).val();

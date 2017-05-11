@@ -56,13 +56,14 @@ class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 		$this->assertEquals( 'image', $widget->widget_options['mime_type'] );
 		$this->assertEqualSets( array(
 			'add_to_widget',
-			'change_media',
+			'replace_media',
 			'edit_media',
 			'media_library_state_multi',
 			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
-			'select_media',
+			'add_media',
+			'unsupported_file_type',
 		), array_keys( $widget->l10n ) );
 	}
 
@@ -324,8 +325,9 @@ class Test_WP_Widget_Media_Image extends WP_UnitTestCase {
 		) );
 		$output = ob_get_clean();
 
-		// Default title to image title.
-		$this->assertContains( 'title="Canola"', $output );
+		// No default title.
+		$this->assertNotContains( 'title="', $output );
+
 		// Default image classes.
 		$this->assertContains( 'class="image wp-image-' . $attachment_id, $output );
 		$this->assertContains( 'style="max-width: 100%; height: auto;"', $output );

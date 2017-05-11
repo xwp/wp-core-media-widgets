@@ -32,6 +32,8 @@ if ( defined( 'WP_CLI' ) ) {
 	WP_CLI::add_command( 'media-widgets', new Media_Widgets_WP_CLI_Command() );
 }
 
+define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
+
 /**
  * Register widget scripts.
  *
@@ -39,10 +41,15 @@ if ( defined( 'WP_CLI' ) ) {
  * @param WP_Scripts $scripts Scripts.
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
+	if ( function_exists( 'wp_enqueue_editor' ) && ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
+		$scripts->add( 'text-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/text-widgets.js', array( 'jquery', 'backbone', 'editor', 'wp-util' ) );
+		$scripts->add_inline_script( 'text-widgets', 'wp.textWidgets.init();', 'after' );
+	}
+
 	$handle = 'media-widgets';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js';
 	if ( $scripts->query( $handle, 'registered' ) ) {
-		$scripts->registered[ $handle ] = $src;
+		$scripts->registered[ $handle ]->src = $src;
 	} else {
 		$scripts->add( $handle, $src, array( 'jquery', 'media-models', 'media-views' ) );
 		$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
@@ -51,20 +58,45 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 	$handle = 'media-image-widget';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js';
 	if ( $scripts->query( $handle, 'registered' ) ) {
-		$scripts->registered[ $handle ] = $src;
+		$scripts->registered[ $handle ]->src = $src;
 	} else {
 		$scripts->add( $handle, $src, array( 'media-widgets' ) );
 	}
 
-	/* TODO: $scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
+	$handle = 'media-video-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js';
+	if ( $scripts->query( $handle, 'registered' ) ) {
+		$scripts->registered[ $handle ]->src = $src;
+	} else {
+		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
+	}
 
-	/* TODO: $scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets', 'wp-mediaelement' ) ); */
+	$handle = 'media-audio-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js';
+	if ( $scripts->query( $handle, 'registered' ) ) {
+		$scripts->registered[ $handle ]->src = $src;
+	} else {
+		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
+	}
 
 	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
 		$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
 	}
 }
 add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
+
+/**
+ * Add filters that will eventually reside in default-filters.php
+ */
+function wp32417_add_default_filters() {
+	add_filter( 'widget_text_content', 'capital_P_dangit', 11 );
+	add_filter( 'widget_text_content', 'wptexturize' );
+	add_filter( 'widget_text_content', 'convert_smilies', 20 );
+	add_filter( 'widget_text_content', 'wpautop' );
+}
+if ( ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
+	add_action( 'plugins_loaded', 'wp32417_add_default_filters' );
+}
 
 /**
  * Register widget styles.
@@ -112,12 +144,15 @@ function wp32417_twentyten_styles() {
  * @codeCoverageIgnore
  */
 function wp32417_widgets_init() {
-
 	register_widget( 'WP_Widget_Media_Image' );
+	register_widget( 'WP_Widget_Media_Video' );
+	register_widget( 'WP_Widget_Media_Audio' );
 
-	/* TODO: register_widget( 'WP_Widget_Media_Audio' ); */
-
-	/* TODO: register_widget( 'WP_Widget_Media_Video' ); */
+	if ( function_exists( 'wp_enqueue_editor' ) && ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
+		require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-visual-text.php' );
+		unregister_widget( 'WP_Widget_Text' );
+		register_widget( 'WP_Widget_Visual_Text' );
+	}
 }
 add_action( 'widgets_init', 'wp32417_widgets_init', 0 );
 
@@ -142,10 +177,8 @@ function wp32417_maybe_load_widgets() {
 	// Require media widgets from plugin instead of core.
 	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php';
 	require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php';
-
-	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php'; */
-
-	/* TODO: require_once dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php'; */
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php' );
+	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php' );
 
 	add_action( '_admin_menu', 'wp_widgets_add_menu' );
 }
@@ -153,7 +186,7 @@ remove_action( 'plugins_loaded', 'wp_maybe_load_widgets', 0 );
 add_action( 'plugins_loaded', 'wp32417_maybe_load_widgets', 0 );
 
 /**
- * Add align classname to the alignment container in .attachment-display-settings.
+ * Add align class name to the alignment container in .attachment-display-settings.
  *
  * @see wp_print_media_templates()
  * @todo For Core merge, this should be patched in \wp_print_media_templates().
@@ -171,3 +204,26 @@ function wp32417_add_classname_to_display_settings() {
 	<?php
 }
 add_action( 'print_media_templates', 'wp32417_add_classname_to_display_settings' );
+
+/**
+ * Add autoplay class name to the checkbox container elements for audio/video details.
+ *
+ * @see wp_print_media_templates()
+ * @todo For Core merge, this should be patched in \wp_print_media_templates().
+ */
+function wp32417_add_classname_to_audio_video_details_frames() {
+	?>
+	<script>
+		(function( audioTemplateEl, videoTemplateEl ) {
+			var regex = /(<label class="setting checkbox-setting)(?=">\s*<input type="checkbox" data-setting="autoplay")/;
+			if ( audioTemplateEl ) {
+				audioTemplateEl.text = audioTemplateEl.text.replace( regex, '$1 autoplay' );
+			}
+			if ( videoTemplateEl ) {
+				videoTemplateEl.text = videoTemplateEl.text.replace( regex, '$1 autoplay' );
+			}
+		}( document.getElementById( 'tmpl-audio-details' ), document.getElementById( 'tmpl-video-details' ) ));
+	</script>
+	<?php
+}
+add_action( 'print_media_templates', 'wp32417_add_classname_to_audio_video_details_frames' );
