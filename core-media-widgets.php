@@ -38,7 +38,7 @@ if ( defined( 'WP_CLI' ) ) {
  */
 function wp32417_default_scripts( WP_Scripts $scripts ) {
 	if ( function_exists( 'wp_enqueue_editor' ) ) {
-		$scripts->add( 'text-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/text-widgets.js', array( 'jquery', 'backbone' ) );
+		$scripts->add( 'text-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/text-widgets.js', array( 'jquery', 'backbone', 'editor', 'wp-util' ) );
 		$scripts->add_inline_script( 'text-widgets', 'wp.textWidgets.init();', 'after' );
 	}
 
