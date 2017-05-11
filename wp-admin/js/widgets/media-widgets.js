@@ -187,7 +187,8 @@ wp.mediaWidgets = ( function( $ ) {
 								url: embedLinkView.model.get( 'url' ),
 								maxwidth: embedLinkView.model.get( 'width' ),
 								maxheight: embedLinkView.model.get( 'height' ),
-								_wpnonce: wp.media.view.settings.nonce.wpRestApi
+								_wpnonce: wp.media.view.settings.nonce.wpRestApi,
+								discover: false
 							},
 							type: 'GET',
 							dataType: 'json',

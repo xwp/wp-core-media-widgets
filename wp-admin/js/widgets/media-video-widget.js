@@ -116,7 +116,8 @@
 					url: control.model.get( 'url' ),
 					maxwidth: control.model.get( 'width' ),
 					maxheight: control.model.get( 'height' ),
-					_wpnonce: wp.media.view.settings.nonce.wpRestApi
+					_wpnonce: wp.media.view.settings.nonce.wpRestApi,
+					discover: false
 				},
 				type: 'GET',
 				dataType: 'json',
