@@ -162,7 +162,28 @@ wp.textWidgets = ( function( $ ) {
 
 				control.editorFocused = false;
 				triggerChangeIfDirty = function() {
+					var updateWidgetBuffer = 300; // See wp.customize.Widgets.WidgetControl._setupUpdateUI() which uses 250ms for updateWidgetDebounced.
 					if ( editor.isDirty() ) {
+
+						/*
+						 * Account for race condition in customizer where user clicks Save & Publish while
+						 * focus was just previously given to to the editor. Since updates to the editor
+						 * are debounced at 1 second and since widget input changes are only synced to
+						 * settings after 250ms, the customizer needs to be put into the processing
+						 * state during the time between the change event is triggered and updateWidget
+						 * logic starts. Note that the debounced update-widget request should be able
+						 * to be removed with the removal of the update-widget request entirely once
+						 * widgets are able to mutate their own instance props directly in JS without
+						 * having to make server round-trips to call the respective WP_Widget::update()
+						 * callbacks. See <https://core.trac.wordpress.org/ticket/33507>.
+						 */
+						if ( wp.customize ) {
+							wp.customize.state( 'processing' ).set( wp.customize.state( 'processing' ).get() + 1 );
+							_.delay( function() {
+								wp.customize.state( 'processing' ).set( wp.customize.state( 'processing' ).get() - 1 );
+							}, updateWidgetBuffer );
+						}
+
 						editor.save();
 						textarea.trigger( 'change' );
 					}
