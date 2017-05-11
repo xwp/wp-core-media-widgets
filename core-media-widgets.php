@@ -98,9 +98,7 @@ if ( ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
 function wp32417_default_styles( WP_Styles $styles ) {
 	$handle = 'media-widgets';
 	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
-	if ( $styles->query( $handle, 'registered' ) ) {
-		$styles->registered[ $handle ] = $src;
-	} else {
+	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
 		$styles->add( $handle, $src, array( 'media-views' ) );
 	}
 }
