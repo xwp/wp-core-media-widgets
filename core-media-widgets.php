@@ -24,13 +24,14 @@
  * @package WordPress
  */
 
+define( 'WP_CORE_MEDIA_WIDGETS_MERGED', file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
+
 // Register WP-CLI command for generating QUnit test suite.
 if ( defined( 'WP_CLI' ) ) {
 	require_once dirname( __FILE__ ) . '/php/class-media-widgets-wp-cli-command.php';
 	WP_CLI::add_command( 'media-widgets', new Media_Widgets_WP_CLI_Command() );
 }
-
-define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
 
 /**
  * Register widget scripts.
@@ -44,14 +45,34 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 		$scripts->add_inline_script( 'text-widgets', 'wp.textWidgets.init();', 'after' );
 	}
 
-	$scripts->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js', array( 'jquery', 'media-models', 'media-views' ) );
-	$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
+	$handle = 'media-widgets';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-widgets.js';
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
+		$scripts->add( $handle, $src, array( 'jquery', 'media-models', 'media-views' ) );
+		$scripts->add_inline_script( 'media-widgets', 'wp.mediaWidgets.init();', 'after' );
+	}
 
-	$scripts->add( 'media-audio-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js', array( 'media-widgets', 'media-audiovideo' ) );
-	$scripts->add( 'media-image-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js', array( 'media-widgets' ) );
-	$scripts->add( 'media-video-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js', array( 'media-widgets', 'media-audiovideo' ) );
+	$handle = 'media-image-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-image-widget.js';
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
+		$scripts->add( $handle, $src, array( 'media-widgets' ) );
+	}
 
-	$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
+	$handle = 'media-video-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-video-widget.js';
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
+		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
+	}
+
+	$handle = 'media-audio-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-audio-widget.js';
+	if ( ! $scripts->query( $handle, 'registered' ) ) {
+		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
+	}
+
+	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+		$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
+	}
 }
 add_action( 'wp_default_scripts', 'wp32417_default_scripts' );
 
@@ -75,7 +96,11 @@ if ( ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
  * @param WP_Styles $styles Styles.
  */
 function wp32417_default_styles( WP_Styles $styles ) {
-	$styles->add( 'media-widgets', plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css', array( 'media-views' ) );
+	$handle = 'media-widgets';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
+	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+		$styles->add( $handle, $src, array( 'media-views' ) );
+	}
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
 
@@ -89,7 +114,9 @@ function wp32417_custom_theme_styles() {
 		add_action( 'wp_head', 'wp32417_twentyten_styles' );
 	}
 }
-add_action( 'wp_enqueue_scripts', 'wp32417_custom_theme_styles', 11 );
+if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+	add_action( 'wp_enqueue_scripts', 'wp32417_custom_theme_styles', 11 );
+}
 
 /**
  * Style fixes for Twenty Ten.
@@ -106,14 +133,22 @@ function wp32417_twentyten_styles() {
  * @codeCoverageIgnore
  */
 function wp32417_widgets_init() {
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php' );
-	require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php' );
 
-	register_widget( 'WP_Widget_Media_Image' );
-	register_widget( 'WP_Widget_Media_Video' );
-	register_widget( 'WP_Widget_Media_Audio' );
+	$class_files = array(
+		'WP_Widget_Media' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php',
+		'WP_Widget_Media_Image' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php',
+		'WP_Widget_Media_Video' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php',
+		'WP_Widget_Media_Audio' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php',
+	);
+	foreach ( $class_files as $class => $file ) {
+		if ( ! class_exists( $class ) ) {
+			require_once( $file );
+
+			if ( 'WP_Widget_Media' !== $class ) {
+				register_widget( $class );
+			}
+		}
+	}
 
 	if ( function_exists( 'wp_enqueue_editor' ) && ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
 		require_once( dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-visual-text.php' );
@@ -121,7 +156,7 @@ function wp32417_widgets_init() {
 		register_widget( 'WP_Widget_Visual_Text' );
 	}
 }
-add_action( 'widgets_init', 'wp32417_widgets_init' );
+add_action( 'widgets_init', 'wp32417_widgets_init', 0 );
 
 /**
  * Add align class name to the alignment container in .attachment-display-settings.
