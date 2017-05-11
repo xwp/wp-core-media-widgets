@@ -107,7 +107,7 @@ wp.textWidgets = ( function( $ ) {
 		 * @returns {void}
 		 */
 		initializeEditor: function initializeEditor() {
-			var control = this, changeDebounceDelay = 1000, iframeKeepAliveInterval = 1000, id, textarea, restoreTextMode = false;
+			var control = this, changeDebounceDelay = 1000, id, textarea, restoreTextMode = false;
 			textarea = control.fields.text;
 			id = textarea.attr( 'id' );
 
@@ -137,7 +137,9 @@ wp.textWidgets = ( function( $ ) {
 					throw new Error( 'Failed to initialize editor' );
 				}
 				onInit = function() {
-					watchForDestroyedBody( control.$el.find( 'iframe' )[0] );
+					$( editor.getWin() ).on( 'unload', function() {
+						_.defer( buildEditor );
+					});
 
 					// If a prior mce instance was replaced, and it was in text mode, toggle to text mode.
 					if ( restoreTextMode ) {
@@ -168,23 +170,6 @@ wp.textWidgets = ( function( $ ) {
 				} );
 
 				control.editor = editor;
-			}
-
-			/**
-			 * Watch an iframe for the destruction of its TinyMCE contenteditable contents.
-			 *
-			 * @todo There may be a better way to listen for an iframe being destroyed.
-			 * @param {HTMLIFrameElement} iframe - TinyMCE iframe.
-			 * @returns {void}
-			 */
-			function watchForDestroyedBody( iframe ) {
-				var timeoutId = setInterval( function() {
-					if ( ! iframe.contentWindow || iframe.contentWindow.document.body.id ) {
-						return;
-					}
-					clearInterval( timeoutId );
-					buildEditor();
-				}, iframeKeepAliveInterval );
 			}
 
 			buildEditor();
