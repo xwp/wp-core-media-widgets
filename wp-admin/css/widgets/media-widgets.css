@@ -41,8 +41,12 @@
 .media-widget-control .media-widget-preview .notice {
 	text-align: initial;
 }
-.media-widget-control .notice p {
+.media-frame .media-widget-embed-notice p code,
+.media-widget-control .notice p code {
 	padding: 0 3px 0 0;
+}
+.media-frame .media-widget-embed-notice {
+	margin-top: 16px;
 }
 .media-widget-control .media-widget-preview img {
 	max-width: 100%;
@@ -78,7 +82,7 @@
 .media-widget-video-link .dashicons {
 	font: normal 60px/1 'dashicons';
 	position: relative;
-    width: 100%;
+	width: 100%;
 	top: -90px;
 	color: white;
 	text-decoration: none;
@@ -88,9 +92,6 @@
 	top: 30px;
 }
 
-.media-frame .media-widget-embed-notice {
-	margin-top: 16px;
-}
 .media-frame #embed-url-field.invalid {
 	border: 1px solid #f00;
 }
