@@ -1,1 +1,6 @@
-dev-lib/.stylelintrc
+{
+  "extends": "stylelint-config-wordpress",
+  "rules": {
+    "font-weight-notation": "named-where-possible"
+  }
+}

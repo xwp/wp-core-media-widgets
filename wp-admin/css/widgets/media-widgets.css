@@ -82,15 +82,15 @@
 	display: inline-block;
 	min-height: 132px;
 	width: 100%;
-	background: black;
+	background: #000;
 }
 
 .media-widget-video-link .dashicons {
-	font: normal 60px/1 'dashicons';
+	font: normal 60px/1 dashicons;
 	position: relative;
 	width: 100%;
 	top: -90px;
-	color: white;
+	color: #fff;
 	text-decoration: none;
 }
 
