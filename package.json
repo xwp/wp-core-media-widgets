@@ -21,6 +21,9 @@
     "grunt-cli": "^1.2.0",
     "grunt-contrib-qunit": "^1.2.0",
     "qunitjs": "1.18.0",
-    "sinon": "^1.8.2"
+    "sinon": "^1.8.2",
+    "stylelint": "^7.10.1",
+    "stylelint-config-wordpress": "^11.0.0",
+    "stylelint-formatter-compact": "^0.1.0"
   }
 }
