@@ -92,7 +92,7 @@
 		editMedia: function editMedia() {
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
-				selection = new wp.media.model.Selection( JSON.parse( control.model.get( 'attachments') ) );
+				selection = new wp.media.model.Selection( JSON.parse( control.model.get( 'attachments' ) ) );
 			} else {
 				selection = null;
 			}
@@ -130,7 +130,7 @@
 							return model.toJSON();
 						} )
 					),
-					selection: selectedImages,
+					selection: selectedImages
 				} );
 			} );
 
@@ -205,7 +205,7 @@
 							return model.toJSON();
 						} )
 					),
-					selection: selectedImages,
+					selection: selectedImages
 				} );
 			} );
 
