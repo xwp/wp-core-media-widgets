@@ -26,7 +26,7 @@
 					toolbar:    'main-gallery',
 					filterable: 'uploaded',
 					multiple:   'add',
-					editable:   false,
+					editable:   true,
 
 					library:  wp.media.query( _.defaults({
 						type: 'image'
@@ -75,7 +75,89 @@
 			previewTemplate = wp.template( 'wp-media-widget-gallery-preview' );
 			previewContainer.html( previewTemplate( control.previewTemplateProps.toJSON() ) );
 		},
+		isSelected: function isSelected() {
+			var control = this;
 
+			if ( control.model.get( 'error' ) ) {
+				return false;
+			}
+
+			return Boolean( control.model.get( 'ids' ) || control.model.get( 'attachments' ) );
+		},
+		/**
+		 * Open the media select frame to edit images.
+		 *
+		 * @returns {void}
+		 */
+		editMedia: function editMedia() {
+			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
+			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
+				selection = new wp.media.model.Selection( JSON.parse( control.model.get( 'attachments') ) );
+			} else {
+				selection = null;
+			}
+
+			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
+			if ( mediaFrameProps.size ) {
+				control.displaySettings.set( 'size', mediaFrameProps.size );
+			}
+			mediaFrame = new GalleryDetailsMediaFrame({
+				frame: 'select',
+				text: control.l10n.add_to_widget,
+				selection: selection,
+				mimeType: control.mime_type,
+				selectedDisplaySettings: control.displaySettings,
+				showDisplaySettings: control.showDisplaySettings,
+				metadata: mediaFrameProps,
+				state: 'gallery'
+			});
+			wp.media.frame = mediaFrame; // See wp.media().
+
+			// Handle selection of a media item.
+			mediaFrame.on( 'update', function onUpdate( selections ) {
+				var state = mediaFrame.state(), selectedImages;
+
+				selectedImages = selections || state.get( 'selection' );
+				if ( ! selectedImages ) {
+					return;
+				}
+
+				// Update widget instance.
+				control.model.set( {
+					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ),
+					attachments: JSON.stringify(
+						selectedImages.models.map( function( model ) {
+							return model.toJSON();
+						} )
+					),
+					selection: selectedImages,
+				} );
+			} );
+
+			// Disable syncing of attachment changes back to server. See <https://core.trac.wordpress.org/ticket/40403>.
+			defaultSync = wp.media.model.Attachment.prototype.sync;
+			wp.media.model.Attachment.prototype.sync = function rejectedSync() {
+				return $.Deferred().rejectWith( this ).promise();
+			};
+			mediaFrame.on( 'close', function onClose() {
+				wp.media.model.Attachment.prototype.sync = defaultSync;
+			});
+
+			mediaFrame.$el.addClass( 'media-widget' );
+			mediaFrame.open();
+
+			// Clear the selected attachment when it is deleted in the media select frame.
+			if ( selection ) {
+				selection.on( 'destroy', function onDestroy( attachment ) {
+					if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
+						control.model.set({
+							attachment_id: 0,
+							url: ''
+						});
+					}
+				});
+			}
+		},
 		/**
 		 * Open the media select frame to chose an item.
 		 *
@@ -83,8 +165,7 @@
 		 */
 		selectMedia: function selectMedia() {
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
-
-			if ( control.isSelected() && 0 !== control.model.get( 'attachment_id' ) ) {
+			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
 				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
 			} else {
 				selection = null;
@@ -94,7 +175,6 @@
 			if ( mediaFrameProps.size ) {
 				control.displaySettings.set( 'size', mediaFrameProps.size );
 			}
-
 			mediaFrame = new GalleryDetailsMediaFrame({
 				frame: 'select',
 				text: control.l10n.add_to_widget,
@@ -120,9 +200,12 @@
 				// Update widget instance.
 				control.model.set( {
 					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ),
-					attachments: selectedImages.models.map( function( model ) {
-						return model.toJSON();
-					} )
+					attachments: JSON.stringify(
+						selectedImages.models.map( function( model ) {
+							return model.toJSON();
+						} )
+					),
+					selection: selectedImages,
 				} );
 			} );
 
@@ -156,6 +239,7 @@
 			 */
 			mediaFrame.$el.find( ':focusable:first' ).focus();
 		}
+
 	} );
 
 	// Exports.

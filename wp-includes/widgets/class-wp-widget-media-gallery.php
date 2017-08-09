@@ -85,8 +85,8 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 					'should_preview_update' => false,
 				),
 				'attachments' => array(
-					'type'                  => 'array',
-					'default' => array(),
+					'type'                  => 'string',
+					'default' => '',
 				),
 			)
 		);
@@ -106,7 +106,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 		$shortcode_atts = array(
 			'ids' => $instance['ids'],
 		);
-
 		// @codingStandardsIgnoreStart
 		if ( $instance['orderby_random'] ) {
 			$shortcode_atts['orderby'] = 'rand';
@@ -163,15 +162,15 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 */
 	public function render_control_template_scripts() {
 		parent::render_control_template_scripts();
-
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-gallery-preview">
 			<# var describedById = 'describedBy-' + String( Math.random() ); #>
-
+			<# data.attachments = data.attachments ? JSON.parse(data.attachments) : ''; #>
 			<# if ( data.error && 'missing_attachment' === data.error ) { #>
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
+
 			<# } else if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
 				<div class="gallery gallery-columns-{{ data.columns }}">
 					<# _.each( data.attachments, function( attachment, index ) { #>
@@ -201,5 +200,32 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			<# } #>
 		</script>
 		<?php
+	}
+
+	/**
+	 * Whether the widget has content to show.
+	 *
+	 * @since 4.8.0
+	 * @access protected
+	 *
+	 * @param array $instance Widget instance props.
+	 * @return bool Whether widget has content.
+	 */
+	protected function has_content( $instance ) {
+
+		if ( ! empty( $instance['ids'] ) ) {
+
+			$attachments = explode( ',', $instance['ids'] );
+			foreach ( $attachments as $attachment ) {
+				if ( 'attachment' !== get_post_type( $attachment ) ) {
+
+					return false;
+				}
+			}
+			return true;
+		} else {
+
+			return false;
+		}
 	}
 }
