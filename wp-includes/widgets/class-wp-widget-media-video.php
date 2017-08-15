@@ -30,8 +30,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 
 		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No video selected' ),
-			'select_media' => _x( 'Select Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
-			'change_media' => _x( 'Change Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
+			'add_media' => _x( 'Add Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
+			'replace_media' => _x( 'Replace Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Video', 'label for button in the video widget; should not be longer than ~13 characters long' ),
 			'missing_attachment' => sprintf(
 				/* translators: placeholder is URL to media library */
@@ -41,6 +41,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			/* translators: %d is widget count */
 			'media_library_state_multi' => _n_noop( 'Video Widget (%d)', 'Video Widget (%d)' ),
 			'media_library_state_single' => __( 'Video Widget' ),
+			/* translators: placeholder is a list of valid video file extensions */
+			'unsupported_file_type' => sprintf( __( 'Sorry, we can&#8217;t display the video file type selected. Please select a supported video file (%1$s) or stream (YouTube or Vimeo) instead.' ), '<code>.' . implode( '</code>, <code>.', wp_get_video_extensions() ) . '</code>' ),
 		) );
 	}
 
@@ -59,16 +61,10 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		$schema = array_merge(
 			parent::get_instance_schema(),
 			array(
-				'poster' => array(
-					'type' => 'string',
-					'default' => '',
-					'format' => 'uri',
-					'description' => __( 'URL to the poster frame' ),
-				),
 				'preload' => array(
 					'type' => 'string',
 					'enum' => array( 'none', 'auto', 'metadata' ),
-					'default' => 'none',
+					'default' => 'metadata',
 					'should_preview_update' => false,
 				),
 				'loop' => array(
@@ -112,11 +108,8 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 	 */
 	public function render_media( $instance ) {
 		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
-		if ( empty( $instance['attachment_id'] ) && empty( $instance['url'] ) ) {
-			return;
-		}
-
 		$attachment = null;
+
 		if ( $this->is_attachment_with_mime_type( $instance['attachment_id'], $this->widget_options['mime_type'] ) ) {
 			$attachment = get_post( $instance['attachment_id'] );
 		}
@@ -124,12 +117,17 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 		if ( $attachment ) {
 			$src = wp_get_attachment_url( $attachment->ID );
 		} else {
-			$src = $instance['url'];
+
+			// Manually add the loop query argument.
+			$loop = $instance['loop'] ? '1' : '0';
+			$src = empty( $instance['url'] ) ? $instance['url'] : add_query_arg( 'loop', $loop, $instance['url'] );
 		}
 
 		if ( empty( $src ) ) {
 			return;
 		}
+
+		add_filter( 'wp_video_shortcode', array( $this, 'inject_video_max_width_style' ) );
 
 		echo wp_video_shortcode(
 			array_merge(
@@ -138,6 +136,24 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			),
 			$instance['content']
 		);
+
+		remove_filter( 'wp_video_shortcode', array( $this, 'inject_video_max_width_style' ) );
+	}
+
+	/**
+	 * Inject max-width and remove height for videos too constrained to fit inside sidebars on frontend.
+	 *
+	 * @since 4.8.0
+	 * @access public
+	 *
+	 * @param string $html Video shortcode HTML output.
+	 * @return string HTML Output.
+	 */
+	public function inject_video_max_width_style( $html ) {
+		$html = preg_replace( '/\sheight="\d+"/', '', $html );
+		$html = preg_replace( '/\swidth="\d+"/', '', $html );
+		$html = preg_replace( '/(?<=width:)\s*\d+px(?=;?)/', '100%', $html );
+		return $html;
 	}
 
 	/**
@@ -176,7 +192,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
-			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop' ) );
+			$exported_schema[ $field ] = wp_array_slice_assoc( $field_schema, array( 'type', 'default', 'enum', 'minimum', 'format', 'media_prop', 'should_preview_update' ) );
 		}
 		wp_add_inline_script(
 			$handle,
@@ -192,7 +208,7 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 			sprintf(
 				'
 					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
-					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n = _.extend( {}, wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
 				',
 				wp_json_encode( $this->id_base ),
 				wp_json_encode( $this->widget_options['mime_type'] ),
@@ -215,16 +231,23 @@ class WP_Widget_Media_Video extends WP_Widget_Media {
 				<div class="notice notice-error notice-alt notice-missing-attachment">
 					<p><?php echo $this->l10n['missing_attachment']; ?></p>
 				</div>
+			<# } else if ( data.error && 'unsupported_file_type' === data.error ) { #>
+				<div class="notice notice-error notice-alt notice-missing-attachment">
+					<p><?php echo $this->l10n['unsupported_file_type']; ?></p>
+				</div>
 			<# } else if ( data.error ) { #>
 				<div class="notice notice-error notice-alt">
 					<p><?php _e( 'Unable to preview media due to an unknown error.' ); ?></p>
 				</div>
-			<# } else if ( data.model && ! data.model.attachment_id ) { #>
-				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link{{ ! data.model.poster ? ' no-poster' : '' }}">
-					<img class="attachment-thumb" src="{{ data.model.poster }}" draggable="false" />
+			<# } else if ( data.is_hosted_embed && data.model.poster ) { #>
+				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link">
+					<img src="{{ data.model.poster }}" />
+				</a>
+			<# } else if ( data.is_hosted_embed ) { #>
+				<a href="{{ data.model.src }}" target="_blank" class="media-widget-video-link no-poster">
 					<span class="dashicons dashicons-format-video"></span>
 				</a>
-			<# } else if ( data.model && data.model.attachment_id ) { #>
+			<# } else if ( data.model.src ) { #>
 				<?php wp_underscore_video_template() ?>
 			<# } #>
 		</script>

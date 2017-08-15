@@ -30,8 +30,8 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 
 		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No image selected' ),
-			'select_media' => _x( 'Select Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
-			'change_media' => _x( 'Change Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'add_media' => _x( 'Add Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
+			'replace_media' => _x( 'Replace Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Image', 'label for button in the image widget; should not be longer than ~13 characters long' ),
 			'missing_attachment' => sprintf(
 				/* translators: placeholder is URL to media library */
@@ -174,10 +174,12 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 			}
 
 			$image_attributes = array(
-				'title' => $instance['image_title'] ? $instance['image_title'] : get_the_title( $attachment->ID ),
 				'class' => sprintf( 'image wp-image-%d %s', $attachment->ID, $instance['image_classes'] ),
 				'style' => 'max-width: 100%; height: auto;',
 			);
+			if ( ! empty( $instance['image_title'] ) ) {
+				$image_attributes['title'] = $instance['image_title'];
+			}
 
 			if ( $instance['alt'] ) {
 				$image_attributes['alt'] = $instance['alt'];
@@ -278,7 +280,7 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 			sprintf(
 				'
 					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.mime_type = %2$s;
-					_.extend( wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
+					wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n = _.extend( {}, wp.mediaWidgets.controlConstructors[ %1$s ].prototype.l10n, %3$s );
 				',
 				wp_json_encode( $this->id_base ),
 				wp_json_encode( $this->widget_options['mime_type'] ),
@@ -317,10 +319,6 @@ class WP_Widget_Media_Image extends WP_Widget_Media {
 						echo sprintf( __( 'Current image: %s' ), '{{ data.currentFilename }}' );
 					?></p>
 				<# } #>
-			<# } else { #>
-				<div class="attachment-media-view">
-					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
-				</div>
 			<# } #>
 		</script>
 		<?php

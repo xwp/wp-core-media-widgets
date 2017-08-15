@@ -26,7 +26,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			array_merge(
 				array(
 					'attachment_id',
-					'poster',
 					'preload',
 					'loop',
 					'title',
@@ -54,13 +53,14 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$this->assertEquals( 'video', $widget->widget_options['mime_type'] );
 		$this->assertEqualSets( array(
 			'add_to_widget',
-			'change_media',
+			'replace_media',
+			'unsupported_file_type',
 			'edit_media',
 			'media_library_state_multi',
 			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
-			'select_media',
+			'add_media',
 		), array_keys( $widget->l10n ) );
 	}
 
@@ -99,20 +99,6 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		), $instance );
 		$this->assertNotSame( $result, $instance );
 		$this->assertStringStartsWith( 'http://', $result['url'] );
-
-		// Should return valid poster url.
-		$expected = array(
-			'poster' => 'https://chickenandribs.org/some-poster-image.jpg',
-		);
-		$result = $widget->update( $expected, $instance );
-		$this->assertSame( $result, $expected );
-
-		// Should filter invalid poster url.
-		$result = $widget->update( array(
-			'poster' => 'not_a_url',
-		), $instance );
-		$this->assertNotSame( $result, $instance );
-		$this->assertStringStartsWith( 'http://', $result['poster'] );
 
 		// Should return loop setting.
 		$expected = array(
@@ -164,6 +150,7 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 	 * Test render_media method.
 	 *
 	 * @covers WP_Widget_Media_Video::render_media()
+	 * @covers WP_Widget_Media_Video::inject_video_max_width_style()
 	 */
 	function test_render_media() {
 		$test_movie_file = __FILE__ . '../data/small-video.m4v';
@@ -198,28 +185,25 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 		$output = ob_get_clean();
 
 		// Check default outputs.
-		$this->assertContains( 'preload="none"', $output );
+		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'class="wp-video"', $output );
-		$this->assertContains( 'small-video.m4v', $output );
-
-		// Auto parses dimensions.
-		$this->assertContains( 'width="640"', $output );
-		$this->assertContains( 'height="360"', $output );
+		$this->assertContains( 'width:100%', $output );
+		$this->assertNotContains( 'height=', $output );
+		$this->assertNotContains( 'width="', $output );
+		$this->assertContains( 'small-video.m4v', $output );// Auto parses dimensions.
 
 		ob_start();
 		$widget->render_media( array(
 			'attachment_id' => $attachment_id,
 			'title' => 'Open Source Cartoon',
-			'preload' => 'auto',
+			'preload' => 'metadata',
 			'loop' => true,
-			'poster' => 'http://chickenandribs.org/poster-image.jpg',
 		) );
 		$output = ob_get_clean();
 
 		// Custom attributes.
-		$this->assertContains( 'preload="auto"', $output );
+		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'loop="1"', $output );
-		$this->assertContains( 'poster="http://chickenandribs.org/poster-image.jpg"', $output );
 
 		// Externally hosted video.
 		ob_start();
@@ -228,14 +212,12 @@ class Test_WP_Widget_Media_Video extends WP_UnitTestCase {
 			'attachment_id' => null,
 			'loop' => false,
 			'url' => 'https://www.youtube.com/watch?v=OQSNhk5ICTI',
-			'poster' => 'https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg',
 			'content' => $content,
 		) );
 		$output = ob_get_clean();
 
 		// Custom attributes.
-		$this->assertContains( 'preload="none"', $output );
-		$this->assertContains( 'poster="https://img.youtube.com/vi/OQSNhk5ICTI/mqdefault.jpg"', $output );
+		$this->assertContains( 'preload="metadata"', $output );
 		$this->assertContains( 'src="https://www.youtube.com/watch?v=OQSNhk5ICTI', $output );
 		$this->assertContains( $content, $output );
 	}

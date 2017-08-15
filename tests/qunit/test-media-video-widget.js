@@ -25,6 +25,12 @@
 		equal( mappedProps.url, testVideoUrl, 'mapModelToMediaFrameProps should set url' );
 		equal( mappedProps.loop, false, 'mapModelToMediaFrameProps should set loop' );
 		equal( mappedProps.preload, 'meta', 'mapModelToMediaFrameProps should set preload' );
+
+		// Test mapMediaToModelProps().
+		mappedProps = videoWidgetControlInstance.mapMediaToModelProps( { loop: false, preload: 'meta', url: testVideoUrl, title: 'random movie file title' } );
+		equal( mappedProps.title, undefined, 'mapMediaToModelProps should ignore title inputs' );
+		equal( mappedProps.loop, false, 'mapMediaToModelProps should set loop' );
+		equal( mappedProps.preload, 'meta', 'mapMediaToModelProps should set preload' );
 	});
 
 	asyncTest( 'video widget control renderPreview', function() {
@@ -41,7 +47,7 @@
 
 		// Due to renderPreview being deferred.
 		setTimeout( function() {
-			equal( videoWidgetControlInstance.$el.find( 'a[href="https://videos.files.wordpress.com/AHz0Ca46/wp4-7-vaughan-r8-mastered_hd.mp4"]' ).length, 1, 'One video link should be rendered' );
+			equal( videoWidgetControlInstance.$el.find( 'source[src="https://videos.files.wordpress.com/AHz0Ca46/wp4-7-vaughan-r8-mastered_hd.mp4"]' ).length, 1, 'One video link should be rendered' );
 		}, 50 );
 
 		setTimeout( start, 1000 );

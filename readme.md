@@ -4,13 +4,13 @@
 Feature plugin for introducing new core media widgets for images, audio, and video.
 
 **Contributors:** [wordpressdotorg](https://profiles.wordpress.org/wordpressdotorg)  
-**Tags:** [sidebar](https://wordpress.org/plugins/tags/sidebar), [widget](https://wordpress.org/plugins/tags/widget), [images](https://wordpress.org/plugins/tags/images), [video](https://wordpress.org/plugins/tags/video), [audio](https://wordpress.org/plugins/tags/audio)  
+**Tags:** [sidebar](https://wordpress.org/plugins/tags/sidebar), [widget](https://wordpress.org/plugins/tags/widget), [images](https://wordpress.org/plugins/tags/images), [video](https://wordpress.org/plugins/tags/video), [audio](https://wordpress.org/plugins/tags/audio), [tinymce](https://wordpress.org/plugins/tags/tinymce)  
 **Requires at least:** 4.7.0  
 **Tested up to:** 4.8.0-alpha  
 **Stable tag:** master  
 **License:** [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)  
 
-[![Build Status](https://travis-ci.org/xwp/wp-core-media-widgets.svg?branch=master)](https://travis-ci.org/xwp/wp-core-media-widgets) 
+[![Build Status](https://travis-ci.org/xwp/wp-core-media-widgets.svg?branch=master)](https://travis-ci.org/xwp/wp-core-media-widgets) [![Built with Grunt](https://cdn.gruntjs.com/builtwith.svg)](http://gruntjs.com) 
 
 ## Description ##
 
@@ -20,6 +20,7 @@ See Trac tickets:
 * [#39993](https://core.trac.wordpress.org/ticket/39993): Introduce Core Widget: Image
 * [#39994](https://core.trac.wordpress.org/ticket/39994): Introduce Core Widget: Video
 * [#39995](https://core.trac.wordpress.org/ticket/39995): Introduce Core Widget: Audio
+* [#35243](https://core.trac.wordpress.org/ticket/35243): Extending the text widget to also allow visual mode
 
 Media widgets from this plugin are planned to be copied into core and deactivated in this
 plugin in future releases.

@@ -24,13 +24,13 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public $l10n = array(
 		'add_to_widget' => '',
-		'change_media' => '',
+		'replace_media' => '',
 		'edit_media' => '',
 		'media_library_state_multi' => '',
 		'media_library_state_single' => '',
 		'missing_attachment' => '',
 		'no_media_selected' => '',
-		'select_media' => '',
+		'add_media' => '',
 	);
 
 	/**
@@ -57,8 +57,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 
 		$l10n_defaults = array(
 			'no_media_selected' => __( 'No media selected' ),
-			'select_media' => _x( 'Select Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
-			'change_media' => _x( 'Change Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'add_media' => _x( 'Add Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
+			'replace_media' => _x( 'Replace Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Media', 'label for button in the media widget; should not be longer than ~13 characters long' ),
 			'add_to_widget' => __( 'Add to Widget' ),
 			'missing_attachment' => sprintf(
@@ -69,6 +69,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 			/* translators: %d is widget count */
 			'media_library_state_multi' => _n_noop( 'Media Widget (%d)', 'Media Widget (%d)' ),
 			'media_library_state_single' => __( 'Media Widget' ),
+			'unsupported_file_type' => __( 'Looks like this isn&#8217;t the correct kind of file. Please link to an appropriate file instead.' ),
 		);
 		$this->l10n = array_merge( $l10n_defaults, array_filter( $this->l10n ) );
 
@@ -88,14 +89,15 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 */
 	public function _register() {
 
+		// Note that the widgets component in the customizer will also do the 'admin_print_scripts-widgets.php' action in WP_Customize_Widgets::print_scripts().
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_scripts' ) );
-		add_action( 'customize_controls_print_scripts', array( $this, 'enqueue_admin_scripts' ) );
+
 		if ( $this->is_preview() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_preview_scripts' ) );
 		}
 
+		// Note that the widgets component in the customizer will also do the 'admin_footer-widgets.php' action in WP_Customize_Widgets::print_footer_scripts().
 		add_action( 'admin_footer-widgets.php', array( $this, 'render_control_template_scripts' ) );
-		add_action( 'customize_controls_print_footer_scripts', array( $this, 'render_control_template_scripts' ) );
 
 		add_filter( 'display_media_states', array( $this, 'display_media_state' ), 10, 2 );
 
@@ -173,7 +175,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param string|array $tokens List of tokens separated by spaces, or an array of tokens.
 	 * @return string Sanitized token string list.
 	 */
-	function sanitize_token_list( $tokens ) {
+	public function sanitize_token_list( $tokens ) {
 		if ( is_string( $tokens ) ) {
 			$tokens = preg_split( '/\s+/', trim( $tokens ) );
 		}
@@ -197,7 +199,7 @@ abstract class WP_Widget_Media extends WP_Widget {
 		$instance = wp_parse_args( $instance, wp_list_pluck( $this->get_instance_schema(), 'default' ) );
 
 		// Short-circuit if no media is selected.
-		if ( ( ! $instance['attachment_id'] || 'attachment' !== get_post_type( $instance['attachment_id'] ) ) && ! $instance['url'] ) {
+		if ( ! $this->has_content( $instance ) ) {
 			return;
 		}
 
@@ -284,24 +286,6 @@ abstract class WP_Widget_Media extends WP_Widget {
 	abstract public function render_media( $instance );
 
 	/**
-	 * Creates and returns a link for an attachment.
-	 *
-	 * @param WP_Post $attachment Attachment object.
-	 * @param string  $type       link type.
-	 * @return string
-	 */
-	protected function create_link_for( $attachment, $type = '' ) {
-		$url = '#';
-		if ( 'file' === $type ) {
-			$url = wp_get_attachment_url( $attachment->ID );
-		} elseif ( 'post' === $type ) {
-			$url = get_attachment_link( $attachment->ID );
-		}
-
-		return '<a href="' . esc_url( $url ) . '">' . get_the_title( $attachment->ID ) . '</a>';
-	}
-
-	/**
 	 * Outputs the settings update form.
 	 *
 	 * Note that the widget UI itself is rendered with JavaScript via `MediaWidgetControl#render()`.
@@ -319,8 +303,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 			wp_parse_args( (array) $instance, wp_list_pluck( $instance_schema, 'default' ) ),
 			array_keys( $instance_schema )
 		);
-		?>
-		<?php foreach ( $instance as $name => $value ) : ?>
+
+		foreach ( $instance as $name => $value ) : ?>
 			<input
 				type="hidden"
 				data-property="<?php echo esc_attr( $name ); ?>"
@@ -329,8 +313,8 @@ abstract class WP_Widget_Media extends WP_Widget {
 				id="<?php echo esc_attr( $this->get_field_id( $name ) ); // Needed specifically by wpWidgets.appendTitle(). ?>"
 				value="<?php echo esc_attr( strval( $value ) ); ?>"
 			/>
-		<?php endforeach; ?>
 		<?php
+		endforeach;
 	}
 
 	/**
@@ -343,7 +327,10 @@ abstract class WP_Widget_Media extends WP_Widget {
 	 * @param WP_Post $post   The current attachment object.
 	 * @return array
 	 */
-	public function display_media_state( $states, $post ) {
+	public function display_media_state( $states, $post = null ) {
+		if ( ! $post ) {
+			$post = get_post();
+		}
 
 		// Count how many times this attachment is used in widgets.
 		$use_count = 0;
@@ -403,21 +390,34 @@ abstract class WP_Widget_Media extends WP_Widget {
 			</p>
 			<div class="media-widget-preview">
 				<div class="attachment-media-view">
-					<p class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></p>
+					<div class="placeholder"><?php echo esc_html( $this->l10n['no_media_selected'] ); ?></div>
 				</div>
 			</div>
-			<div class="media-widget-buttons">
+			<p class="media-widget-buttons">
 				<button type="button" class="button edit-media selected">
 					<?php echo esc_html( $this->l10n['edit_media'] ); ?>
 				</button>
 				<button type="button" class="button change-media select-media selected">
-					<?php echo esc_html( $this->l10n['change_media'] ); ?>
+					<?php echo esc_html( $this->l10n['replace_media'] ); ?>
 				</button>
 				<button type="button" class="button select-media not-selected">
-					<?php echo esc_html( $this->l10n['select_media'] ); ?>
+					<?php echo esc_html( $this->l10n['add_media'] ); ?>
 				</button>
-			</div>
+			</p>
 		</script>
 		<?php
+	}
+
+	/**
+	 * Whether the widget has content to show.
+	 *
+	 * @since 4.8.0
+	 * @access protected
+	 *
+	 * @param array $instance Widget instance props.
+	 * @return bool Whether widget has content.
+	 */
+	protected function has_content( $instance ) {
+		return ( $instance['attachment_id'] && 'attachment' === get_post_type( $instance['attachment_id'] ) ) || $instance['url'];
 	}
 }

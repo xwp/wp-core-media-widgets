@@ -49,20 +49,19 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$this->assertEmpty( $widget->widget_options['mime_type'] );
 		$this->assertEqualSets( array(
 			'add_to_widget',
-			'change_media',
+			'replace_media',
 			'edit_media',
 			'media_library_state_multi',
 			'media_library_state_single',
 			'missing_attachment',
 			'no_media_selected',
-			'select_media',
+			'add_media',
+			'unsupported_file_type',
 		), array_keys( $widget->l10n ) );
 		$this->assertEquals( count( $widget->l10n ), count( array_filter( $widget->l10n ) ), 'Expected all translation strings to be defined.' );
 		$this->assertEquals( 10, has_action( 'admin_print_scripts-widgets.php', array( $widget, 'enqueue_admin_scripts' ) ) );
-		$this->assertEquals( 10, has_action( 'customize_controls_print_scripts', array( $widget, 'enqueue_admin_scripts' ) ) );
 		$this->assertFalse( has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ), 'Did not expect preview scripts to be enqueued when not in customize preview context.' );
 		$this->assertEquals( 10, has_action( 'admin_footer-widgets.php', array( $widget, 'render_control_template_scripts' ) ) );
-		$this->assertEquals( 10, has_action( 'customize_controls_print_footer_scripts', array( $widget, 'render_control_template_scripts' ) ) );
 
 		// With non-default args.
 		$id_base = 'media_pdf';
@@ -250,50 +249,6 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test create_link_for method.
-	 *
-	 * @covers WP_Widget_Media::create_link_for()
-	 */
-	function test_create_link_for() {
-		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
-			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
-			return;
-		}
-
-		$attachment_id = self::factory()->attachment->create_object( array(
-			'file' => DIR_TESTDATA . '/images/canola.jpg',
-			'post_parent' => 0,
-			'post_mime_type' => 'image/jpeg',
-		) );
-
-		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
-		$create_link_for = $wp_widget_media->getMethod( 'create_link_for' );
-		$create_link_for->setAccessible( true );
-
-		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
-			get_post( $attachment_id ),
-		) );
-		$this->assertSame( '<a href="#"></a>', $result );
-
-		wp_update_post( array(
-			'ID' => $attachment_id,
-			'post_title' => 'Attachment Title',
-		) );
-
-		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
-			get_post( $attachment_id ),
-			'file',
-		) );
-		$this->assertSame( '<a href="' . esc_url( wp_get_attachment_url( $attachment_id ) ) . '">Attachment Title</a>', $result );
-
-		$result = $create_link_for->invokeArgs( $this->get_mocked_class_instance(), array(
-			get_post( $attachment_id ),
-			'post',
-		) );
-		$this->assertSame( '<a href="' . esc_url( get_permalink( $attachment_id ) ) . '">Attachment Title</a>', $result );
-	}
-
-	/**
 	 * Test widget method.
 	 *
 	 * @covers WP_Widget_Media::widget()
@@ -447,5 +402,51 @@ class Test_WP_Widget_Media extends WP_UnitTestCase {
 		$output = ob_get_clean();
 
 		$this->assertContains( '<script type="text/html" id="tmpl-widget-media-mocked-control">', $output );
+	}
+
+	/**
+	 * Test has_content method.
+	 *
+	 * @covers WP_Widget_Media::has_content()
+	 */
+	function test_has_content() {
+		if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+			$this->markTestSkipped( 'ReflectionMethod::setAccessible is only available for PHP 5.3+' );
+			return;
+		}
+
+		$attachment_id = self::factory()->attachment->create_object( array(
+			'file' => DIR_TESTDATA . '/images/canola.jpg',
+			'post_parent' => 0,
+			'post_mime_type' => 'image/jpeg',
+		) );
+
+		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
+		$has_content = $wp_widget_media->getMethod( 'has_content' );
+		$has_content->setAccessible( true );
+
+		$result = $has_content->invokeArgs( $this->get_mocked_class_instance(), array(
+			array(
+				'attachment_id' => 0,
+				'url' => '',
+			),
+		) );
+		$this->assertFalse( $result );
+
+		$result = $has_content->invokeArgs( $this->get_mocked_class_instance(), array(
+			array(
+				'attachment_id' => $attachment_id,
+				'url' => '',
+			),
+		) );
+		$this->assertTrue( $result );
+
+		$result = $has_content->invokeArgs( $this->get_mocked_class_instance(), array(
+			array(
+				'attachment_id' => 0,
+				'url' => 'http://example.com/image.jpg',
+			),
+		) );
+		$this->assertTrue( $result );
 	}
 }
