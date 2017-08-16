@@ -92,7 +92,9 @@
 		editMedia: function editMedia() {
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
-				selection = new wp.media.model.Selection( JSON.parse( control.model.get( 'attachments' ) ) );
+				selection = new wp.media.model.Selection( JSON.parse( control.model.get( 'attachments' ) ), {
+					multiple: true
+				});
 			} else {
 				selection = null;
 			}
@@ -102,14 +104,16 @@
 				control.displaySettings.set( 'size', mediaFrameProps.size );
 			}
 			mediaFrame = new GalleryDetailsMediaFrame({
-				frame: 'select',
+				frame: 'manage',
 				text: control.l10n.add_to_widget,
 				selection: selection,
 				mimeType: control.mime_type,
 				selectedDisplaySettings: control.displaySettings,
 				showDisplaySettings: control.showDisplaySettings,
 				metadata: mediaFrameProps,
-				state: 'gallery'
+				editing:   true,
+				multiple:  true,
+				state: 'gallery-edit'
 			});
 			wp.media.frame = mediaFrame; // See wp.media().
 
@@ -118,6 +122,7 @@
 				var state = mediaFrame.state(), selectedImages;
 
 				selectedImages = selections || state.get( 'selection' );
+
 				if ( ! selectedImages ) {
 					return;
 				}
