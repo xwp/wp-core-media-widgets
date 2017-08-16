@@ -2,3 +2,7 @@ CHECK_SCOPE=changed-files
 PHPCS_RULESET_FILE=phpcs.xml.dist
 WPCS_BRANCH=develop
 PHPCS_PHAR_URL=https://github.com/squizlabs/PHP_CodeSniffer/releases/download/2.9.0/phpcs.phar
+
+if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.2" ]]; then
+	DEV_LIB_SKIP="$DEV_LIB_SKIP,phpcs"
+fi
