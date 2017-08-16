@@ -8,6 +8,7 @@
 	<rule ref="WordPress">
 		<exclude name="WordPress.XSS.EscapeOutput"/>
 		<exclude name="WordPress.Arrays.ArrayIndentation"/>
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing"/>
 	</rule>
 
 	<rule ref="WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents">
