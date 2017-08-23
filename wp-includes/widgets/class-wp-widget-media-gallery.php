@@ -55,42 +55,44 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 * @return array Schema for properties.
 	 */
 	public function get_instance_schema() {
-		return array_merge(
-			array_filter( parent::get_instance_schema(), function( $key ) {
-				return 'title' === $key;
-			}, ARRAY_FILTER_USE_KEY ),
-			array(
-				'ids' => array(
-					'type' => 'string',
-					'default' => '',
-				),
-				'columns' => array(
-					'type' => 'integer',
-					'default' => 3,
-				),
-				'size' => array(
-					'type' => 'string',
-					'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
-					'default' => 'thumbnail',
-				),
-				'link_type' => array(
-					'type' => 'string',
-					'enum' => array( 'none', 'file', 'post' ),
-					'default' => 'none',
-					'media_prop' => 'link',
-					'should_preview_update' => false,
-				),
-				'orderby_random' => array(
-					'type'                  => 'boolean',
-					'default'               => false,
-					'media_prop'            => '_orderbyRandom',
-					'should_preview_update' => false,
-				),
-				'attachments' => array(
-					'type'                  => 'string',
-					'default' => '',
-				),
-			)
+		return array(
+			'title' => array(
+				'type' => 'string',
+				'default' => '',
+				'sanitize_callback' => 'sanitize_text_field',
+				'description' => __( 'Title for the widget' ),
+				'should_preview_update' => false,
+			),
+			'ids' => array(
+				'type' => 'string',
+				'default' => '',
+			),
+			'columns' => array(
+				'type' => 'integer',
+				'default' => 3,
+			),
+			'size' => array(
+				'type' => 'string',
+				'enum' => array_merge( get_intermediate_image_sizes(), array( 'full', 'custom' ) ),
+				'default' => 'thumbnail',
+			),
+			'link_type' => array(
+				'type' => 'string',
+				'enum' => array( 'none', 'file', 'post' ),
+				'default' => 'none',
+				'media_prop' => 'link',
+				'should_preview_update' => false,
+			),
+			'orderby_random' => array(
+				'type'                  => 'boolean',
+				'default'               => false,
+				'media_prop'            => '_orderbyRandom',
+				'should_preview_update' => false,
+			),
+			'attachments' => array(
+				'type'                  => 'string',
+				'default' => '',
+			),
 		);
 	}
 
