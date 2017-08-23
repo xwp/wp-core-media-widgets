@@ -53,7 +53,25 @@
 	 * @class GalleryWidgetModel
 	 * @constructor
 	 */
-	GalleryWidgetModel = component.MediaWidgetModel.extend( {} );
+	GalleryWidgetModel = component.MediaWidgetModel.extend( {
+		/**
+		 * Remove an attachment ID from attachments.
+		 *
+		 * @param {Integer} id - Attachment id to remove from attachments.
+		 * @returns {void}
+		 */
+		removeAttachmentId: function removeAttachmentId( id ) {
+			var attachments, newAttachments;
+			attachments = JSON.parse( this.get( 'attachments' ) );
+			newAttachments = _.filter( attachments, function( attachment ) {
+				return attachment.id !== id;
+			} );
+			this.set( {
+				'attachments': JSON.stringify( newAttachments ),
+				'ids': _.map( newAttachments, 'id' )
+			} );
+		}
+	} );
 
 	/**
 	 * Gallery widget control.
@@ -154,12 +172,7 @@
 			// Clear the selected attachment when it is deleted in the media select frame.
 			if ( selection ) {
 				selection.on( 'destroy', function onDestroy( attachment ) {
-					if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
-						control.model.set({
-							attachment_id: 0,
-							url: ''
-						});
-					}
+					control.model.removeAttachmentId( attachment.get( 'id' ) );
 				});
 			}
 		},
@@ -229,12 +242,7 @@
 			// Clear the selected attachment when it is deleted in the media select frame.
 			if ( selection ) {
 				selection.on( 'destroy', function onDestroy( attachment ) {
-					if ( control.model.get( 'attachment_id' ) === attachment.get( 'id' ) ) {
-						control.model.set({
-							attachment_id: 0,
-							url: ''
-						});
-					}
+					control.model.removeAttachmentId( attachment.get( 'id' ) );
 				});
 			}
 

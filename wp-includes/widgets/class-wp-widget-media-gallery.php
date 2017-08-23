@@ -56,7 +56,9 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 */
 	public function get_instance_schema() {
 		return array_merge(
-			parent::get_instance_schema(),
+			array_filter( parent::get_instance_schema(), function( $key ) {
+				return 'title' === $key;
+			}, ARRAY_FILTER_USE_KEY ),
 			array(
 				'ids' => array(
 					'type' => 'string',
@@ -166,12 +168,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 		<script type="text/html" id="tmpl-wp-media-widget-gallery-preview">
 			<# var describedById = 'describedBy-' + String( Math.random() ); #>
 			<# data.attachments = data.attachments ? JSON.parse(data.attachments) : ''; #>
-			<# if ( data.error && 'missing_attachment' === data.error ) { #>
-				<div class="notice notice-error notice-alt notice-missing-attachment">
-					<p><?php echo $this->l10n['missing_attachment']; ?></p>
-				</div>
-
-			<# } else if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
+			<# if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
 				<div class="gallery gallery-columns-{{ data.columns }}">
 					<# _.each( data.attachments, function( attachment, index ) { #>
 						<dl class="gallery-item">
