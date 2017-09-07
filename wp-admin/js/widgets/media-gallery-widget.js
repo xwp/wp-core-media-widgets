@@ -93,7 +93,7 @@
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-gallery-preview' );
 
-			if ( control.model.get( 'ids').length && ! control.model.get( 'attachemnts' ) ) {
+			if ( control.model.get( 'ids' ).length && ! control.model.get( 'attachemnts' ) ) {
 				attachments = this.getAttachments();
 
 				attachments.more().done( function() {
@@ -120,7 +120,7 @@
 				perPage: -1,
 				post__in: ids,
 				query: true,
-				type: 'image',
+				type: 'image'
 			} );
 
 			return attachments;
