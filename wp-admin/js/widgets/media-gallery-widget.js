@@ -88,11 +88,44 @@
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate;
+			var control = this, previewContainer, previewTemplate, attachments;
+
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-gallery-preview' );
-			previewContainer.html( previewTemplate( control.previewTemplateProps.toJSON() ) );
+
+			if ( control.model.get( 'ids').length && ! control.model.get( 'attachemnts' ) ) {
+				attachments = this.getAttachments();
+
+				attachments.more().done( function() {
+					control.model.set( 'attachments', JSON.stringify( _.pluck( attachments.models, 'attributes' ) ) );
+					previewContainer.html( previewTemplate( control.model.attributes ) );
+				} );
+			} else {
+				previewContainer.html( previewTemplate( control.previewTemplateProps.toJSON() ) );
+			}
 		},
+
+		/**
+		 * Fetch attachment models.
+		 *
+		 * @returns {wp.media.model.Attachments} A Backbone.Collection.
+		 */
+		getAttachments: function getAttachments() {
+			var attachments,
+				ids = this.model.get( 'ids' ).split( ',' );
+
+			attachments = wp.media.query( {
+				order: 'ASC',
+				orderby: 'post__in',
+				perPage: -1,
+				post__in: ids,
+				query: true,
+				type: 'image',
+			} );
+
+			return attachments;
+		},
+
 		isSelected: function isSelected() {
 			var control = this;
 
@@ -102,6 +135,7 @@
 
 			return Boolean( control.model.get( 'ids' ) || control.model.get( 'attachments' ) );
 		},
+
 		/**
 		 * Open the media select frame to edit images.
 		 *
@@ -110,7 +144,7 @@
 		editMedia: function editMedia() {
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
-				selection = new wp.media.model.Selection( JSON.parse( control.model.get( 'attachments' ) ), {
+				selection = new wp.media.model.Selection( control.model.get( 'attachments' ), {
 					multiple: true
 				});
 			} else {
@@ -176,6 +210,7 @@
 				});
 			}
 		},
+
 		/**
 		 * Open the media select frame to chose an item.
 		 *
