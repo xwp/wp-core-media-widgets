@@ -24,7 +24,8 @@
  * @package WordPress
  */
 
-define( 'WP_CORE_MEDIA_WIDGETS_MERGED', file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+define( 'WP_CORE_MEDIA_WIDGETS_MERGED',      file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+define( 'WP_CORE_GALLERY_WIDGET_MERGED',     file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media-gallery.php' ) );
 define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
 
 // Register WP-CLI command for generating QUnit test suite.
@@ -105,6 +106,22 @@ function wp32417_default_styles( WP_Styles $styles ) {
 	}
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
+
+
+/**
+ * Register gallery widget preview styles.
+ *
+ * @codeCoverageIgnore
+ */
+function wp32417_enqueue_gallery_styles() {
+	$handle = 'media-gallery-widget';
+	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-gallery-widget.css';
+
+	wp_enqueue_style( $handle, $src );
+}
+if ( ! WP_CORE_GALLERY_WIDGET_MERGED ) {
+	add_action( 'customize_controls_print_styles', 'wp32417_enqueue_gallery_styles' );
+}
 
 /**
  * Style fixes for default themes.

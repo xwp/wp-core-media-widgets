@@ -40,6 +40,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			),
 			'media_library_state_multi' => '',
 			'media_library_state_single' => '',
+			'media_gallery_more' => __( '+ More' ),
 		) );
 	}
 
@@ -167,24 +168,24 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			<# var describedById = 'describedBy-' + String( Math.random() ); #>
 			<# data.attachments = data.attachments ? JSON.parse(data.attachments) : ''; #>
 			<# if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
-				<div class="gallery gallery-columns-{{ data.columns }}">
+				<div class="gallery media-widget-gallery-preview">
 					<# _.each( data.attachments, function( attachment, index ) { #>
-						<dl class="gallery-item">
-							<dt class="gallery-icon">
-							<# if ( attachment.sizes.thumbnail ) { #>
-								<img src="{{ attachment.sizes.thumbnail.url }}" width="{{ attachment.sizes.thumbnail.width }}" height="{{ attachment.sizes.thumbnail.height }}" alt="" />
+						<# if ( index < 6 ) { #>
+							<dl class="gallery-item">
+							<# if ( index < 5 ) { #>
+								<dt class="gallery-icon">
+								<# if ( attachment.sizes.thumbnail ) { #>
+									<img src="{{ attachment.sizes.thumbnail.url }}" width="{{ attachment.sizes.thumbnail.width }}" height="{{ attachment.sizes.thumbnail.height }}" alt="" />
+								<# } else { #>
+									<img src="{{ attachment.url }}" alt="" />
+								<# } #>
+								</dt>
 							<# } else { #>
-								<img src="{{ attachment.url }}" alt="" />
+								<dt class="gallery-icon-placeholder">
+									<p class="gallery-icon-placeholder-text"><?php echo esc_html( $this->l10n['media_gallery_more'] ); ?></p>
+								</dt>
 							<# } #>
-							</dt>
-							<# if ( attachment.caption ) { #>
-								<dd class="wp-caption-text gallery-caption">
-									{{{ data.verifyHTML( attachment.caption ) }}}
-								</dd>
-							<# } #>
-						</dl>
-						<# if ( index % data.columns === data.columns - 1 ) { #>
-							<br style="clear: both;">
+							</dl>
 						<# } #>
 					<# } ); #>
 				</div>
