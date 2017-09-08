@@ -89,10 +89,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 				'media_prop'            => '_orderbyRandom',
 				'should_preview_update' => false,
 			),
-			'attachments' => array(
-				'type'                  => 'string',
-				'default' => '',
-			),
 		);
 	}
 

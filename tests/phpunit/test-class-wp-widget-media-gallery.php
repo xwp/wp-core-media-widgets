@@ -30,7 +30,6 @@ class Test_WP_Widget_Media_Gallery extends WP_UnitTestCase {
 				'size',
 				'link_type',
 				'orderby_random',
-				'attachments',
 			),
 			array_keys( $schema )
 		);
