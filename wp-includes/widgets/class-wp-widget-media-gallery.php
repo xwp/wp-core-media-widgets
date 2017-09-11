@@ -126,6 +126,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 
 		$handle = 'media-gallery-widget';
 		wp_enqueue_script( $handle );
+		wp_enqueue_style( $handle );
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {
@@ -167,24 +168,23 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			<# var describedById = 'describedBy-' + String( Math.random() ); #>
 			<# data.attachments = data.attachments ? JSON.parse(data.attachments) : ''; #>
 			<# if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
-				<div class="gallery gallery-columns-{{ data.columns }}">
+				<div class="gallery media-widget-gallery-preview">
 					<# _.each( data.attachments, function( attachment, index ) { #>
-						<dl class="gallery-item">
-							<dt class="gallery-icon">
-							<# if ( attachment.sizes.thumbnail ) { #>
-								<img src="{{ attachment.sizes.thumbnail.url }}" width="{{ attachment.sizes.thumbnail.width }}" height="{{ attachment.sizes.thumbnail.height }}" alt="" />
-							<# } else { #>
-								<img src="{{ attachment.url }}" alt="" />
-							<# } #>
-							</dt>
-							<# if ( attachment.caption ) { #>
-								<dd class="wp-caption-text gallery-caption">
-									{{{ data.verifyHTML( attachment.caption ) }}}
-								</dd>
-							<# } #>
-						</dl>
-						<# if ( index % data.columns === data.columns - 1 ) { #>
-							<br style="clear: both;">
+						<# if ( index < 6 ) { #>
+							<dl class="gallery-item">
+								<dt class="gallery-icon">
+								<# if ( attachment.sizes.thumbnail ) { #>
+									<img src="{{ attachment.sizes.thumbnail.url }}" width="{{ attachment.sizes.thumbnail.width }}" height="{{ attachment.sizes.thumbnail.height }}" alt="" />
+								<# } else { #>
+									<img src="{{ attachment.url }}" alt="" />
+								<# } #>
+								<# if ( index === 5 && data.attachments.length > 6 ) { #>
+									<div class="gallery-icon-placeholder">
+										<p class="gallery-icon-placeholder-text">+{{ data.attachments.length - 5 }}</p>
+									</div>
+								<# } #>
+								</dt>
+							</dl>
 						<# } #>
 					<# } ); #>
 				</div>
