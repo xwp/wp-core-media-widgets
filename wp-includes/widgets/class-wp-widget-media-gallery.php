@@ -40,7 +40,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			),
 			'media_library_state_multi' => '',
 			'media_library_state_single' => '',
-			'media_gallery_more' => __( '+ More' ),
 		) );
 	}
 
@@ -183,7 +182,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 								</dt>
 							<# } else { #>
 								<dt class="gallery-icon-placeholder">
-									<p class="gallery-icon-placeholder-text"><?php echo esc_html( $this->l10n['media_gallery_more'] ); ?></p>
+									<p class="gallery-icon-placeholder-text">+ {{ data.attachments.length - 5 }}</p>
 								</dt>
 							<# } #>
 							</dl>
