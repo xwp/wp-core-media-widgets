@@ -127,6 +127,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 
 		$handle = 'media-gallery-widget';
 		wp_enqueue_script( $handle );
+		wp_enqueue_style( $handle );
 
 		$exported_schema = array();
 		foreach ( $this->get_instance_schema() as $field => $field_schema ) {

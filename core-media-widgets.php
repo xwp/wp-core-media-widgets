@@ -100,28 +100,18 @@ if ( ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
  */
 function wp32417_default_styles( WP_Styles $styles ) {
 	$handle = 'media-widgets';
-	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
 	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+		$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
+		$styles->add( $handle, $src, array( 'media-views' ) );
+	}
+
+	$handle = 'media-gallery-widget';
+	if ( ! WP_CORE_GALLERY_WIDGET_MERGED ) {
+		$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-gallery-widget.css';
 		$styles->add( $handle, $src, array( 'media-views' ) );
 	}
 }
 add_action( 'wp_default_styles', 'wp32417_default_styles' );
-
-
-/**
- * Register gallery widget preview styles.
- *
- * @codeCoverageIgnore
- */
-function wp32417_enqueue_gallery_styles() {
-	$handle = 'media-gallery-widget';
-	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-gallery-widget.css';
-
-	wp_enqueue_style( $handle, $src );
-}
-if ( ! WP_CORE_GALLERY_WIDGET_MERGED ) {
-	add_action( 'customize_controls_print_styles', 'wp32417_enqueue_gallery_styles' );
-}
 
 /**
  * Style fixes for default themes.
