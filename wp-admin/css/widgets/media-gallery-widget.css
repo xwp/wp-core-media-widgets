@@ -30,15 +30,24 @@
 	vertical-align: bottom;
 }
 
+.media-widget-gallery-preview .gallery-icon {
+	position: relative;
+}
+
 .media-widget-gallery-preview .gallery-icon-placeholder {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	max-width: 100%;
-	width: 150px;
-	height: 100%;
-	background-color: #ededed;
-	border: 1px solid #dbdbdb;
+	background-color: rgba( 0, 0, 0, .5 );
+}
+
+.media-widget-gallery-preview .gallery-icon-placeholder-text {
 	font-weight: 600;
+	font-size: 2em;
+	color: white;
 }

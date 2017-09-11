@@ -172,19 +172,18 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 					<# _.each( data.attachments, function( attachment, index ) { #>
 						<# if ( index < 6 ) { #>
 							<dl class="gallery-item">
-							<# if ( index < 5 ) { #>
 								<dt class="gallery-icon">
 								<# if ( attachment.sizes.thumbnail ) { #>
 									<img src="{{ attachment.sizes.thumbnail.url }}" width="{{ attachment.sizes.thumbnail.width }}" height="{{ attachment.sizes.thumbnail.height }}" alt="" />
 								<# } else { #>
 									<img src="{{ attachment.url }}" alt="" />
 								<# } #>
+								<# if ( index === 5 && data.attachments.length > 6 ) { #>
+									<div class="gallery-icon-placeholder">
+										<p class="gallery-icon-placeholder-text">+{{ data.attachments.length - 5 }}</p>
+									</div>
+								<# } #>
 								</dt>
-							<# } else { #>
-								<dt class="gallery-icon-placeholder">
-									<p class="gallery-icon-placeholder-text">+ {{ data.attachments.length - 5 }}</p>
-								</dt>
-							<# } #>
 							</dl>
 						<# } #>
 					<# } ); #>
