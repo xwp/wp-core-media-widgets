@@ -82,6 +82,11 @@
 	 * @constructor
 	 */
 	GalleryWidgetControl = component.MediaWidgetControl.extend( {
+
+		events: _.extend( {}, component.MediaWidgetControl.prototype.events, {
+			'click .media-widget-preview': 'editMedia'
+		} ),
+
 		/**
 		 * Render preview.
 		 *
