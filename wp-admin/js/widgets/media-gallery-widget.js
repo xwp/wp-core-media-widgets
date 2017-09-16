@@ -86,8 +86,8 @@
 			_.bindAll( control, 'updateSelectedAttachments' );
 			control.selectedAttachments = new wp.media.model.Attachments();
 			control.model.on( 'change:ids', control.updateSelectedAttachments );
-			control.selectedAttachments.on( 'change', control.render );
-			control.selectedAttachments.on( 'reset', control.render );
+			control.selectedAttachments.on( 'change', control.renderPreview );
+			control.selectedAttachments.on( 'reset', control.renderPreview );
 			control.updateSelectedAttachments();
 		},
 
@@ -119,7 +119,6 @@
 				});
 				addedQuery.more().done( function() {
 					control.selectedAttachments.reset( addedQuery.models );
-					control.renderPreview(); // @todo Should get triggered with reset.
 				});
 			}
 		},
