@@ -120,7 +120,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 			'link'    => $instance['link_type'],
 			'size'    => $instance['size'],
 		);
-		
+
 		// @codingStandardsIgnoreStart
 		if ( $instance['orderby_random'] ) {
 			$shortcode_atts['orderby'] = 'rand';
