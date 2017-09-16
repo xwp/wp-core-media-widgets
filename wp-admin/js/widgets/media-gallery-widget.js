@@ -198,7 +198,7 @@
 					return;
 				}
 
-				// @todo Support comma-separated ID list arrays?
+				// @todo Support comma-separated ID list arrays? This will depend on WP_Widget_Media::form() being updated to support serializing array to form field.
 				if ( 'boolean' === control.model.schema[ propertyName ].type ) {
 					value = value ? '1' : ''; // Because in PHP, strval( true ) === '1' && strval( false ) === ''.
 				} else {

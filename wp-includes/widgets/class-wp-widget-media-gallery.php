@@ -31,23 +31,16 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 		$this->l10n = array_merge( $this->l10n, array(
 			'no_media_selected' => __( 'No images selected' ),
 			'select_media' => _x( 'Select Images', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
-			'replace_media' => _x( 'Replace Images', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
+			'replace_media' => _x( 'Replace Gallery', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
 			'change_media' => _x( 'Add Image', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
 			'edit_media' => _x( 'Edit Gallery', 'label for button in the gallery widget; should not be longer than ~13 characters long' ),
-			'missing_attachment' => sprintf(
-				/* translators: placeholder is URL to media library */
-				__( 'We can&#8217;t find that gallery. Check your <a href="%s">media library</a> and make sure it wasn&#8217;t deleted.' ),
-				esc_url( admin_url( 'upload.php' ) )
-			),
-			'media_library_state_multi' => '',
-			'media_library_state_single' => '',
 		) );
 	}
 
 	/**
 	 * Get schema for properties of a widget instance (item).
 	 *
-	 * @since  4.8.0
+	 * @since  4.9.0
 	 * @access public
 	 *
 	 * @see WP_REST_Controller::get_item_schema()
@@ -115,7 +108,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	/**
 	 * Render the media on the frontend.
 	 *
-	 * @since  4.8.0
+	 * @since  4.9.0
 	 * @access public
 	 *
 	 * @param array $instance Widget instance props.
@@ -138,7 +131,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	/**
 	 * Loads the required media files for the media manager and scripts for media widgets.
 	 *
-	 * @since 4.8.0
+	 * @since 4.9.0
 	 * @access public
 	 */
 	public function enqueue_admin_scripts() {
@@ -178,7 +171,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	/**
 	 * Render form template scripts.
 	 *
-	 * @since 4.8.0
+	 * @since 4.9.0
 	 * @access public
 	 */
 	public function render_control_template_scripts() {
@@ -225,7 +218,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	/**
 	 * Whether the widget has content to show.
 	 *
-	 * @since 4.8.0
+	 * @since 4.9.0
 	 * @access protected
 	 *
 	 * @param array $instance Widget instance props.
