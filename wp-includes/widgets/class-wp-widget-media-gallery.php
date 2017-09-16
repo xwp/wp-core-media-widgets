@@ -20,7 +20,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 * Constructor.
 	 *
 	 * @since  4.9.0
-	 * @access public
 	 */
 	public function __construct() {
 		parent::__construct( 'media_gallery', __( 'Gallery' ), array(
@@ -41,7 +40,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 * Get schema for properties of a widget instance (item).
 	 *
 	 * @since  4.9.0
-	 * @access public
 	 *
 	 * @see WP_REST_Controller::get_item_schema()
 	 * @see WP_REST_Controller::get_additional_fields()
@@ -109,7 +107,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 * Render the media on the frontend.
 	 *
 	 * @since  4.9.0
-	 * @access public
 	 *
 	 * @param array $instance Widget instance props.
 	 * @return void
@@ -132,7 +129,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 * Loads the required media files for the media manager and scripts for media widgets.
 	 *
 	 * @since 4.9.0
-	 * @access public
 	 */
 	public function enqueue_admin_scripts() {
 		parent::enqueue_admin_scripts();
@@ -172,7 +168,6 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 * Render form template scripts.
 	 *
 	 * @since 4.9.0
-	 * @access public
 	 */
 	public function render_control_template_scripts() {
 		parent::render_control_template_scripts();
