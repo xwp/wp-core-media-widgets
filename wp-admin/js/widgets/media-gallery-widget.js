@@ -53,25 +53,7 @@
 	 * @class GalleryWidgetModel
 	 * @constructor
 	 */
-	GalleryWidgetModel = component.MediaWidgetModel.extend( {
-		/**
-		 * Remove an attachment ID from attachments.
-		 *
-		 * @param {Integer} id - Attachment id to remove from attachments.
-		 * @returns {void}
-		 */
-		removeAttachmentId: function removeAttachmentId( id ) {
-			var attachments, newAttachments;
-			attachments = JSON.parse( this.get( 'attachments' ) );
-			newAttachments = _.filter( attachments, function( attachment ) {
-				return attachment.id !== id;
-			} );
-			this.set( {
-				'attachments': JSON.stringify( newAttachments ),
-				'ids': _.map( newAttachments, 'id' )
-			} );
-		}
-	} );
+	GalleryWidgetModel = component.MediaWidgetModel.extend( {} );
 
 	/**
 	 * Gallery widget control.
@@ -88,57 +70,147 @@
 		} ),
 
 		/**
+		 * Initialize.
+		 *
+		 * @param {Object}         options - Options.
+		 * @param {Backbone.Model} options.model - Model.
+		 * @param {jQuery}         options.el - Control field container element.
+		 * @param {jQuery}         options.syncContainer - Container element where fields are synced for the server.
+		 * @returns {void}
+		 */
+		initialize: function initialize( options ) {
+			var control = this;
+
+			component.MediaWidgetControl.prototype.initialize.call( control, options );
+
+			_.bindAll( control, 'updateSelectedAttachments' );
+			control.selectedAttachments = new wp.media.model.Attachments();
+			control.model.on( 'change:ids', control.updateSelectedAttachments );
+			control.selectedAttachments.on( 'change', control.render );
+			control.selectedAttachments.on( 'reset', control.render );
+			control.updateSelectedAttachments();
+		},
+
+		/**
+		 * Update the selected attachments if necessary.
+		 *
+		 * @returns {void}
+		 */
+		updateSelectedAttachments: function updateSelectedAttachments() {
+			var control = this, newIds, oldIds, removedIds, addedIds, addedQuery;
+
+			newIds = control.parseIdList( control.model.get( 'ids' ) );
+			oldIds = _.pluck( control.selectedAttachments.models, 'id' );
+
+			removedIds = _.difference( oldIds, newIds );
+			_.each( removedIds, function( removedId ) {
+				control.selectedAttachments.remove( control.selectedAttachments.get( removedId ) );
+			});
+
+			addedIds = _.difference( newIds, oldIds );
+			if ( addedIds.length ) {
+				addedQuery = wp.media.query({
+					order: 'ASC',
+					orderby: 'post__in',
+					perPage: -1,
+					post__in: newIds,
+					query: true,
+					type: 'image'
+				});
+				addedQuery.more().done( function() {
+					control.selectedAttachments.reset( addedQuery.models );
+					control.renderPreview(); // @todo Should get triggered with reset.
+				});
+			}
+		},
+
+		/**
+		 * Parse ID list.
+		 *
+		 * @param {Array|string} ids - ID list.
+		 * @returns {Array} Valid integers.
+		 */
+		parseIdList: function( ids ) {
+			var parsedIds;
+			if ( 'string' === typeof ids ) {
+				parsedIds = ids.split( ',' );
+			} else {
+				parsedIds = ids;
+			}
+			return _.filter(
+				_.map( parsedIds, function( id ) {
+					return parseInt( id, 10 );
+				},
+				function( id ) {
+					return 'number' === typeof id;
+				}
+			) );
+		},
+
+		/**
 		 * Render preview.
 		 *
 		 * @returns {void}
 		 */
 		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachments;
+			var control = this, previewContainer, previewTemplate, data;
 
 			previewContainer = control.$el.find( '.media-widget-preview' );
 			previewTemplate = wp.template( 'wp-media-widget-gallery-preview' );
 
-			if ( control.model.get( 'ids' ).length && ! control.model.get( 'attachemnts' ) ) {
-				attachments = this.getAttachments();
+			data = control.previewTemplateProps.toJSON();
+			data.ids = control.parseIdList( data.ids );
+			data.attachments = {};
+			control.selectedAttachments.each( function( attachment ) {
+				data.attachments[ attachment.id ] = attachment.toJSON();
+			} );
 
-				attachments.more().done( function() {
-					control.model.set( 'attachments', JSON.stringify( _.pluck( attachments.models, 'attributes' ) ) );
-					previewContainer.html( previewTemplate( control.model.attributes ) );
-				} );
-			} else {
-				previewContainer.html( previewTemplate( control.previewTemplateProps.toJSON() ) );
-			}
+			previewContainer.html( previewTemplate( data ) );
 		},
 
 		/**
-		 * Fetch attachment models.
+		 * Determine whether there are selected attachments.
 		 *
-		 * @returns {wp.media.model.Attachments} A Backbone.Collection.
+		 * @returns {boolean} Selected.
 		 */
-		getAttachments: function getAttachments() {
-			var attachments,
-				ids = this.model.get( 'ids' ).split( ',' );
-
-			attachments = wp.media.query( {
-				order: 'ASC',
-				orderby: 'post__in',
-				perPage: -1,
-				post__in: ids,
-				query: true,
-				type: 'image'
-			} );
-
-			return attachments;
-		},
-
 		isSelected: function isSelected() {
-			var control = this;
+			var control = this, ids;
 
 			if ( control.model.get( 'error' ) ) {
 				return false;
 			}
 
-			return Boolean( control.model.get( 'ids' ) || control.model.get( 'attachments' ) );
+			ids = control.parseIdList( control.model.get( 'ids' ) );
+			return ids.length > 0;
+		},
+
+		/**
+		 * Sync the model attributes to the hidden inputs, and update previewTemplateProps.
+		 *
+		 * @todo Patch this in core to eliminate need for override.
+		 * @returns {void}
+		 */
+		syncModelToInputs: function syncModelToInputs() {
+			var control = this;
+			control.syncContainer.find( '.media-widget-instance-property' ).each( function() {
+				var input = $( this ), value, propertyName = input.data( 'property' );
+				value = control.model.get( propertyName );
+				if ( _.isUndefined( value ) ) {
+					return;
+				}
+
+				// @todo Support comma-separated ID list arrays?
+				if ( 'boolean' === control.model.schema[ propertyName ].type ) {
+					value = value ? '1' : ''; // Because in PHP, strval( true ) === '1' && strval( false ) === ''.
+				} else {
+					value = String( value );
+				}
+
+				if ( input.val() !== value ) {
+					input.val( value );
+					input.trigger( 'change' );
+				}
+			});
 		},
 
 		/**
@@ -148,13 +220,13 @@
 		 */
 		editMedia: function editMedia() {
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
-			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
-				selection = new wp.media.model.Selection( control.model.get( 'attachments' ), {
-					multiple: true
-				});
-			} else {
-				selection = null;
-			}
+			selection = new wp.media.model.Selection( control.selectedAttachments.models, {
+				multiple: true
+			} );
+
+			selection.gallery = new Backbone.Model({
+				_orderbyRandom: control.model.get( 'orderby_random' )
+			});
 
 			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
 			if ( mediaFrameProps.size ) {
@@ -184,15 +256,17 @@
 					return;
 				}
 
-				// Update widget instance.
+				// Copy orderby_random from gallery state.
+				if ( selectedImages.gallery ) {
+					control.model.set( 'orderby_random', selectedImages.gallery.get( '_orderbyRandom' ) );
+				}
+
+				// Directly update selectedAttachments to prevent needing to do additional request.
+				control.selectedAttachments.reset( selectedImages.models );
+
+				// Update models in the widget instance.
 				control.model.set( {
-					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ),
-					attachments: JSON.stringify(
-						selectedImages.models.map( function( model ) {
-							return model.toJSON();
-						} )
-					),
-					selection: selectedImages
+					ids: _.pluck( selectedImages.models, 'id' ).join( ',' )
 				} );
 			} );
 
@@ -211,7 +285,12 @@
 			// Clear the selected attachment when it is deleted in the media select frame.
 			if ( selection ) {
 				selection.on( 'destroy', function onDestroy( attachment ) {
-					control.model.removeAttachmentId( attachment.get( 'id' ) );
+					control.model.set( {
+						ids: _.difference(
+							control.parseIdList( control.model.get( 'ids' ) ),
+							[ attachment.id ]
+						).join( ',' ) // @todo Array.
+					} );
 				});
 			}
 		},
@@ -255,15 +334,17 @@
 					return;
 				}
 
+				// Copy orderby_random from gallery state.
+				if ( selectedImages.gallery ) {
+					control.model.set( 'orderby_random', selectedImages.gallery.get( '_orderbyRandom' ) );
+				}
+
+				// Directly update selectedAttachments to prevent needing to do additional request.
+				control.selectedAttachments.reset( selectedImages.models );
+
 				// Update widget instance.
 				control.model.set( {
-					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ),
-					attachments: JSON.stringify(
-						selectedImages.models.map( function( model ) {
-							return model.toJSON();
-						} )
-					),
-					selection: selectedImages
+					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ) // @todo Allow array.
 				} );
 			} );
 

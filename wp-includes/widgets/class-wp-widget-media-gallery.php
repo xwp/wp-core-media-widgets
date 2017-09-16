@@ -93,6 +93,25 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	}
 
 	/**
+	 * Sanitizes the widget form values as they are saved.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param array $new_instance Values just sent to be saved.
+	 * @param array $instance Previously saved values from database.
+	 * @return array Updated safe values to be saved.
+	 */
+	public function update( $new_instance, $instance ) {
+
+		// Workaround for rest_validate_value_from_schema() due to the fact that rest_is_boolean( '' ) === false, while rest_is_boolean( '1' ) is true.
+		if ( isset( $new_instance['orderby_random'] ) && '' === $new_instance['orderby_random'] ) {
+			$new_instance['orderby_random'] = false;
+		}
+
+		return parent::update( $new_instance, $instance );
+	}
+
+	/**
 	 * Render the media on the frontend.
 	 *
 	 * @since  4.8.0
@@ -166,10 +185,15 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 		?>
 		<script type="text/html" id="tmpl-wp-media-widget-gallery-preview">
 			<# var describedById = 'describedBy-' + String( Math.random() ); #>
-			<# data.attachments = data.attachments ? JSON.parse(data.attachments) : ''; #>
-			<# if ( Array.isArray( data.attachments ) && data.attachments.length ) { #>
+			<# if ( data.ids.length ) { #>
 				<div class="gallery media-widget-gallery-preview">
-					<# _.each( data.attachments, function( attachment, index ) { #>
+					<# _.each( data.ids, function( id, index ) { #>
+						<#
+						var attachment = data.attachments[ id ];
+						if ( ! attachment ) {
+							return;
+						}
+						#>
 						<# if ( index < 6 ) { #>
 							<dl class="gallery-item">
 								<dt class="gallery-icon">
@@ -178,9 +202,9 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 								<# } else { #>
 									<img src="{{ attachment.url }}" alt="" />
 								<# } #>
-								<# if ( index === 5 && data.attachments.length > 6 ) { #>
+								<# if ( index === 5 && data.ids.length > 6 ) { #>
 									<div class="gallery-icon-placeholder">
-										<p class="gallery-icon-placeholder-text">+{{ data.attachments.length - 5 }}</p>
+										<p class="gallery-icon-placeholder-text">+{{ data.ids.length - 5 }}</p>
 									</div>
 								<# } #>
 								</dt>
