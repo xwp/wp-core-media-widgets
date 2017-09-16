@@ -83,7 +83,7 @@
 
 			component.MediaWidgetControl.prototype.initialize.call( control, options );
 
-			_.bindAll( control, 'updateSelectedAttachments' );
+			_.bindAll( control, 'updateSelectedAttachments', 'handleAttachmentDestroy' );
 			control.selectedAttachments = new wp.media.model.Attachments();
 			control.model.on( 'change:ids', control.updateSelectedAttachments );
 			control.selectedAttachments.on( 'change', control.renderPreview );
@@ -277,16 +277,8 @@
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
-			// Clear the selected attachment when it is deleted in the media select frame.
 			if ( selection ) {
-				selection.on( 'destroy', function onDestroy( attachment ) {
-					control.model.set( {
-						ids: _.difference(
-							control.parseIdList( control.model.get( 'ids' ) ),
-							[ attachment.id ]
-						).join( ',' ) // @todo Array.
-					} );
-				});
+				selection.on( 'destroy', control.handleAttachmentDestroy );
 			}
 		},
 
@@ -352,11 +344,8 @@
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
-			// Clear the selected attachment when it is deleted in the media select frame.
 			if ( selection ) {
-				selection.on( 'destroy', function onDestroy( attachment ) {
-					control.model.removeAttachmentId( attachment.get( 'id' ) );
-				});
+				selection.on( 'destroy', control.handleAttachmentDestroy );
 			}
 
 			/*
@@ -364,8 +353,23 @@
 			 * the modal and not inadvertently cause the widget to collapse in the customizer.
 			 */
 			mediaFrame.$el.find( ':focusable:first' ).focus();
-		}
+		},
 
+		/**
+		 * Clear the selected attachment when it is deleted in the media select frame.
+		 *
+		 * @param {wp.media.models.Attachment} attachment - Attachment.
+		 * @returns {void}
+		 */
+		handleAttachmentDestroy: function handleAttachmentDestroy( attachment ) {
+			var control = this;
+			control.model.set( {
+				ids: _.difference(
+					control.parseIdList( control.model.get( 'ids' ) ),
+					[ attachment.id ]
+				).join( ',' ) // @todo Array.
+			} );
+		}
 	} );
 
 	// Exports.
