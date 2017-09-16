@@ -113,9 +113,14 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	 */
 	public function render_media( $instance ) {
 		$instance = array_merge( wp_list_pluck( $this->get_instance_schema(), 'default' ), $instance );
+
 		$shortcode_atts = array(
-			'ids' => $instance['ids'],
+			'ids'     => $instance['ids'],
+			'columns' => $instance['columns'],
+			'link'    => $instance['link_type'],
+			'size'    => $instance['size'],
 		);
+		
 		// @codingStandardsIgnoreStart
 		if ( $instance['orderby_random'] ) {
 			$shortcode_atts['orderby'] = 'rand';
