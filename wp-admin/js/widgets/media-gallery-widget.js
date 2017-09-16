@@ -221,13 +221,10 @@
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
 			selection = new wp.media.model.Selection( control.selectedAttachments.models, {
 				multiple: true
-			} );
-
-			selection.gallery = new Backbone.Model({
-				_orderbyRandom: control.model.get( 'orderby_random' )
 			});
 
 			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
+			selection.gallery = new Backbone.Model( _.pick( mediaFrameProps, 'columns', 'link', 'size', '_orderbyRandom' ) );
 			if ( mediaFrameProps.size ) {
 				control.displaySettings.set( 'size', mediaFrameProps.size );
 			}
@@ -246,26 +243,25 @@
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'update', function onUpdate( selections ) {
-				var state = mediaFrame.state(), selectedImages;
+			mediaFrame.on( 'update', function onUpdate( newSelection ) {
+				var state = mediaFrame.state(), resultSelection;
 
-				selectedImages = selections || state.get( 'selection' );
-
-				if ( ! selectedImages ) {
+				resultSelection = newSelection || state.get( 'selection' );
+				if ( ! resultSelection ) {
 					return;
 				}
 
 				// Copy orderby_random from gallery state.
-				if ( selectedImages.gallery ) {
-					control.model.set( 'orderby_random', selectedImages.gallery.get( '_orderbyRandom' ) );
+				if ( resultSelection.gallery ) {
+					control.model.set( control.mapMediaToModelProps( resultSelection.gallery.toJSON() ) );
 				}
 
 				// Directly update selectedAttachments to prevent needing to do additional request.
-				control.selectedAttachments.reset( selectedImages.models );
+				control.selectedAttachments.reset( resultSelection.models );
 
 				// Update models in the widget instance.
 				control.model.set( {
-					ids: _.pluck( selectedImages.models, 'id' ).join( ',' )
+					ids: _.pluck( resultSelection.models, 'id' ).join( ',' ) // @todo Array.
 				} );
 			} );
 
@@ -301,11 +297,9 @@
 		 */
 		selectMedia: function selectMedia() {
 			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
-			if ( control.isSelected() && 0 !== control.model.get( 'selection' ) ) {
-				selection = new wp.media.model.Selection( [ control.selectedAttachment ] );
-			} else {
-				selection = null;
-			}
+			selection = new wp.media.model.Selection( control.selectedAttachments.models, {
+				multiple: true
+			});
 
 			mediaFrameProps = control.mapModelToMediaFrameProps( control.model.toJSON() );
 			if ( mediaFrameProps.size ) {
@@ -324,26 +318,25 @@
 			wp.media.frame = mediaFrame; // See wp.media().
 
 			// Handle selection of a media item.
-			mediaFrame.on( 'update', function onUpdate( selections ) {
-				var state = mediaFrame.state(), selectedImages;
+			mediaFrame.on( 'update', function onUpdate( newSelection ) {
+				var state = mediaFrame.state(), resultSelection;
 
-				selectedImages = selections || state.get( 'selection' );
-
-				if ( ! selectedImages ) {
+				resultSelection = newSelection || state.get( 'selection' );
+				if ( ! resultSelection ) {
 					return;
 				}
 
 				// Copy orderby_random from gallery state.
-				if ( selectedImages.gallery ) {
-					control.model.set( 'orderby_random', selectedImages.gallery.get( '_orderbyRandom' ) );
+				if ( resultSelection.gallery ) {
+					control.model.set( control.mapMediaToModelProps( resultSelection.gallery.toJSON() ) );
 				}
 
 				// Directly update selectedAttachments to prevent needing to do additional request.
-				control.selectedAttachments.reset( selectedImages.models );
+				control.selectedAttachments.reset( resultSelection.models );
 
 				// Update widget instance.
 				control.model.set( {
-					ids: _.pluck( selectedImages.models, 'id' ).join( ',' ) // @todo Allow array.
+					ids: _.pluck( resultSelection.models, 'id' ).join( ',' ) // @todo Allow array.
 				} );
 			} );
 

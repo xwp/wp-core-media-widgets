@@ -4,13 +4,13 @@
  *
  * @package WordPress
  * @subpackage Widgets
- * @since 4.8.0
+ * @since 4.9.0
  */
 
 /**
  * Core class that implements a gallery widget.
  *
- * @since 4.8.0
+ * @since 4.9.0
  *
  * @see WP_Widget
  */
@@ -19,7 +19,7 @@ class WP_Widget_Media_Gallery extends WP_Widget_Media {
 	/**
 	 * Constructor.
 	 *
-	 * @since  4.8.0
+	 * @since  4.9.0
 	 * @access public
 	 */
 	public function __construct() {
