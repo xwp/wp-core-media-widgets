@@ -218,7 +218,7 @@
 		 * @returns {void}
 		 */
 		editMedia: function editMedia() {
-			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
+			var control = this, selection, mediaFrame, mediaFrameProps;
 			selection = new wp.media.model.Selection( control.selectedAttachments.models, {
 				multiple: true
 			});
@@ -265,19 +265,6 @@
 				} );
 			} );
 
-			// Disable syncing of attachment changes back to server (except for deletions). See <https://core.trac.wordpress.org/ticket/40403>.
-			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function( method ) {
-				if ( 'delete' === method ) {
-					return defaultSync.apply( this, arguments );
-				} else {
-					return $.Deferred().rejectWith( this ).promise();
-				}
-			};
-			mediaFrame.on( 'close', function onClose() {
-				wp.media.model.Attachment.prototype.sync = defaultSync;
-			});
-
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
 
@@ -292,7 +279,7 @@
 		 * @returns {void}
 		 */
 		selectMedia: function selectMedia() {
-			var control = this, selection, mediaFrame, defaultSync, mediaFrameProps;
+			var control = this, selection, mediaFrame, mediaFrameProps;
 			selection = new wp.media.model.Selection( control.selectedAttachments.models, {
 				multiple: true
 			});
@@ -335,20 +322,6 @@
 					ids: _.pluck( resultSelection.models, 'id' ).join( ',' ) // @todo Allow array.
 				} );
 			} );
-
-			// @todo The following needs to be updated in MediaWidgetControl#selectMedia in core, where it was missed in r41248.
-			// Disable syncing of attachment changes back to server (except for deletions). See <https://core.trac.wordpress.org/ticket/40403>.
-			defaultSync = wp.media.model.Attachment.prototype.sync;
-			wp.media.model.Attachment.prototype.sync = function( method ) {
-				if ( 'delete' === method ) {
-					return defaultSync.apply( this, arguments );
-				} else {
-					return $.Deferred().rejectWith( this ).promise();
-				}
-			};
-			mediaFrame.on( 'close', function onClose() {
-				wp.media.model.Attachment.prototype.sync = defaultSync;
-			});
 
 			mediaFrame.$el.addClass( 'media-widget' );
 			mediaFrame.open();
