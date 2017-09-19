@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Core Media Widgets
- * Version: 0.1.0
+ * Version: 0.2.0
  * Description: Adding images to your widget areas is a common, yet currently incredibly tedious task -- you need to upload it in your media library, find the url, copy the url, and then manually add an image tag inside of a text widget. That's a lot to ask for a beginner user to do. We should include a default image widget in core to make this task easier.
  * Author: WordPress.org
  * Plugin URI: https://core.trac.wordpress.org/ticket/32417
