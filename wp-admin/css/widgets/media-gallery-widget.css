@@ -1,0 +1,54 @@
+.media-widget-gallery-preview {
+	display: flex;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	cursor: pointer;
+}
+
+.media-widget-gallery-preview .gallery-item {
+	box-sizing: border-box;
+	width: 50%;
+	margin: 0;
+	padding: 1.79104477%;
+}
+
+/*
+ * Use targetted nth-last-child selectors to control the size of each image
+ * based on how many gallery items are present in the grid.
+ * See: https://alistapart.com/article/quantity-queries-for-css
+ */
+.media-widget-gallery-preview .gallery-item:nth-last-child(3):first-child,
+.media-widget-gallery-preview .gallery-item:nth-last-child(3):first-child ~ .gallery-item,
+.media-widget-gallery-preview .gallery-item:nth-last-child(n+5),
+.media-widget-gallery-preview .gallery-item:nth-last-child(n+5) ~ .gallery-item,
+.media-widget-gallery-preview .gallery-item:nth-last-child(n+6),
+.media-widget-gallery-preview .gallery-item:nth-last-child(n+6) ~ .gallery-item {
+	max-width: 33.33%;
+}
+
+.media-widget-gallery-preview .gallery-item img {
+	height: auto;
+	vertical-align: bottom;
+}
+
+.media-widget-gallery-preview .gallery-icon {
+	position: relative;
+}
+
+.media-widget-gallery-preview .gallery-icon-placeholder {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba( 0, 0, 0, .5 );
+}
+
+.media-widget-gallery-preview .gallery-icon-placeholder-text {
+	font-weight: 600;
+	font-size: 2em;
+	color: white;
+}

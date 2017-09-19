@@ -46,6 +46,7 @@ class Media_Widgets_WP_CLI_Command extends WP_CLI_Command {
 		'media-image-widget',
 		'media-video-widget',
 		'media-audio-widget',
+		'media-gallery-widget',
 	);
 
 	/**

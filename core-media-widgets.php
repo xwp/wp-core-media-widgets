@@ -24,7 +24,8 @@
  * @package WordPress
  */
 
-define( 'WP_CORE_MEDIA_WIDGETS_MERGED', file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+define( 'WP_CORE_MEDIA_WIDGETS_MERGED',      file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media.php' ) );
+define( 'WP_CORE_GALLERY_WIDGET_MERGED',     file_exists( ABSPATH . 'wp-includes/widgets/class-wp-widget-media-gallery.php' ) );
 define( 'WP_CORE_VISUAL_TEXT_WIDGET_MERGED', file_exists( ABSPATH . 'wp-admin/js/widgets/text-widgets.js' ) );
 
 // Register WP-CLI command for generating QUnit test suite.
@@ -70,6 +71,8 @@ function wp32417_default_scripts( WP_Scripts $scripts ) {
 		$scripts->add( $handle, $src, array( 'media-widgets', 'media-audiovideo' ) );
 	}
 
+	$scripts->add( 'media-gallery-widget', plugin_dir_url( __FILE__ ) . 'wp-admin/js/widgets/media-gallery-widget.js', array( 'media-widgets' ) );
+
 	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
 		$scripts->add_inline_script( 'customize-selective-refresh', file_get_contents( dirname( __FILE__ ) . '/wp-includes/js/customize-selective-refresh-extras.js' ) );
 	}
@@ -97,8 +100,14 @@ if ( ! WP_CORE_VISUAL_TEXT_WIDGET_MERGED ) {
  */
 function wp32417_default_styles( WP_Styles $styles ) {
 	$handle = 'media-widgets';
-	$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
 	if ( ! WP_CORE_MEDIA_WIDGETS_MERGED ) {
+		$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-widgets.css';
+		$styles->add( $handle, $src, array( 'media-views' ) );
+	}
+
+	$handle = 'media-gallery-widget';
+	if ( ! WP_CORE_GALLERY_WIDGET_MERGED ) {
+		$src = plugin_dir_url( __FILE__ ) . 'wp-admin/css/widgets/media-gallery-widget.css';
 		$styles->add( $handle, $src, array( 'media-views' ) );
 	}
 }
@@ -133,12 +142,12 @@ function wp32417_twentyten_styles() {
  * @codeCoverageIgnore
  */
 function wp32417_widgets_init() {
-
 	$class_files = array(
-		'WP_Widget_Media' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php',
-		'WP_Widget_Media_Image' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php',
-		'WP_Widget_Media_Video' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php',
-		'WP_Widget_Media_Audio' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php',
+		'WP_Widget_Media'         => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media.php',
+		'WP_Widget_Media_Image'   => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-image.php',
+		'WP_Widget_Media_Video'   => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-video.php',
+		'WP_Widget_Media_Audio'   => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-audio.php',
+		'WP_Widget_Media_Gallery' => dirname( __FILE__ ) . '/wp-includes/widgets/class-wp-widget-media-gallery.php',
 	);
 	foreach ( $class_files as $class => $file ) {
 		if ( ! class_exists( $class ) ) {
