@@ -5,7 +5,7 @@ Feature plugin for introducing new core media widgets for images, audio, and vid
 
 **Contributors:** [wordpressdotorg](https://profiles.wordpress.org/wordpressdotorg)  
 **Tags:** [sidebar](https://wordpress.org/plugins/tags/sidebar), [widget](https://wordpress.org/plugins/tags/widget), [images](https://wordpress.org/plugins/tags/images), [video](https://wordpress.org/plugins/tags/video), [audio](https://wordpress.org/plugins/tags/audio), [tinymce](https://wordpress.org/plugins/tags/tinymce)  
-**Requires at least:** 4.7.0  
+**Requires at least:** 4.8.0  
 **Tested up to:** 4.9.0-alpha  
 **Stable tag:** master  
 **License:** [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)  

@@ -1,7 +1,7 @@
 === Core Media Widgets ===
 Contributors:      wordpressdotorg
 Tags:              sidebar, widget, images, video, audio, tinymce
-Requires at least: 4.7.0
+Requires at least: 4.8.0
 Tested up to:      4.9.0-alpha
 Stable tag:        master
 License:           GPLv2 or later
