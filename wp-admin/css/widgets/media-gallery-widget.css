@@ -2,6 +2,10 @@
 	display: flex;
 	justify-content: flex-start;
 	flex-wrap: wrap;
+}
+
+.media-widget-preview.gallery .placeholder,
+.media-widget-gallery-preview {
 	cursor: pointer;
 }
 

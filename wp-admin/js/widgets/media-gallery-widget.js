@@ -165,6 +165,7 @@
 			} );
 
 			previewContainer.html( previewTemplate( data ) );
+			previewContainer.addClass( 'gallery' );
 		},
 
 		/**
