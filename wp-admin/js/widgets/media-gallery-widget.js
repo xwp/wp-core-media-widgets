@@ -165,6 +165,7 @@
 			} );
 
 			previewContainer.html( previewTemplate( data ) );
+			previewContainer.addClass( 'gallery' );
 		},
 
 		/**
@@ -219,6 +220,13 @@
 		 */
 		editMedia: function editMedia() {
 			var control = this, selection, mediaFrame, mediaFrameProps;
+
+			// If no images are selected, open the select frame instead.
+			if ( ! control.isSelected() ) {
+				control.selectMedia();
+				return;
+			}
+
 			selection = new wp.media.model.Selection( control.selectedAttachments.models, {
 				multiple: true
 			});
